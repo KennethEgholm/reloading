@@ -53,8 +53,11 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
               <th className="text-left px-6 py-3 font-medium">Projectile</th>
               <th className="text-left px-6 py-3 font-medium">Powder</th>
               <th className="text-right px-6 py-3 font-medium">Charge</th>
-              <th className="text-right px-6 py-3 font-medium">Possible</th>
               <th className="text-right px-6 py-3 font-medium">COAL</th>
+              <th className="text-right px-6 py-3 font-medium">Calc V0</th>
+              <th className="text-right px-6 py-3 font-medium">Meas V0</th>
+              <th className="text-right px-6 py-3 font-medium">Fill %</th>
+              <th className="text-right px-6 py-3 font-medium">Possible</th>
               <th className="w-12"></th>
             </tr>
           </thead>
@@ -76,14 +79,23 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                 <td className="px-6 py-4 text-right font-mono">
                   {recipe.chargeGr ? `${recipe.chargeGr} gr` : '—'}
                 </td>
+                <td className="px-6 py-4 text-right font-mono">
+                  {recipe.coal ? `${recipe.coal}"` : '—'}
+                </td>
+                <td className="px-6 py-4 text-right font-mono">
+                  {recipe.calculatedV0 ? `${recipe.calculatedV0}` : '—'}
+                </td>
+                <td className="px-6 py-4 text-right font-mono">
+                  {recipe.measuredV0 ? `${recipe.measuredV0}` : '—'}
+                </td>
+                <td className="px-6 py-4 text-right font-mono">
+                  {recipe.fillRate ? `${recipe.fillRate}` : '—'}
+                </td>
                 <td className="px-6 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400">
                   {(() => {
                     const possible = getPossibleLoads(recipe);
                     return possible !== null ? `${possible}×` : '—';
                   })()}
-                </td>
-                <td className="px-6 py-4 text-right font-mono">
-                  {recipe.coal ? `${recipe.coal}"` : '—'}
                 </td>
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <DeleteRecipeButton id={recipe.id} />

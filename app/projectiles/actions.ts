@@ -59,17 +59,3 @@ export async function deleteProjectile(id: string) {
 
   revalidatePath('/projectiles');
 }
-
-export async function adjustProjectileAmount(id: string, delta: number) {
-  const projectile = await prisma.projectile.findUnique({ where: { id } });
-  if (!projectile) throw new Error('Projectile not found');
-
-  const newAmount = Math.max(0, projectile.amount + delta);
-
-  await prisma.projectile.update({
-    where: { id },
-    data: { amount: newAmount },
-  });
-
-  revalidatePath('/projectiles');
-}

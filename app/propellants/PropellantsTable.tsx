@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { PropellantForm } from './PropellantForm';
 import { DeletePropellantButton } from './DeletePropellantButton';
-import { AdjustAmountButton } from './AdjustAmountButton';
 
 interface PropellantsTableProps {
   propellants: Array<{
@@ -52,12 +51,8 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
               >
                 <td className="px-6 py-4 font-medium">{propellant.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{propellant.type}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <AdjustAmountButton id={propellant.id} delta={-1}>−</AdjustAmountButton>
-                    <span className="w-16 text-right font-medium font-mono">{propellant.amountGr.toFixed(1)}</span>
-                    <AdjustAmountButton id={propellant.id} delta={1}>+</AdjustAmountButton>
-                  </div>
+                <td className="px-6 py-4 text-right font-mono font-medium">
+                  {propellant.amountGr.toFixed(1)}
                 </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {propellant.description || '—'}

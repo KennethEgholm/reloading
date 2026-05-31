@@ -108,6 +108,18 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
     };
   }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
 
+  useEffect(() => {
+    if (defaultValues?.id) {
+      reset({
+        brand: defaultValues.brand || '',
+        type: defaultValues.type || PrimerType.SMALL_RIFLE,
+        magnum: defaultValues.magnum ?? false,
+        amount: defaultValues.amount ?? 0,
+        description: defaultValues.description || '',
+      });
+    }
+  }, [defaultValues?.id, reset]);
+
   return (
     <>
       {!isEdit && !isControlled && (

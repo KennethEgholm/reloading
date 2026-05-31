@@ -51,17 +51,3 @@ export async function deletePropellant(id: string) {
 
   revalidatePath('/propellants');
 }
-
-export async function adjustPropellantAmount(id: string, delta: number) {
-  const propellant = await prisma.propellant.findUnique({ where: { id } });
-  if (!propellant) throw new Error('Propellant not found');
-
-  const newAmount = Math.max(0, Math.round((propellant.amountGr + delta) * 100) / 100);
-
-  await prisma.propellant.update({
-    where: { id },
-    data: { amountGr: newAmount },
-  });
-
-  revalidatePath('/propellants');
-}

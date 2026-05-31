@@ -110,6 +110,19 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
     };
   }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
 
+  useEffect(() => {
+    if (defaultValues?.id) {
+      reset({
+        brand: defaultValues.brand || '',
+        type: defaultValues.type || '',
+        weightGr: defaultValues.weightGr ?? 0,
+        caliber: defaultValues.caliber || '',
+        amount: defaultValues.amount ?? 0,
+        description: defaultValues.description || '',
+      });
+    }
+  }, [defaultValues?.id, reset]);
+
   return (
     <>
       {!isEdit && !isControlled && (

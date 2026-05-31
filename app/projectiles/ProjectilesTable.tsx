@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ProjectileForm } from './ProjectileForm';
 import { DeleteProjectileButton } from './DeleteProjectileButton';
-import { AdjustAmountButton } from './AdjustAmountButton';
 
 interface ProjectilesTableProps {
   projectiles: Array<{
@@ -58,12 +57,8 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.type || '—'}</td>
                 <td className="px-6 py-4 text-right font-mono">{projectile.weightGr}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.caliber}</td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <AdjustAmountButton id={projectile.id} delta={-1}>−</AdjustAmountButton>
-                    <span className="w-10 text-right font-medium font-mono">{projectile.amount}</span>
-                    <AdjustAmountButton id={projectile.id} delta={1}>+</AdjustAmountButton>
-                  </div>
+                <td className="px-6 py-4 text-right font-mono font-medium">
+                  {projectile.amount}
                 </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {projectile.description || '—'}

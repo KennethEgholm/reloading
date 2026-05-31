@@ -65,6 +65,9 @@ model Recipe {
   primerId        String?
   chargeGr        Float?    // Powder charge in grains
   coal            Float?    // Cartridge Overall Length (inches)
+  calculatedV0    Float?    // Calculated muzzle velocity (m/s)
+  measuredV0      Float?    // Measured muzzle velocity (m/s)
+  fillRate        Float?    // Powder fill rate (%)
   notes           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

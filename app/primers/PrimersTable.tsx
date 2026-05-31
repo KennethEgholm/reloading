@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { PrimerForm } from './PrimerForm';
 import { DeleteButton } from './DeleteButton';
-import { AdjustAmountButton } from './AdjustAmountButton';
 import { PrimerType } from '@prisma/client';
 
 interface PrimersTableProps {
@@ -70,12 +69,8 @@ export function PrimersTable({ primers }: PrimersTableProps) {
                     <span className="text-zinc-400">—</span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
-                  <div className="flex items-center justify-end gap-2">
-                    <AdjustAmountButton id={primer.id} delta={-1}>−</AdjustAmountButton>
-                    <span className="w-10 text-right font-medium">{primer.amount}</span>
-                    <AdjustAmountButton id={primer.id} delta={1}>+</AdjustAmountButton>
-                  </div>
+                <td className="px-6 py-4 text-right font-mono font-medium">
+                  {primer.amount}
                 </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {primer.description || '—'}

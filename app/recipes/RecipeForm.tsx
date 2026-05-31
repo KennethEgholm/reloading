@@ -14,6 +14,9 @@ const recipeSchema = z.object({
   primerId: z.string().optional(),
   chargeGr: z.coerce.number().optional(),
   coal: z.coerce.number().optional(),
+  calculatedV0: z.coerce.number().optional(),
+  measuredV0: z.coerce.number().optional(),
+  fillRate: z.coerce.number().optional(),
   notes: z.string().optional(),
 });
 
@@ -73,6 +76,9 @@ export function RecipeForm({
       primerId: defaultValues?.primerId || '',
       chargeGr: defaultValues?.chargeGr,
       coal: defaultValues?.coal,
+      calculatedV0: defaultValues?.calculatedV0,
+      measuredV0: defaultValues?.measuredV0,
+      fillRate: defaultValues?.fillRate,
       notes: defaultValues?.notes || '',
     },
   });
@@ -87,6 +93,9 @@ export function RecipeForm({
         primerId: defaultValues.primerId || '',
         chargeGr: defaultValues.chargeGr,
         coal: defaultValues.coal,
+        calculatedV0: defaultValues.calculatedV0,
+        measuredV0: defaultValues.measuredV0,
+        fillRate: defaultValues.fillRate,
         notes: defaultValues.notes || '',
       });
     }
@@ -101,6 +110,9 @@ export function RecipeForm({
     if (data.primerId) formData.append('primerId', data.primerId);
     if (data.chargeGr !== undefined) formData.append('chargeGr', String(data.chargeGr));
     if (data.coal !== undefined) formData.append('coal', String(data.coal));
+    if (data.calculatedV0 !== undefined) formData.append('calculatedV0', String(data.calculatedV0));
+    if (data.measuredV0 !== undefined) formData.append('measuredV0', String(data.measuredV0));
+    if (data.fillRate !== undefined) formData.append('fillRate', String(data.fillRate));
     if (data.notes) formData.append('notes', data.notes);
 
     try {
@@ -264,6 +276,38 @@ export function RecipeForm({
                     type="number"
                     step="0.001"
                     {...register('coal')}
+                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Calculated V0 (m/s)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    {...register('calculatedV0')}
+                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Measured V0 (m/s)</label>
+                  <input
+                    type="number"
+                    step="1"
+                    {...register('measuredV0')}
+                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Fill rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    {...register('fillRate')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
                 </div>

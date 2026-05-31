@@ -11,6 +11,9 @@ export async function createRecipe(formData: FormData) {
   const primerId = (formData.get('primerId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
+  const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
+  const measuredV0 = formData.get('measuredV0') ? parseFloat(formData.get('measuredV0') as string) : null
+  const fillRate = formData.get('fillRate') ? parseFloat(formData.get('fillRate') as string) : null
   const notes = (formData.get('notes') as string) || null
 
   if (!name || !caliber || !projectileId || !propellantId) {
@@ -26,6 +29,9 @@ export async function createRecipe(formData: FormData) {
       primerId,
       chargeGr,
       coal,
+      calculatedV0,
+      measuredV0,
+      fillRate,
       notes,
     },
   })
@@ -46,6 +52,9 @@ export async function updateRecipe(id: string, formData: FormData) {
   const primerId = (formData.get('primerId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
+  const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
+  const measuredV0 = formData.get('measuredV0') ? parseFloat(formData.get('measuredV0') as string) : null
+  const fillRate = formData.get('fillRate') ? parseFloat(formData.get('fillRate') as string) : null
   const notes = (formData.get('notes') as string) || null
 
   if (!name || !caliber || !projectileId || !propellantId) {
@@ -62,6 +71,9 @@ export async function updateRecipe(id: string, formData: FormData) {
       primerId,
       chargeGr,
       coal,
+      calculatedV0,
+      measuredV0,
+      fillRate,
       notes,
     },
   })

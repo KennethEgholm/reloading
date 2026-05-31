@@ -104,6 +104,17 @@ export function PropellantForm({ action, defaultValues, title, submitLabel, open
     };
   }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
 
+  useEffect(() => {
+    if (defaultValues?.id) {
+      reset({
+        brand: defaultValues.brand || '',
+        type: defaultValues.type || '',
+        amountGr: defaultValues.amountGr ?? 0,
+        description: defaultValues.description || '',
+      });
+    }
+  }, [defaultValues?.id, reset]);
+
   return (
     <>
       {!isEdit && !isControlled && (

@@ -56,17 +56,3 @@ export async function deletePrimer(id: string) {
 
   revalidatePath('/primers');
 }
-
-export async function adjustPrimerAmount(id: string, delta: number) {
-  const primer = await prisma.primer.findUnique({ where: { id } });
-  if (!primer) throw new Error('Primer not found');
-
-  const newAmount = Math.max(0, primer.amount + delta);
-
-  await prisma.primer.update({
-    where: { id },
-    data: { amount: newAmount },
-  });
-
-  revalidatePath('/primers');
-}
