@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url is provided via prisma.config.ts (Prisma 7+ requirement)
+}
+
+enum PrimerType {
+  SMALL_RIFLE
+  LARGE_RIFLE
+  SMALL_PISTOL
+  LARGE_PISTOL
+}
+
+model Propellant {
+  id          String   @id @default(cuid())
+  brand       String
+  type        String
+  amountGr    Float    // Stock in grams (user preference)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  recipes     Recipe[]
+}
+
+model Projectile {
+  id          String   @id @default(cuid())
+  brand       String
+  type        String?  // e.g. "Game King", "MatchKing", "Tipped"
+  weightGr    Float    // Weight in grains (industry standard)
+  caliber     String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  recipes     Recipe[]
+}
+
+model Primer {
+  id          String      @id @default(cuid())
+  brand       String
+  magnum      Boolean     @default(false)
+  type        PrimerType
+  amount      Int         // Count of individual primers
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  recipes     Recipe[]
+}
+
+model Recipe {
+  id              String    @id @default(cuid())
+  name            String
+  caliber         String
+  projectileId    String
+  propellantId    String
+  primerId        String?
+  chargeGr        Float?    // Powder charge in grains
+  coal            Float?    // Cartridge Overall Length (inches)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  projectile      Projectile @relation(fields: [projectileId], references: [id])
+  propellant      Propellant @relation(fields: [propellantId], references: [id])
+  primer          Primer?    @relation(fields: [primerId], references: [id])
+}
+

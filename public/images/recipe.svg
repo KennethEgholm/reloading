@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Recipe card (cream paper) -->
+  <rect 
+    x="6" y="8" 
+    width="52" height="48" 
+    rx="4" 
+    fill="#F5F0E4"
+  />
+  <!-- Subtle card border -->
+  <rect 
+    x="6" y="8" 
+    width="52" height="48" 
+    rx="4" 
+    fill="none" 
+    stroke="#D8D0C0" 
+    stroke-width="2"
+  />
+
+  <!-- Small long rifle cartridge on the card (inspired by logo style) -->
+  <!-- Brass case -->
+  <rect x="12" y="14" width="28" height="7" rx="1" fill="#C5A26F"/>
+  <!-- Case highlight -->
+  <rect x="13" y="14.5" width="6" height="6" rx="0.5" fill="#E2C78F" opacity="0.45"/>
+  
+  <!-- Shoulder -->
+  <path d="M40 14 L43 11 L43 24 L40 21" fill="#A67C52"/>
+  
+  <!-- Neck -->
+  <rect x="42" y="15" width="5" height="5" rx="0.5" fill="#C5A26F"/>
+  
+  <!-- Bullet (spitzer) -->
+  <path d="M47 17.5 Q52 14 53 17.5 Q52 21 47 21.5 Z" fill="#B87333"/>
+  <!-- Bullet highlight -->
+  <path d="M47.5 16.5 Q50 15 51 17" fill="none" stroke="#D4A574" stroke-width="1" opacity="0.5"/>
+
+  <!-- Base rim -->
+  <rect x="9" y="14" width="4" height="7" rx="1" fill="#3D3D3D"/>
+
+  <!-- Recipe data lines -->
+  <rect x="13" y="28" width="22" height="2.2" rx="0.8" fill="#666"/>
+  <rect x="13" y="34" width="18" height="2.2" rx="0.8" fill="#666"/>
+  <rect x="13" y="40" width="20" height="2.2" rx="0.8" fill="#666"/>
+  <rect x="13" y="46" width="15" height="2.2" rx="0.8" fill="#666"/>
+</svg>

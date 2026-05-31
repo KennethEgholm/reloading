@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: reloading
+      POSTGRES_PASSWORD: reloading
+      POSTGRES_DB: reloading
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reloading"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://reloading:reloading@db:5432/reloading
+      NODE_ENV: development
+      CI: "true"  # Prevents pnpm from prompting about module removal in Docker
+    volumes:
+      - .:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        pnpm install --ignore-scripts --prefer-offline || true &&
+        pnpm prisma generate &&
+        pnpm rebuild sharp unrs-resolver @prisma/engines prisma --silent || true &&
+        pnpm dev
+      "
+
+volumes:
+  postgres_data:

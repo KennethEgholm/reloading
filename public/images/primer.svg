@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Primer cup -->
+  <circle cx="32" cy="32" r="22" fill="#555555"/>
+  <!-- Rim -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#333" stroke-width="4"/>
+  <!-- Anvil / center -->
+  <circle cx="32" cy="32" r="8" fill="#888"/>
+  <!-- Highlight -->
+  <circle cx="26" cy="26" r="4" fill="#777" opacity="0.6"/>
+</svg>

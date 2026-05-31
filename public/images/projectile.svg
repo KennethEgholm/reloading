@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Main bullet body (copper) -->
+  <path 
+    d="M22 58 
+       L22 22 
+       Q22 12 32 6 
+       Q42 12 42 22 
+       L42 58 
+       Z" 
+    fill="#C68E42"
+  />
+  
+  <!-- Horizontal highlight band (like the photo) -->
+  <path 
+    d="M22 42 
+       L22 28 
+       Q22 24 32 20 
+       Q42 24 42 28 
+       L42 42 
+       Z" 
+    fill="#E8B06B" 
+    opacity="0.45"
+  />
+  
+  <!-- Green polymer tip -->
+  <path 
+    d="M26 18 
+       Q32 4 38 18 
+       Z" 
+    fill="#2E8B57"
+  />
+  
+  <!-- Tip highlight -->
+  <path 
+    d="M28 16 
+       Q32 8 36 16" 
+    fill="none" 
+    stroke="#4CAF50" 
+    stroke-width="2" 
+    opacity="0.6"
+  />
+  
+  <!-- Boat tail base -->
+  <path 
+    d="M22 58 
+       L26 62 
+       L38 62 
+       L42 58 
+       Z" 
+    fill="#3D3D3D"
+  />
+  
+  <!-- Base edge highlight -->
+  <path 
+    d="M24 59 
+       L32 62 
+       L40 59" 
+    fill="none" 
+    stroke="#555" 
+    stroke-width="1.5"
+  />
+  
+  <!-- Subtle body shading line -->
+  <path 
+    d="M24 55 
+       L24 25 
+       Q24 18 32 13" 
+    fill="none" 
+    stroke="#9C6B2E" 
+    stroke-width="3" 
+    opacity="0.25"
+  />
+</svg>
