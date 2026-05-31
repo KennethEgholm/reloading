@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,10 +20,20 @@ interface PropellantFormProps {
   defaultValues?: Partial<PropellantFormData & { id?: string }>;
   title: string;
   submitLabel: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function PropellantForm({ action, defaultValues, title, submitLabel }: PropellantFormProps) {
-  const [open, setOpen] = useState(false);
+export function PropellantForm({ action, defaultValues, title, submitLabel, open, onOpenChange }: PropellantFormProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open! : uncontrolledOpen;
+  const setIsOpen = (value: boolean) => {
+    if (isControlled && onOpenChange) onOpenChange(value);
+    else setUncontrolledOpen(value);
+  };
+
+  const isEdit = !!defaultValues?.id;
 
   const {
     register,
@@ -50,7 +60,7 @@ export function PropellantForm({ action, defaultValues, title, submitLabel }: Pr
 
     try {
       await action(formData);
-      setOpen(false);
+      setIsOpen(false);
       reset();
       toast.success(defaultValues?.id ? 'Propellant updated' : 'Propellant created');
     } catch (error) {
@@ -58,16 +68,54 @@ export function PropellantForm({ action, defaultValues, title, submitLabel }: Pr
     }
   };
 
+  const brandInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Auto-focus the first field when the modal opens (critical for keyboard handling)
+    const focusTimer = setTimeout(() => {
+      brandInputRef.current?.focus();
+      brandInputRef.current?.select();
+    }, 0);
+
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsOpen(false);
+        reset();
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        const active = document.activeElement as HTMLElement | null;
+        if (active?.tagName === 'TEXTAREA' || active?.tagName === 'BUTTON') {
+          return; // let textarea get newlines, let buttons do their thing
+        }
+        e.preventDefault();
+        handleSubmit(onSubmit as any)();
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => {
+      clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleGlobalKeyDown);
+    };
+  }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
+
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
-      >
-        {title === 'Add New Propellant' ? '+ Add Propellant' : 'Edit'}
-      </button>
+      {!isEdit && !isControlled && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+        >
+          {title === 'Add New Propellant' ? '+ Add Propellant' : 'Edit'}
+        </button>
+      )}
 
-      {open && (
+      {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6">{title}</h2>
@@ -77,6 +125,11 @@ export function PropellantForm({ action, defaultValues, title, submitLabel }: Pr
                 <label className="block text-sm font-medium mb-1.5">Brand</label>
                 <input
                   {...register('brand')}
+                  ref={(e) => {
+                    // Merge react-hook-form's ref with our own for auto-focus
+                    register('brand').ref(e);
+                    brandInputRef.current = e;
+                  }}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder="Hodgdon, Vihtavuori, Alliant..."
                 />
@@ -117,7 +170,10 @@ export function PropellantForm({ action, defaultValues, title, submitLabel }: Pr
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    reset();
+                  }}
                   className="flex-1 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm"
                 >
                   Cancel
