@@ -4,6 +4,30 @@ import { useState } from 'react';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
 
+function getPossibleLoads(recipe: any): number | null {
+  const projAmount = recipe.projectile?.amount ?? 0;
+  const powderGrams = recipe.propellant?.amountGr ?? 0;
+  const chargeGr = recipe.chargeGr ?? 0;
+
+  const GRAIN_TO_GRAM = 0.06479891;
+
+  let fromPowder = Infinity;
+  if (chargeGr > 0 && powderGrams > 0) {
+    const gramsPerLoad = chargeGr * GRAIN_TO_GRAM;
+    fromPowder = Math.floor(powderGrams / gramsPerLoad);
+  }
+
+  const fromProjectile = projAmount;
+
+  let fromPrimer = Infinity;
+  if (recipe.primer) {
+    fromPrimer = recipe.primer.amount ?? 0;
+  }
+
+  const min = Math.min(fromProjectile, fromPowder, fromPrimer);
+  return min === Infinity ? null : Math.max(0, min);
+}
+
 interface RecipesTableProps {
   recipes: any[];
   projectiles: any[];
@@ -29,6 +53,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
               <th className="text-left px-6 py-3 font-medium">Projectile</th>
               <th className="text-left px-6 py-3 font-medium">Powder</th>
               <th className="text-right px-6 py-3 font-medium">Charge</th>
+              <th className="text-right px-6 py-3 font-medium">Possible</th>
               <th className="text-right px-6 py-3 font-medium">COAL</th>
               <th className="w-12"></th>
             </tr>
@@ -50,6 +75,12 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                 </td>
                 <td className="px-6 py-4 text-right font-mono">
                   {recipe.chargeGr ? `${recipe.chargeGr} gr` : '—'}
+                </td>
+                <td className="px-6 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                  {(() => {
+                    const possible = getPossibleLoads(recipe);
+                    return possible !== null ? `${possible}×` : '—';
+                  })()}
                 </td>
                 <td className="px-6 py-4 text-right font-mono">
                   {recipe.coal ? `${recipe.coal}"` : '—'}

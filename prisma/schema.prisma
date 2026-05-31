@@ -35,6 +35,7 @@ model Projectile {
   type        String?  // e.g. "Game King", "MatchKing", "Tipped"
   weightGr    Float    // Weight in grains (industry standard)
   caliber     String
+  amount      Int      @default(0)  // Number of projectiles in stock
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

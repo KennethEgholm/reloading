@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { createProjectile } from './actions';
 import { ProjectileForm } from './ProjectileForm';
 import { DeleteProjectileButton } from './DeleteProjectileButton';
+import { AdjustAmountButton } from './AdjustAmountButton';
 
 export default async function ProjectilesPage() {
   const projectiles = await prisma.projectile.findMany({
@@ -33,6 +34,7 @@ export default async function ProjectilesPage() {
               <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Type</th>
               <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Weight (gr)</th>
               <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Caliber</th>
+              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Amount</th>
               <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Description</th>
               <th className="w-40"></th>
             </tr>
@@ -40,7 +42,7 @@ export default async function ProjectilesPage() {
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {projectiles.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={7} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                   No projectiles yet. Add your first one above.
                 </td>
               </tr>
@@ -52,6 +54,13 @@ export default async function ProjectilesPage() {
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.type || '—'}</td>
                 <td className="px-6 py-4 text-right font-mono">{projectile.weightGr}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.caliber}</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <AdjustAmountButton id={projectile.id} delta={-1}>−</AdjustAmountButton>
+                    <span className="w-10 text-right font-medium font-mono">{projectile.amount}</span>
+                    <AdjustAmountButton id={projectile.id} delta={1}>+</AdjustAmountButton>
+                  </div>
+                </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {projectile.description || '—'}
                 </td>

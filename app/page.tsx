@@ -231,6 +231,7 @@ export default async function Overview() {
                   <th className="text-left px-6 py-3 font-medium">Projectile</th>
                   <th className="text-left px-6 py-3 font-medium">Propellant</th>
                   <th className="text-right px-6 py-3 font-medium">Charge</th>
+                  <th className="text-right px-6 py-3 font-medium">Possible</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -246,6 +247,26 @@ export default async function Overview() {
                     </td>
                     <td className="px-6 py-3 text-right font-mono">
                       {recipe.chargeGr ? `${recipe.chargeGr} gr` : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                      {(() => {
+                        const projAmount = recipe.projectile?.amount ?? 0;
+                        const powderGrams = recipe.propellant?.amountGr ?? 0;
+                        const chargeGr = recipe.chargeGr ?? 0;
+                        const GRAIN_TO_GRAM = 0.06479891;
+
+                        let fromPowder = Infinity;
+                        if (chargeGr > 0 && powderGrams > 0) {
+                          const gramsPerLoad = chargeGr * GRAIN_TO_GRAM;
+                          fromPowder = Math.floor(powderGrams / gramsPerLoad);
+                        }
+                        const fromProjectile = projAmount;
+
+                        // Note: primer not included in this overview query
+                        const min = Math.min(fromProjectile, fromPowder);
+                        const possible = min === Infinity ? null : Math.max(0, min);
+                        return possible !== null ? `${possible}×` : '—';
+                      })()}
                     </td>
                   </tr>
                 ))}

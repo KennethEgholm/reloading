@@ -11,6 +11,7 @@ const projectileSchema = z.object({
   type: z.string().min(1, 'Type is required'),
   weightGr: z.coerce.number().positive('Weight must be positive'),
   caliber: z.string().min(1, 'Caliber is required'),
+  amount: z.coerce.number().int().min(0).default(0),
   description: z.string().optional(),
 });
 
@@ -39,6 +40,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel }: Pr
       type: defaultValues?.type || '',
       weightGr: defaultValues?.weightGr ?? 0,
       caliber: defaultValues?.caliber || '',
+      amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description || '',
     },
   });
@@ -49,6 +51,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel }: Pr
     formData.append('type', data.type);
     formData.append('weightGr', String(data.weightGr));
     formData.append('caliber', data.caliber);
+    formData.append('amount', String(data.amount));
     if (data.description) formData.append('description', data.description);
 
     try {
@@ -115,6 +118,17 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel }: Pr
                   placeholder="9mm, .308, 5.56..."
                 />
                 {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Amount in stock</label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  {...register('amount')}
+                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                />
               </div>
 
               <div>
