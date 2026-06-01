@@ -21,59 +21,101 @@ model Propellant {
   id          String   @id @default(cuid())
   brand       String
   type        String
-  amountGr    Float    // Stock in grams (user preference)
+  amountGr    Float // Stock in grams (user preference)
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  recipes     Recipe[]
+  recipes Recipe[]
 }
 
 model Projectile {
   id          String   @id @default(cuid())
   brand       String
-  type        String?  // e.g. "Game King", "MatchKing", "Tipped"
-  weightGr    Float    // Weight in grains (industry standard)
+  type        String? // e.g. "Game King", "MatchKing", "Tipped"
+  weightGr    Float // Weight in grains (industry standard)
   caliber     String
-  amount      Int      @default(0)  // Number of projectiles in stock
+  amount      Int      @default(0) // Number of projectiles in stock
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  recipes     Recipe[]
+  recipes Recipe[]
 }
 
 model Primer {
-  id          String      @id @default(cuid())
+  id          String     @id @default(cuid())
   brand       String
-  magnum      Boolean     @default(false)
+  magnum      Boolean    @default(false)
   type        PrimerType
-  amount      Int         // Count of individual primers
+  amount      Int // Count of individual primers
   description String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  recipes     Recipe[]
+  recipes Recipe[]
 }
 
 model Recipe {
-  id              String    @id @default(cuid())
-  name            String
-  caliber         String
-  projectileId    String
-  propellantId    String
-  primerId        String?
-  chargeGr        Float?    // Powder charge in grains
-  coal            Float?    // Cartridge Overall Length (inches)
-  calculatedV0    Float?    // Calculated muzzle velocity (m/s)
-  measuredV0      Float?    // Measured muzzle velocity (m/s)
-  fillRate        Float?    // Powder fill rate (%)
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  caliber      String
+  projectileId String
+  propellantId String
+  primerId     String?
+  chargeGr     Float? // Powder charge in grains
+  coal         Float? // Cartridge Overall Length (inches)
+  calculatedV0 Float? // Calculated muzzle velocity (m/s)
+  measuredV0   Float? // Measured muzzle velocity (m/s)
+  fillRate     Float? // Powder fill rate (%)
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  projectile      Projectile @relation(fields: [projectileId], references: [id])
-  propellant      Propellant @relation(fields: [propellantId], references: [id])
-  primer          Primer?    @relation(fields: [primerId], references: [id])
+  projectile Projectile @relation(fields: [projectileId], references: [id])
+  propellant Propellant @relation(fields: [propellantId], references: [id])
+  primer     Primer?    @relation(fields: [primerId], references: [id])
+  loadLogs   LoadLog[]
 }
 
+model LoadLog {
+  id       String   @id @default(cuid())
+  date     DateTime @default(now())
+  recipeId String? // Optional for historical integrity
+  quantity Int
+  notes    String?
+
+  // Snapshot of recipe at time of loading (for historical accuracy)
+  // These are optional because older log entries may not have this data.
+  recipeName String?
+  caliber    String?
+  chargeGr   Float? // grains per cartridge at the time
+
+  // Projectile snapshot
+  projectileBrand    String?
+  projectileType     String?
+  projectileWeightGr Float?
+
+  // Propellant snapshot
+  propellantBrand String?
+  propellantType  String?
+
+  // Primer snapshot (if used)
+  primerBrand String?
+  primerType  String?
+
+  // Optional recipe data captured at load time
+  calculatedV0 Float?
+  measuredV0   Float?
+  fillRate     Float?
+
+  // Component IDs at the time of loading (used for inventory restoration when deleting a log)
+  projectileId String?
+  propellantId String?
+  primerId     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipe Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+}

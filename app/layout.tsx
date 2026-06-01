@@ -69,6 +69,13 @@ export default function RootLayout({
                   <Image src="/images/recipe.svg" alt="Recipes" width={20} height={20} />
                   Recipes
                 </a>
+                <a 
+                  href="/logs" 
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <Image src="/images/log.svg" alt="Log" width={20} height={20} />
+                  Log
+                </a>
               </div>
             </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-500">

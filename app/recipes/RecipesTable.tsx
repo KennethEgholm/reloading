@@ -98,6 +98,12 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                   })()}
                 </td>
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                  <a
+                    href={`/logs?recipeId=${recipe.id}`}
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
+                  >
+                    Log load
+                  </a>
                   <DeleteRecipeButton id={recipe.id} />
                 </td>
               </tr>
