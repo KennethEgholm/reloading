@@ -8,6 +8,7 @@ export default async function Overview() {
     primers,
     projectiles,
     propellants,
+    cartridges,
     recipes,
     recentRangeLogs,
     rangeCount,
@@ -23,6 +24,9 @@ export default async function Overview() {
       orderBy: { createdAt: 'desc' },
     }),
     prisma.propellant.findMany({
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.cartridge.findMany({
       orderBy: { createdAt: 'desc' },
     }),
     prisma.recipe.findMany({
@@ -62,6 +66,7 @@ export default async function Overview() {
 
   const totalPrimers = primers.reduce((sum, p) => sum + p.amount, 0);
   const totalPropellantGrams = propellants.reduce((sum, p) => sum + p.amountGr, 0);
+  const totalCases = cartridges.reduce((sum, c) => sum + c.amount, 0);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -77,7 +82,7 @@ export default async function Overview() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-10">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">Range Sessions</div>
           <div className="text-3xl font-semibold mt-1">{rangeCount} logged</div>
@@ -108,6 +113,11 @@ export default async function Overview() {
           <div className="text-sm text-zinc-500 dark:text-zinc-400">Propellants</div>
           <div className="text-3xl font-semibold mt-1">{propellants.length} types</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalPropellantGrams.toFixed(1)} g</div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">Cartridges</div>
+          <div className="text-3xl font-semibold mt-1">{cartridges.length} types</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalCases} cases</div>
         </div>
       </div>
 
@@ -277,7 +287,7 @@ export default async function Overview() {
           </svg>
           <h2 className="text-2xl font-semibold">Materials</h2>
           <span className="text-sm text-zinc-500">
-            ({primers.length} primers • {projectiles.length} projectiles • {propellants.length} propellants)
+            ({primers.length} primers • {projectiles.length} projectiles • {propellants.length} propellants • {cartridges.length} cartridges)
           </span>
         </summary>
 
@@ -383,7 +393,7 @@ export default async function Overview() {
       </div>
 
       {/* Propellants Section */}
-      <div>
+      <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/propellant.svg" alt="Propellants" className="w-7 h-7" />
@@ -425,6 +435,56 @@ export default async function Overview() {
           </div>
         ) : (
           <p className="text-zinc-500">No propellants added yet.</p>
+        )}
+      </div>
+
+      {/* Cartridges Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <img src="/images/cartridge.svg" alt="Cartridges" className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">Cartridges</h2>
+            <span className="text-sm text-zinc-500">({cartridges.length} types • {totalCases} cases)</span>
+          </div>
+          <Link
+            href="/cartridges"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            View full list →
+          </Link>
+        </div>
+
+        {cartridges.length > 0 ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                <tr>
+                  <th className="text-left px-6 py-3 font-medium">Brand</th>
+                  <th className="text-left px-6 py-3 font-medium">Caliber</th>
+                  <th className="text-right px-6 py-3 font-medium">Water cap. (gr)</th>
+                  <th className="text-right px-6 py-3 font-medium">Amount</th>
+                  <th className="text-left px-6 py-3 font-medium">Description</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {cartridges.map((cartridge) => (
+                  <tr key={cartridge.id}>
+                    <td className="px-6 py-3 font-medium">{cartridge.brand}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{cartridge.caliber}</td>
+                    <td className="px-6 py-3 text-right font-mono">
+                      {cartridge.waterCapacityGr != null ? cartridge.waterCapacityGr.toFixed(1) : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-right font-mono">{cartridge.amount}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
+                      {cartridge.description || '—'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-zinc-500">No cartridges added yet.</p>
         )}
       </div>
         </div>

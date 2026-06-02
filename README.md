@@ -12,6 +12,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Primers: brand, type (Small Rifle / Large Rifle / Small Pistol / Large Pistol), magnum flag, amount, description.
   - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), caliber, amount, description.
   - Propellants: brand, type, amount (grams, displayed to 1 decimal), description.
+  - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
   - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then materials/inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
 
 - **Recipes**
@@ -103,7 +104,7 @@ pnpm dev
 
 - `app/` – Next.js App Router
   - `page.tsx` – Overview dashboard (Range Sessions + Load Logs first in cards + sections, then Recipes, then materials inventory tables; reuses *Row components for previews)
-  - `primers/`, `projectiles/`, `propellants/` – inventory sections (table + form + actions)
+  - `primers/`, `projectiles/`, `propellants/`, `cartridges/` – inventory sections (table + form + actions)
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Case body (brass) -->
+  <rect x="22" y="20" width="20" height="34" rx="3" fill="#c8a04a"/>
+  <!-- Neck/shoulder taper -->
+  <path d="M24 20 L40 20 L37 10 L27 10 Z" fill="#d4b15e"/>
+  <!-- Bullet tip -->
+  <path d="M27 10 L37 10 L32 2 Z" fill="#9a7b34"/>
+  <!-- Rim / base -->
+  <rect x="20" y="54" width="24" height="6" rx="2" fill="#8a6e2f"/>
+  <!-- Primer pocket -->
+  <circle cx="32" cy="57" r="2.5" fill="#555"/>
+  <!-- Highlight -->
+  <rect x="25" y="22" width="3" height="28" rx="1.5" fill="#e0c578" opacity="0.7"/>
+</svg>

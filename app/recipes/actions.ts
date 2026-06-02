@@ -10,6 +10,7 @@ export async function createRecipe(formData: FormData) {
   const projectileId = formData.get('projectileId') as string
   const propellantId = formData.get('propellantId') as string
   const primerId = (formData.get('primerId') as string) || null
+  const cartridgeId = (formData.get('cartridgeId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
   const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
@@ -28,6 +29,7 @@ export async function createRecipe(formData: FormData) {
       projectileId,
       propellantId,
       primerId,
+      cartridgeId,
       chargeGr,
       coal,
       calculatedV0,
@@ -51,6 +53,7 @@ export async function updateRecipe(id: string, formData: FormData) {
   const projectileId = formData.get('projectileId') as string
   const propellantId = formData.get('propellantId') as string
   const primerId = (formData.get('primerId') as string) || null
+  const cartridgeId = (formData.get('cartridgeId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
   const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
@@ -70,6 +73,7 @@ export async function updateRecipe(id: string, formData: FormData) {
       projectileId,
       propellantId,
       primerId,
+      cartridgeId,
       chargeGr,
       coal,
       calculatedV0,
@@ -89,6 +93,7 @@ export async function getRecipeById(id: string) {
       projectile: true,
       propellant: true,
       primer: true,
+      cartridge: true,
       loadLogs: {
         orderBy: { date: 'desc' },
         take: 5,
@@ -136,6 +141,9 @@ interface RecipeAssessmentInput {
   primerBrand?: string | null
   primerType?: string | null
   primerMagnum?: boolean
+  cartridgeBrand?: string | null
+  cartridgeCaliber?: string | null
+  cartridgeWaterCapacityGr?: number | null
   chargeGr?: number | null
   coal?: number | null
   calculatedV0?: number | null
@@ -169,6 +177,10 @@ async function assessRecipeData(input: RecipeAssessmentInput): Promise<AiAssessm
 
   if (input.primerBrand) {
     lines.push(`Primer: ${input.primerBrand} ${input.primerType ?? ''}${input.primerMagnum ? ' (magnum)' : ''}`.trim())
+  }
+  if (input.cartridgeBrand) {
+    const cap = input.cartridgeWaterCapacityGr ? `, ${input.cartridgeWaterCapacityGr} gr H2O capacity` : ''
+    lines.push(`Case/cartridge: ${input.cartridgeBrand}${input.cartridgeCaliber ? ` ${input.cartridgeCaliber}` : ''}${cap}`)
   }
   // Optional numeric fields: treat both null and 0 as "no data" — 0 is never a
   // legitimate value for any of these, so it means the field was left unset.
@@ -243,7 +255,7 @@ async function persistAssessment(recipeId: string, result: AiAssessment & { mode
 export async function runRecipeAiCheck(recipeId: string) {
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
-    include: { projectile: true, propellant: true, primer: true },
+    include: { projectile: true, propellant: true, primer: true, cartridge: true },
   })
 
   if (!recipe) {
@@ -261,6 +273,9 @@ export async function runRecipeAiCheck(recipeId: string) {
     primerBrand: recipe.primer?.brand ?? null,
     primerType: recipe.primer?.type ?? null,
     primerMagnum: recipe.primer?.magnum ?? false,
+    cartridgeBrand: recipe.cartridge?.brand ?? null,
+    cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+    cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
     chargeGr: recipe.chargeGr,
     coal: recipe.coal,
     calculatedV0: recipe.calculatedV0,
@@ -281,6 +296,7 @@ export interface RecipeAiCheckInput {
   projectileId: string
   propellantId: string
   primerId?: string | null
+  cartridgeId?: string | null
   chargeGr?: number | null
   coal?: number | null
   calculatedV0?: number | null
@@ -306,10 +322,11 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     throw new Error('Name, caliber, projectile, and propellant are required to run a check.')
   }
 
-  const [projectile, propellant, primer] = await Promise.all([
+  const [projectile, propellant, primer, cartridge] = await Promise.all([
     prisma.projectile.findUnique({ where: { id: input.projectileId } }),
     prisma.propellant.findUnique({ where: { id: input.propellantId } }),
     input.primerId ? prisma.primer.findUnique({ where: { id: input.primerId } }) : Promise.resolve(null),
+    input.cartridgeId ? prisma.cartridge.findUnique({ where: { id: input.cartridgeId } }) : Promise.resolve(null),
   ])
 
   if (!projectile) throw new Error('Selected projectile not found.')
@@ -326,6 +343,9 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     primerBrand: primer?.brand ?? null,
     primerType: primer?.type ?? null,
     primerMagnum: primer?.magnum ?? false,
+    cartridgeBrand: cartridge?.brand ?? null,
+    cartridgeCaliber: cartridge?.caliber ?? null,
+    cartridgeWaterCapacityGr: cartridge?.waterCapacityGr ?? null,
     chargeGr: input.chargeGr,
     coal: input.coal,
     calculatedV0: input.calculatedV0,
@@ -363,6 +383,7 @@ function recipeMatchesInput(
     projectileId: string
     propellantId: string
     primerId: string | null
+    cartridgeId: string | null
     chargeGr: number | null
     coal: number | null
     calculatedV0: number | null
@@ -378,6 +399,7 @@ function recipeMatchesInput(
     saved.projectileId === input.projectileId &&
     saved.propellantId === input.propellantId &&
     (saved.primerId ?? '') === (input.primerId ?? '') &&
+    (saved.cartridgeId ?? '') === (input.cartridgeId ?? '') &&
     num(saved.chargeGr) === num(input.chargeGr) &&
     num(saved.coal) === num(input.coal) &&
     num(saved.calculatedV0) === num(input.calculatedV0) &&

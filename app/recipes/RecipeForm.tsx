@@ -14,6 +14,7 @@ const recipeSchema = z.object({
   projectileId: z.string().min(1, 'Projectile is required'),
   propellantId: z.string().min(1, 'Propellant is required'),
   primerId: z.string().optional(),
+  cartridgeId: z.string().optional(),
   chargeGr: z.coerce.number().optional(),
   coal: z.coerce.number().optional(),
   calculatedV0: z.coerce.number().optional(),
@@ -31,6 +32,7 @@ interface RecipeFormProps {
   projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number }>;
   propellants: Array<{ id: string; brand: string; type: string }>;
   primers: Array<{ id: string; brand: string; type: string; magnum: boolean }>;
+  cartridges: Array<{ id: string; brand: string; caliber: string }>;
   title?: string;
   submitLabel?: string;
   open?: boolean;
@@ -44,6 +46,7 @@ export function RecipeForm({
   projectiles,
   propellants,
   primers,
+  cartridges,
   title,
   submitLabel,
   open,
@@ -77,6 +80,7 @@ export function RecipeForm({
       projectileId: defaultValues?.projectileId || '',
       propellantId: defaultValues?.propellantId || '',
       primerId: defaultValues?.primerId || '',
+      cartridgeId: defaultValues?.cartridgeId || '',
       chargeGr: defaultValues?.chargeGr,
       coal: defaultValues?.coal,
       calculatedV0: defaultValues?.calculatedV0,
@@ -99,6 +103,7 @@ export function RecipeForm({
         projectileId: defaultValues.projectileId || '',
         propellantId: defaultValues.propellantId || '',
         primerId: defaultValues.primerId || '',
+        cartridgeId: defaultValues.cartridgeId || '',
         chargeGr: defaultValues.chargeGr,
         coal: defaultValues.coal,
         calculatedV0: defaultValues.calculatedV0,
@@ -131,6 +136,7 @@ export function RecipeForm({
         projectileId: values.projectileId,
         propellantId: values.propellantId,
         primerId: values.primerId || null,
+        cartridgeId: values.cartridgeId || null,
         chargeGr: values.chargeGr ?? null,
         coal: values.coal ?? null,
         calculatedV0: values.calculatedV0 ?? null,
@@ -155,6 +161,7 @@ export function RecipeForm({
     formData.append('projectileId', data.projectileId);
     formData.append('propellantId', data.propellantId);
     if (data.primerId) formData.append('primerId', data.primerId);
+    if (data.cartridgeId) formData.append('cartridgeId', data.cartridgeId);
     if (data.chargeGr !== undefined) formData.append('chargeGr', String(data.chargeGr));
     if (data.coal !== undefined) formData.append('coal', String(data.coal));
     if (data.calculatedV0 !== undefined) formData.append('calculatedV0', String(data.calculatedV0));
@@ -301,6 +308,21 @@ export function RecipeForm({
                   {primers.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.brand} {p.type.replace('_', ' ')} {p.magnum ? '(Magnum)' : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Cartridge / Case (optional)</label>
+                <select
+                  {...register('cartridgeId')}
+                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                >
+                  <option value="">Select Cartridge (optional)</option>
+                  {cartridges.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.brand} – {c.caliber}
                     </option>
                   ))}
                 </select>

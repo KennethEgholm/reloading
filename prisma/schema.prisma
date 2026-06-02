@@ -69,6 +69,19 @@ model Primer {
   recipes Recipe[]
 }
 
+model Cartridge {
+  id              String   @id @default(cuid())
+  brand           String // Brand / name (e.g. "Lapua", "Starline")
+  caliber         String
+  waterCapacityGr Float? // Case water capacity in grains of water (optional)
+  amount          Int      @default(0) // Number of cases in stock
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  recipes Recipe[]
+}
+
 model Recipe {
   id           String   @id @default(cuid())
   name         String
@@ -76,6 +89,7 @@ model Recipe {
   projectileId String
   propellantId String
   primerId     String?
+  cartridgeId  String?
   chargeGr     Float? // Powder charge in grains
   coal         Float? // Cartridge Overall Length (inches)
   calculatedV0 Float? // Calculated muzzle velocity (m/s)
@@ -95,6 +109,7 @@ model Recipe {
   projectile Projectile @relation(fields: [projectileId], references: [id])
   propellant Propellant @relation(fields: [propellantId], references: [id])
   primer     Primer?    @relation(fields: [primerId], references: [id])
+  cartridge  Cartridge? @relation(fields: [cartridgeId], references: [id])
   loadLogs   LoadLog[]
   rangeLogs  RangeLog[]
 }

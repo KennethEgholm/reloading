@@ -4,18 +4,20 @@ import { RecipesTable } from './RecipesTable'
 import { RecipeForm } from './RecipeForm'
 
 export default async function RecipesPage() {
-  const [recipes, projectiles, propellants, primers] = await Promise.all([
+  const [recipes, projectiles, propellants, primers, cartridges] = await Promise.all([
     prisma.recipe.findMany({
       include: {
         projectile: true,
         propellant: true,
         primer: true,
+        cartridge: true,
       },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.projectile.findMany({ orderBy: { brand: 'asc' } }),
     prisma.propellant.findMany({ orderBy: { brand: 'asc' } }),
     prisma.primer.findMany({ orderBy: { brand: 'asc' } }),
+    prisma.cartridge.findMany({ orderBy: { brand: 'asc' } }),
   ])
 
   return (
@@ -35,6 +37,7 @@ export default async function RecipesPage() {
           projectiles={projectiles}
           propellants={propellants}
           primers={primers}
+          cartridges={cartridges}
         />
       </div>
 
@@ -49,6 +52,7 @@ export default async function RecipesPage() {
           projectiles={projectiles}
           propellants={propellants}
           primers={primers}
+          cartridges={cartridges}
         />
       )}
     </div>

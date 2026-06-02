@@ -53,9 +53,10 @@ interface RecipesTableProps {
   projectiles: any[];
   propellants: any[];
   primers: any[];
+  cartridges: any[];
 }
 
-export function RecipesTable({ recipes, projectiles, propellants, primers }: RecipesTableProps) {
+export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges }: RecipesTableProps) {
   const router = useRouter();
   const [editingRecipe, setEditingRecipe] = useState<any | null>(null);
 
@@ -148,6 +149,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
         projectiles={projectiles}
         propellants={propellants}
         primers={primers}
+        cartridges={cartridges}
         open={!!editingRecipe}
         onOpenChange={(open) => {
           if (!open) setEditingRecipe(null);

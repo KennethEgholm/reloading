@@ -68,6 +68,15 @@ export default async function RecipeDetailPage({
           </div>
 
           <div>
+            <div className="text-zinc-500">Cartridge / Case</div>
+            <div className="font-medium">
+              {recipe.cartridge
+                ? `${recipe.cartridge.brand} ${recipe.cartridge.caliber}${recipe.cartridge.waterCapacityGr != null ? ` (${recipe.cartridge.waterCapacityGr} gr H₂O)` : ''}`
+                : '—'}
+            </div>
+          </div>
+
+          <div>
             <div className="text-zinc-500">Charge</div>
             <div className="font-medium">{recipe.chargeGr ? `${recipe.chargeGr} gr` : '—'}</div>
           </div>
