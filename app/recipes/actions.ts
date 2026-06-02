@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { chatCompletion, parseJsonFromModel, DEFAULT_BASE_URLS, AiError } from '@/lib/ai'
 
 export async function createRecipe(formData: FormData) {
   const name = formData.get('name') as string
@@ -103,4 +104,285 @@ export async function getRecipeById(id: string) {
       },
     },
   })
+}
+
+const AI_CHECK_SYSTEM_PROMPT = `You are a firearms reloading safety assistant. You will be given the data for a single handloaded cartridge "recipe". Assess it for obvious danger or data-entry errors — for example: a powder charge weight that is implausible (far too high or too low) for the given powder, bullet weight, and caliber; a primer size that is mismatched to the cartridge; an implausible cartridge overall length (COAL) for the caliber; or a muzzle velocity that is physically unreasonable for the load.
+
+Important constraints:
+- You do NOT have access to official published load data. NEVER declare a load definitively "safe". The best you can do is say nothing obvious looks wrong, while deferring to published manufacturer data.
+- If critical data is missing (e.g. no charge weight), say so as a concern.
+- Be specific and concise. Do not invent exact published load values.
+
+Respond with ONLY a JSON object, no markdown, of exactly this shape:
+{"verdict": "OK" | "CAUTION" | "STOP", "summary": "<one or two sentence overall assessment>", "concerns": ["<specific concern>", ...]}
+Use "STOP" only when something looks clearly dangerous. Use "CAUTION" for plausible-but-verify or missing-data cases. Use "OK" when nothing obvious looks wrong (still deferring to published data). "concerns" may be an empty array.`
+
+export interface AiAssessment {
+  verdict: string
+  summary: string
+  concerns: string[]
+}
+
+// Plain values describing a recipe to assess. Components are pre-resolved to
+// brand/type so this helper works for both a saved recipe and unsaved form input.
+interface RecipeAssessmentInput {
+  name: string
+  caliber: string
+  projectileBrand: string
+  projectileType: string | null
+  projectileWeightGr: number
+  propellantBrand: string
+  propellantType: string
+  primerBrand?: string | null
+  primerType?: string | null
+  primerMagnum?: boolean
+  chargeGr?: number | null
+  coal?: number | null
+  calculatedV0?: number | null
+  measuredV0?: number | null
+  fillRate?: number | null
+  notes?: string | null
+}
+
+/**
+ * Calls the configured model to assess a recipe and returns the parsed verdict.
+ * Pure with respect to the database — does not persist. Throws Error with a
+ * user-friendly message (callers surface it as a toast).
+ */
+async function assessRecipeData(input: RecipeAssessmentInput): Promise<AiAssessment & { model: string }> {
+  const settings = await prisma.aiSettings.findUnique({ where: { id: 'singleton' } })
+
+  if (!settings?.apiKey || !settings.model) {
+    throw new Error('Configure an AI model in Settings first.')
+  }
+
+  // Build a compact description including ONLY fields that hold data. Empty/unset
+  // fields are omitted entirely (rather than sent as "not specified") so the model
+  // doesn't treat placeholder zeros — e.g. an un-measured 0 m/s velocity or 0%
+  // fill rate — as real data-entry errors. Required fields are always present.
+  const lines: string[] = [
+    `Name: ${input.name}`,
+    `Caliber: ${input.caliber}`,
+    `Projectile: ${[input.projectileBrand, input.projectileType].filter(Boolean).join(' ')} — ${input.projectileWeightGr} gr`,
+    `Propellant: ${[input.propellantBrand, input.propellantType].filter(Boolean).join(' ')}`,
+  ]
+
+  if (input.primerBrand) {
+    lines.push(`Primer: ${input.primerBrand} ${input.primerType ?? ''}${input.primerMagnum ? ' (magnum)' : ''}`.trim())
+  }
+  // Optional numeric fields: treat both null and 0 as "no data" — 0 is never a
+  // legitimate value for any of these, so it means the field was left unset.
+  if (input.chargeGr) lines.push(`Powder charge: ${input.chargeGr} gr`)
+  if (input.coal) lines.push(`COAL: ${input.coal} in`)
+  if (input.calculatedV0) lines.push(`Calculated V0: ${input.calculatedV0} m/s`)
+  if (input.measuredV0) lines.push(`Measured V0: ${input.measuredV0} m/s`)
+  if (input.fillRate) lines.push(`Fill rate: ${input.fillRate}%`)
+  if (input.notes && input.notes.trim()) lines.push(`Notes: ${input.notes}`)
+
+  const userPrompt = `Assess this handload recipe:\n\n${lines.join('\n')}`
+
+  const baseUrl = settings.baseUrl || DEFAULT_BASE_URLS[settings.provider] || ''
+
+  let content: string
+  try {
+    content = await chatCompletion({
+      baseUrl,
+      apiKey: settings.apiKey,
+      model: settings.model,
+      temperature: settings.temperature,
+      maxTokens: settings.maxTokens,
+      responseFormat: 'json_object',
+      messages: [
+        { role: 'system', content: AI_CHECK_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+    })
+  } catch (e) {
+    if (e instanceof AiError) throw new Error(e.message)
+    throw e
+  }
+
+  // Defensive parse: fall back to UNKNOWN rather than failing the request.
+  const parsed = parseJsonFromModel<Partial<AiAssessment>>(content)
+
+  let verdict = 'UNKNOWN'
+  let summary = content.slice(0, 2000)
+  let concerns: string[] = []
+
+  if (parsed && typeof parsed === 'object') {
+    const v = String(parsed.verdict ?? '').toUpperCase()
+    verdict = ['OK', 'CAUTION', 'STOP'].includes(v) ? v : 'UNKNOWN'
+    if (typeof parsed.summary === 'string' && parsed.summary.trim()) {
+      summary = parsed.summary.trim()
+    }
+    if (Array.isArray(parsed.concerns)) {
+      concerns = parsed.concerns.filter((c): c is string => typeof c === 'string' && c.trim() !== '')
+    }
+  }
+
+  return { verdict, summary, concerns, model: settings.model }
+}
+
+async function persistAssessment(recipeId: string, result: AiAssessment & { model: string }) {
+  await prisma.recipe.update({
+    where: { id: recipeId },
+    data: {
+      aiVerdict: result.verdict,
+      aiSummary: result.summary,
+      aiConcerns: JSON.stringify(result.concerns),
+      aiModel: result.model,
+      aiCheckedAt: new Date(),
+    },
+  })
+}
+
+/**
+ * Runs an AI assessment of a SAVED recipe (by id) and persists the result.
+ * Used by the recipe detail view button.
+ */
+export async function runRecipeAiCheck(recipeId: string) {
+  const recipe = await prisma.recipe.findUnique({
+    where: { id: recipeId },
+    include: { projectile: true, propellant: true, primer: true },
+  })
+
+  if (!recipe) {
+    throw new Error('Recipe not found')
+  }
+
+  const result = await assessRecipeData({
+    name: recipe.name,
+    caliber: recipe.caliber,
+    projectileBrand: recipe.projectile.brand,
+    projectileType: recipe.projectile.type,
+    projectileWeightGr: recipe.projectile.weightGr,
+    propellantBrand: recipe.propellant.brand,
+    propellantType: recipe.propellant.type,
+    primerBrand: recipe.primer?.brand ?? null,
+    primerType: recipe.primer?.type ?? null,
+    primerMagnum: recipe.primer?.magnum ?? false,
+    chargeGr: recipe.chargeGr,
+    coal: recipe.coal,
+    calculatedV0: recipe.calculatedV0,
+    measuredV0: recipe.measuredV0,
+    fillRate: recipe.fillRate,
+    notes: recipe.notes,
+  })
+
+  await persistAssessment(recipeId, result)
+  revalidatePath(`/recipes/${recipeId}`)
+}
+
+// Input from the edit form — component IDs + the currently-typed field values.
+export interface RecipeAiCheckInput {
+  recipeId?: string // present when editing an existing recipe
+  name: string
+  caliber: string
+  projectileId: string
+  propellantId: string
+  primerId?: string | null
+  chargeGr?: number | null
+  coal?: number | null
+  calculatedV0?: number | null
+  measuredV0?: number | null
+  fillRate?: number | null
+  notes?: string | null
+}
+
+export interface RecipeAiCheckResult extends AiAssessment {
+  model: string
+  /** true if the verdict was saved onto the recipe (only when form matches saved data). */
+  persisted: boolean
+}
+
+/**
+ * Runs an AI assessment of the values currently in the edit form (which may be
+ * unsaved). Resolves the selected components by id. The result is persisted onto
+ * the recipe ONLY when every assessed field already matches what is saved — so a
+ * stored verdict never describes data that isn't actually saved yet.
+ */
+export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promise<RecipeAiCheckResult> {
+  if (!input.name?.trim() || !input.caliber?.trim() || !input.projectileId || !input.propellantId) {
+    throw new Error('Name, caliber, projectile, and propellant are required to run a check.')
+  }
+
+  const [projectile, propellant, primer] = await Promise.all([
+    prisma.projectile.findUnique({ where: { id: input.projectileId } }),
+    prisma.propellant.findUnique({ where: { id: input.propellantId } }),
+    input.primerId ? prisma.primer.findUnique({ where: { id: input.primerId } }) : Promise.resolve(null),
+  ])
+
+  if (!projectile) throw new Error('Selected projectile not found.')
+  if (!propellant) throw new Error('Selected propellant not found.')
+
+  const result = await assessRecipeData({
+    name: input.name,
+    caliber: input.caliber,
+    projectileBrand: projectile.brand,
+    projectileType: projectile.type,
+    projectileWeightGr: projectile.weightGr,
+    propellantBrand: propellant.brand,
+    propellantType: propellant.type,
+    primerBrand: primer?.brand ?? null,
+    primerType: primer?.type ?? null,
+    primerMagnum: primer?.magnum ?? false,
+    chargeGr: input.chargeGr,
+    coal: input.coal,
+    calculatedV0: input.calculatedV0,
+    measuredV0: input.measuredV0,
+    fillRate: input.fillRate,
+    notes: input.notes,
+  })
+
+  // Persist only when the form values match the saved recipe, so the stored
+  // verdict always reflects saved data.
+  let persisted = false
+  if (input.recipeId) {
+    const saved = await prisma.recipe.findUnique({ where: { id: input.recipeId } })
+    if (saved && recipeMatchesInput(saved, input)) {
+      await persistAssessment(input.recipeId, result)
+      revalidatePath(`/recipes/${input.recipeId}`)
+      persisted = true
+    }
+  }
+
+  return { ...result, persisted }
+}
+
+// Normalizes a nullable/zero numeric to null so "0", 0, "", null all compare equal.
+function num(v: unknown): number | null {
+  if (v === null || v === undefined || v === '') return null
+  const n = typeof v === 'number' ? v : parseFloat(String(v))
+  return isNaN(n) || n === 0 ? null : n
+}
+
+function recipeMatchesInput(
+  saved: {
+    name: string
+    caliber: string
+    projectileId: string
+    propellantId: string
+    primerId: string | null
+    chargeGr: number | null
+    coal: number | null
+    calculatedV0: number | null
+    measuredV0: number | null
+    fillRate: number | null
+    notes: string | null
+  },
+  input: RecipeAiCheckInput,
+): boolean {
+  return (
+    saved.name === input.name.trim() &&
+    saved.caliber === input.caliber.trim() &&
+    saved.projectileId === input.projectileId &&
+    saved.propellantId === input.propellantId &&
+    (saved.primerId ?? '') === (input.primerId ?? '') &&
+    num(saved.chargeGr) === num(input.chargeGr) &&
+    num(saved.coal) === num(input.coal) &&
+    num(saved.calculatedV0) === num(input.calculatedV0) &&
+    num(saved.measuredV0) === num(input.measuredV0) &&
+    num(saved.fillRate) === num(input.fillRate) &&
+    (saved.notes ?? '').trim() === (input.notes ?? '').trim()
+  )
 }

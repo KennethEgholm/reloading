@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Image from "next/image";
+import { Settings } from "lucide-react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,8 +86,17 @@ export default function RootLayout({
                 </a>
               </div>
             </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-500">
-              Personal Inventory
+            <div className="flex items-center gap-3">
+              <a
+                href="/settings"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <Settings size={20} />
+                Settings
+              </a>
+              <span className="text-xs text-zinc-500 dark:text-zinc-500">
+                Personal Inventory
+              </span>
             </div>
           </div>
         </nav>

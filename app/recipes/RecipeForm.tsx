@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
+import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
 
 const recipeSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -63,6 +65,7 @@ export function RecipeForm({
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<RecipeFormData>({
@@ -83,6 +86,11 @@ export function RecipeForm({
     },
   });
 
+  // AI safety-check state (edit mode). Result lives only in the modal; it is
+  // persisted server-side only when the form matches the saved recipe.
+  const [aiChecking, setAiChecking] = useState(false);
+  const [aiResult, setAiResult] = useState<RecipeAiCheckResult | null>(null);
+
   useEffect(() => {
     if (defaultValues?.id) {
       reset({
@@ -99,7 +107,46 @@ export function RecipeForm({
         notes: defaultValues.notes || '',
       });
     }
+    // Clear any prior AI result when switching to a different recipe.
+    setAiResult(null);
   }, [defaultValues?.id, reset]);
+
+  // Clear the AI result whenever the modal closes.
+  useEffect(() => {
+    if (!isOpen) setAiResult(null);
+  }, [isOpen]);
+
+  const handleAiCheck = async () => {
+    const values = getValues();
+    if (!values.name?.trim() || !values.caliber?.trim() || !values.projectileId || !values.propellantId) {
+      toast.error('Fill in name, caliber, projectile, and propellant before running the check.');
+      return;
+    }
+    setAiChecking(true);
+    try {
+      const result = await runRecipeAiCheckOnInput({
+        recipeId: defaultValues?.id,
+        name: values.name,
+        caliber: values.caliber,
+        projectileId: values.projectileId,
+        propellantId: values.propellantId,
+        primerId: values.primerId || null,
+        chargeGr: values.chargeGr ?? null,
+        coal: values.coal ?? null,
+        calculatedV0: values.calculatedV0 ?? null,
+        measuredV0: values.measuredV0 ?? null,
+        fillRate: values.fillRate ?? null,
+        notes: values.notes ?? null,
+      });
+      setAiResult(result);
+      toast.success(result.persisted ? 'AI safety check complete (saved)' : 'AI safety check complete');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'AI check failed';
+      toast.error(message);
+    } finally {
+      setAiChecking(false);
+    }
+  };
 
   const onSubmit = async (data: RecipeFormData) => {
     const formData = new FormData();
@@ -321,6 +368,44 @@ export function RecipeForm({
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder="Velocity, group size, seating depth, etc."
                 />
+              </div>
+
+              {/* AI Safety Check — assesses the values currently in the form */}
+              <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">AI Safety Check</span>
+                  <button
+                    type="button"
+                    onClick={handleAiCheck}
+                    disabled={aiChecking}
+                    className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+                  >
+                    {aiChecking ? 'Checking…' : 'Run check'}
+                  </button>
+                </div>
+
+                <AiDisclaimer />
+
+                {aiResult ? (
+                  <>
+                    <AiVerdictDisplay
+                      verdict={aiResult.verdict}
+                      summary={aiResult.summary}
+                      concerns={aiResult.concerns}
+                      model={aiResult.model}
+                    />
+                    {!aiResult.persisted && (
+                      <p className="text-xs text-zinc-500">
+                        This assessment reflects the current (unsaved) values and was not saved. Save the
+                        recipe, then run the check from its detail page to store it.
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-zinc-500">
+                    Checks the values currently entered above — including unsaved changes.
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">

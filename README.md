@@ -19,6 +19,9 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Charge weight (grains), COAL, calculated/measured V0, fill rate, notes.
   - "Possible" loads column: how many cartridges you can currently make based on on-hand inventory (min of projectile count, primer count, and propellant grains ÷ charge).
   - Quick links from recipes to "Log load" or "Log range" (prefills the recipe).
+  - **AI Safety Check**: a button sends the recipe's data to the AI model configured in `/settings` and asks for an advisory assessment. Returns a structured verdict (`OK` / `CAUTION` / `STOP` / `UNKNOWN`) with a summary and specific concerns, rendered as a colored banner. A persistent disclaimer makes clear this is **advisory only** — always cross-check against published manufacturer load data; never rely on it for safety.
+    - From the **recipe detail view**: assesses the saved recipe and saves the result (shown until re-run).
+    - From the **edit form** (create or edit modal): assesses the values currently entered, including unsaved changes, so you can tweak a charge and re-check before saving. The result shows in the modal and is only saved onto the recipe when the form matches the already-saved data (otherwise it stays modal-only, to avoid a stored verdict that describes unsaved values).
 
 - **Load Logs** (`/logs`)
   - Record a batch you loaded using a recipe (rounds + optional notes).
@@ -40,6 +43,12 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - After saving an edit you are returned to the readonly detail page.
   - Edit descriptions or mark photos for deletion when editing a session.
 
+
+- **Settings / AI configuration** (`/settings` – gear icon)
+  - Configure the AI model the app uses. Single switchable config (provider dropdown + fields), designed to alternate between providers; **Grok (xAI)** is the first supported provider.
+  - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.
+  - **Test connection** button validates the key against the provider (xAI is OpenAI-compatible: `GET /models` with a bearer token) and reports success/failure via a toast.
+  - Settings (including the API key) are stored in Postgres as a singleton row. The key is write-only in the UI: it is never sent back to the browser, only a masked `••••last4` placeholder; leave the field blank to keep the existing key. Note: the app has no authentication, so anyone who can reach it can change these.
 
 - **Consistent UX across the app**
   - Click any row to edit (or view for range sessions).
@@ -96,6 +105,8 @@ pnpm dev
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
+  - `settings/` – AI model configuration (singleton `AiSettings` row) + `SettingsForm` + `Test connection`
+- `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test and the recipe AI safety check
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)

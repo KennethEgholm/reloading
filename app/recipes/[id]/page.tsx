@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getRecipeById } from '../actions'
+import { RecipeAiCheck } from './RecipeAiCheck'
 
 export default async function RecipeDetailPage({
   params,
@@ -96,6 +97,16 @@ export default async function RecipeDetailPage({
           </div>
         )}
       </div>
+
+      {/* AI Safety Check */}
+      <RecipeAiCheck
+        recipeId={recipe.id}
+        aiVerdict={recipe.aiVerdict}
+        aiSummary={recipe.aiSummary}
+        aiConcerns={recipe.aiConcerns}
+        aiModel={recipe.aiModel}
+        aiCheckedAt={recipe.aiCheckedAt}
+      />
 
       {/* Recent Range Sessions */}
       <div className="mb-8">

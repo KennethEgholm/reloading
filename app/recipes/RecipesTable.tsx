@@ -1,9 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
+
+// Compact verdict badge for the list. Renders nothing until a check has run.
+function VerdictBadge({ verdict }: { verdict: string | null }) {
+  if (!verdict) return <span className="text-zinc-300 dark:text-zinc-600">—</span>;
+
+  const styles: Record<string, string> = {
+    OK: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300',
+    CAUTION: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
+    STOP: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
+    UNKNOWN: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+  };
+  const cls = styles[verdict] ?? styles.UNKNOWN;
+
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>
+      {verdict}
+    </span>
+  );
+}
 
 function getPossibleLoads(recipe: any): number | null {
   const projAmount = recipe.projectile?.amount ?? 0;
@@ -37,10 +56,12 @@ interface RecipesTableProps {
 }
 
 export function RecipesTable({ recipes, projectiles, propellants, primers }: RecipesTableProps) {
+  const router = useRouter();
   const [editingRecipe, setEditingRecipe] = useState<any | null>(null);
 
+  // Row click opens the readonly detail view; the Edit action opens the form.
   const handleRowClick = (recipe: any) => {
-    setEditingRecipe(recipe);
+    router.push(`/recipes/${recipe.id}`);
   };
 
   return (
@@ -58,6 +79,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
               <th className="text-right px-6 py-3 font-medium">Calc V0</th>
               <th className="text-right px-6 py-3 font-medium">Meas V0</th>
               <th className="text-right px-6 py-3 font-medium">Fill %</th>
+              <th className="text-center px-6 py-3 font-medium">Check</th>
               <th className="text-right px-6 py-3 font-medium">Possible</th>
               <th className="w-12"></th>
             </tr>
@@ -69,11 +91,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                 className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(recipe)}
               >
-                <td className="px-6 py-4 font-medium">
-                  <Link href={`/recipes/${recipe.id}`} className="hover:underline">
-                    {recipe.name}
-                  </Link>
-                </td>
+                <td className="px-6 py-4 font-medium">{recipe.name}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>
                 <td className="px-6 py-4">
                   {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
@@ -96,25 +114,22 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                 <td className="px-6 py-4 text-right font-mono">
                   {recipe.fillRate ? `${recipe.fillRate}` : '—'}
                 </td>
+                <td className="px-6 py-4 text-center">
+                  <VerdictBadge verdict={recipe.aiVerdict} />
+                </td>
                 <td className="px-6 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400">
                   {(() => {
                     const possible = getPossibleLoads(recipe);
                     return possible !== null ? `${possible}×` : '—';
                   })()}
                 </td>
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                  <a
-                    href={`/logs?recipeId=${recipe.id}`}
+                <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setEditingRecipe(recipe)}
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
                   >
-                    Log load
-                  </a>
-                  <a
-                    href={`/range/new?recipeId=${recipe.id}`}
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
-                  >
-                    Log range
-                  </a>
+                    Edit
+                  </button>
                   <DeleteRecipeButton id={recipe.id} />
                 </td>
               </tr>
@@ -135,7 +150,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
         primers={primers}
         open={!!editingRecipe}
         onOpenChange={(open) => {
-          if (!open) handleRowClick(null);
+          if (!open) setEditingRecipe(null);
         }}
       />
     </>

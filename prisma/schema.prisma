@@ -17,6 +17,19 @@ enum PrimerType {
   LARGE_PISTOL
 }
 
+// Singleton row holding AI model configuration (always id = "singleton").
+// Provider is switchable; "grok" (xAI) is the first supported provider.
+model AiSettings {
+  id          String   @id @default("singleton")
+  provider    String   @default("grok")
+  apiKey      String? // bearer token (stored plaintext; app has no auth)
+  model       String? // e.g. "grok-3", "grok-2-latest"
+  baseUrl     String? // e.g. "https://api.x.ai/v1"
+  temperature Float? // optional call param
+  maxTokens   Int? // optional call param
+  updatedAt   DateTime @updatedAt
+}
+
 model Propellant {
   id          String   @id @default(cuid())
   brand       String
@@ -71,6 +84,13 @@ model Recipe {
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  // Latest AI safety-check assessment (advisory only). Nullable until run.
+  aiVerdict   String? // "OK" | "CAUTION" | "STOP" | "UNKNOWN"
+  aiSummary   String? // short prose summary
+  aiConcerns  String? // JSON array of concern strings (stored as text)
+  aiModel     String? // model used, for provenance
+  aiCheckedAt DateTime? // when the check was last run
 
   projectile Projectile @relation(fields: [projectileId], references: [id])
   propellant Propellant @relation(fields: [propellantId], references: [id])
