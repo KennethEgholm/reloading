@@ -28,6 +28,8 @@ services:
       CI: "true"  # Prevents pnpm from prompting about module removal in Docker
     volumes:
       - .:/app
+      - node_modules:/app/node_modules
+      - next_cache:/app/.next
     depends_on:
       db:
         condition: service_healthy
@@ -41,3 +43,5 @@ services:
 
 volumes:
   postgres_data:
+  node_modules:
+  next_cache:

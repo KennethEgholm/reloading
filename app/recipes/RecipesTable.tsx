@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
 
@@ -68,7 +69,11 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                 className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(recipe)}
               >
-                <td className="px-6 py-4 font-medium">{recipe.name}</td>
+                <td className="px-6 py-4 font-medium">
+                  <Link href={`/recipes/${recipe.id}`} className="hover:underline">
+                    {recipe.name}
+                  </Link>
+                </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>
                 <td className="px-6 py-4">
                   {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
@@ -103,6 +108,12 @@ export function RecipesTable({ recipes, projectiles, propellants, primers }: Rec
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
                   >
                     Log load
+                  </a>
+                  <a
+                    href={`/range/new?recipeId=${recipe.id}`}
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
+                  >
+                    Log range
                   </a>
                   <DeleteRecipeButton id={recipe.id} />
                 </td>

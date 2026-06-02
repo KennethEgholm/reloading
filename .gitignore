@@ -41,7 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 # AI assistants / agents (Claude, Grok, Cursor, etc.)
-AGENTS.md
+# We commit AGENTS.md (project instructions for agents) but ignore personal dot-dirs and session data.
+# AGENTS.md
 CLAUDE.md
 .claude/
 .cursor/
@@ -51,3 +52,7 @@ CLAUDE.md
 
 # pnpm local store (can be large)
 .pnpm-store/
+
+# User uploaded photos (range logs etc.) - never commit personal target images
+public/uploads/
+uploads/

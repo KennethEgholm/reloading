@@ -80,3 +80,27 @@ export async function updateRecipe(id: string, formData: FormData) {
 
   revalidatePath('/recipes')
 }
+
+export async function getRecipeById(id: string) {
+  return prisma.recipe.findUnique({
+    where: { id },
+    include: {
+      projectile: true,
+      propellant: true,
+      primer: true,
+      loadLogs: {
+        orderBy: { date: 'desc' },
+        take: 5,
+      },
+      rangeLogs: {
+        orderBy: { date: 'desc' },
+        take: 5,
+        include: {
+          images: {
+            take: 1,
+          },
+        },
+      },
+    },
+  })
+}

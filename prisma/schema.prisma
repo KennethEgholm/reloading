@@ -76,6 +76,7 @@ model Recipe {
   propellant Propellant @relation(fields: [propellantId], references: [id])
   primer     Primer?    @relation(fields: [primerId], references: [id])
   loadLogs   LoadLog[]
+  rangeLogs  RangeLog[]
 }
 
 model LoadLog {
@@ -118,4 +119,37 @@ model LoadLog {
   updatedAt DateTime @updatedAt
 
   recipe Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+}
+
+model RangeLog {
+  id            String   @id @default(cuid())
+  date          DateTime
+  location      String?
+  conditions    String?
+  recipeId      String
+  roundsFired   Int
+  velocityMin   Float?
+  velocityMax   Float?
+  velocityAvg   Float?
+  extremeSpread Float?
+  stdDev        Float?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  recipe        Recipe          @relation(fields: [recipeId], references: [id])
+  images        RangeLogImage[]   @relation("RangeLogImages")
+  mainImageId   String?  @unique
+  mainImage     RangeLogImage?    @relation("MainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
+}
+
+model RangeLogImage {
+  id          String   @id @default(cuid())
+  rangeLogId  String
+  filename    String
+  description String?
+  createdAt   DateTime @default(now())
+
+  rangeLog    RangeLog @relation("RangeLogImages", fields: [rangeLogId], references: [id], onDelete: Cascade)
+  mainForLog  RangeLog? @relation("MainImage")
 }
