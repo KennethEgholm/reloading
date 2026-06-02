@@ -32,7 +32,20 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/*
+          Apply the saved theme before first paint to avoid a flash of the wrong
+          theme. Reads localStorage "theme" (light | dark | system; default system)
+          and toggles the `.dark` class on <html>. Kept inline + tiny on purpose.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50">
         <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
           <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">

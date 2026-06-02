@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/*
+ * Manual theme control: drive the `dark:` variant off a `.dark` class on <html>
+ * instead of the OS preference. A small inline script in layout.tsx adds/removes
+ * `.dark` before paint, based on the saved preference (light/dark/system).
+ * "System" mode resolves the OS preference to that same class, so OS-following
+ * behavior is preserved as the default.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,11 +21,9 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
