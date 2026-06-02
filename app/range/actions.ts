@@ -4,9 +4,39 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
+import { randomUUID } from 'crypto'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/range-logs')
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+
+const ALLOWED_IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.avif'])
+
+/**
+ * Builds a safe, server-controlled upload filename. The client-supplied
+ * file.name is NEVER used as a path component (it could contain "../" or other
+ * traversal sequences); we only derive the extension from it, validated against
+ * an allow-list. The base name is a random UUID, guaranteeing uniqueness and
+ * that the result stays inside UPLOAD_DIR.
+ */
+function safeImageFilename(originalName: string): string {
+  // path.extname on the basename only, so a crafted name can't smuggle a path.
+  const ext = path.extname(path.basename(originalName || '')).toLowerCase()
+  const safeExt = ALLOWED_IMAGE_EXTENSIONS.has(ext) ? ext : '.jpg'
+  return `${randomUUID()}${safeExt}`
+}
+
+/**
+ * Resolves a stored filename to an absolute path inside UPLOAD_DIR, or null if
+ * it would escape that directory. New uploads use safeImageFilename, but legacy
+ * DB rows predating that fix could contain traversal sequences — so any unlink
+ * driven by a stored filename is guarded through here.
+ */
+function resolveUploadPath(filename: string): string | null {
+  const resolved = path.resolve(UPLOAD_DIR, filename)
+  const base = path.resolve(UPLOAD_DIR)
+  if (resolved !== base && !resolved.startsWith(base + path.sep)) return null
+  return resolved
+}
 
 export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
@@ -103,7 +133,7 @@ export async function createRangeLog(formData: FormData) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const filename = `${Date.now()}-${i}-${file.name.replace(/\s+/g, '-')}`
+    const filename = safeImageFilename(file.name)
     const filepath = path.join(UPLOAD_DIR, filename)
 
     await writeFile(filepath, buffer)
@@ -144,12 +174,14 @@ export async function deleteRangeLogImage(imageId: string) {
   }
 
   // Delete the file from disk (best effort)
-  try {
-    const fs = await import('fs/promises')
-    const filepath = path.join(UPLOAD_DIR, image.filename)
-    await fs.unlink(filepath)
-  } catch (e) {
-    // File might not exist, ignore
+  const filepath = resolveUploadPath(image.filename)
+  if (filepath) {
+    try {
+      const fs = await import('fs/promises')
+      await fs.unlink(filepath)
+    } catch (e) {
+      // File might not exist, ignore
+    }
   }
 
   await prisma.rangeLogImage.delete({ where: { id: imageId } })
@@ -215,10 +247,13 @@ export async function updateRangeLog(id: string, formData: FormData) {
       // Delete the image
       const img = await prisma.rangeLogImage.findUnique({ where: { id: imgId } })
       if (img) {
-        try {
-          const fs = await import('fs/promises')
-          await fs.unlink(path.join(UPLOAD_DIR, img.filename))
-        } catch {}
+        const filepath = resolveUploadPath(img.filename)
+        if (filepath) {
+          try {
+            const fs = await import('fs/promises')
+            await fs.unlink(filepath)
+          } catch {}
+        }
         await prisma.rangeLogImage.delete({ where: { id: imgId } })
       }
     } else {
@@ -246,7 +281,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const filename = `${Date.now()}-${i}-${file.name.replace(/\s+/g, '-')}`
+    const filename = safeImageFilename(file.name)
     const filepath = path.join(UPLOAD_DIR, filename)
 
     await writeFile(filepath, buffer)
