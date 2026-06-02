@@ -22,6 +22,7 @@ Instructions for AI agents / future sessions working on this codebase.
 - Propellant weights shown with 1 decimal place.
 - Keyboard: document `keydown` listener (Enter save / Esc close). Exception for `<textarea>`. Auto-focus name/brand field on open.
 - Toasts via Sonner on every mutation path.
+- Overview (`app/page.tsx`) structure (per user spec): summary cards + sections ordered Range Sessions first, then Load Logs, then Recipes, then materials (primers/projectiles/propellants). Uses recent previews (5) + aggregates for Range/Load; reuses RangeLogRow + new LoadLogRow. All activity mutations revalidate '/'.
 
 ## UI Patterns to Respect
 - No "+ Add ..." or "Edit" buttons rendered below any list/table.
@@ -59,4 +60,4 @@ Ask before implementing ambiguous requirements (e.g. whether recipe can be chang
 
 Keep the app feeling solid and the data trustworthy for a reloader.
 
-(Last updated together with the major range-log photo duplication + population fixes and the README overhaul.)
+(Last updated together with the major range-log photo duplication + population fixes and the README overhaul. + Range Sessions + Load Logs integrated/reordered first on Overview per spec, with LoadLogRow extraction.)

@@ -130,6 +130,7 @@ export async function createRangeLog(formData: FormData) {
 
   revalidatePath('/range')
   revalidatePath(`/range/${rangeLog.id}`)
+  revalidatePath('/')
 }
 
 export async function deleteRangeLogImage(imageId: string) {
@@ -161,6 +162,7 @@ export async function deleteRangeLogImage(imageId: string) {
 
   revalidatePath(`/range/${image.rangeLogId}`)
   revalidatePath('/range')
+  revalidatePath('/')
 }
 
 export async function updateRangeLog(id: string, formData: FormData) {
@@ -269,4 +271,5 @@ export async function updateRangeLog(id: string, formData: FormData) {
 
   revalidatePath('/range')
   revalidatePath(`/range/${id}`)
+  revalidatePath('/')
 }

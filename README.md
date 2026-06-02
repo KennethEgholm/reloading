@@ -12,7 +12,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Primers: brand, type (Small Rifle / Large Rifle / Small Pistol / Large Pistol), magnum flag, amount, description.
   - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), caliber, amount, description.
   - Propellants: brand, type, amount (grams, displayed to 1 decimal), description.
-  - Full CRUD. Overview dashboard with totals and recent items. Low-stock awareness via recipe "Possible" calculations.
+  - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then materials/inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
 
 - **Recipes**
   - Link one projectile + propellant + primer.
@@ -26,18 +26,20 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - **Historical snapshots**: the log stores a complete copy of the recipe + component details at the time it was made (so future recipe edits or component deletions don't corrupt history).
   - Detail view shows the exact snapshot + summary of components consumed.
   - Delete a log (with confirmation) and the components are restored to inventory (again via transaction using the snapshots).
+  - Recent load logs are shown on the Overview (after Range Sessions).
 
 - **Range Sessions** (`/range` – bullseye icon)
   - Full session logging: date, location, linked recipe, rounds fired, weather/conditions, notes.
   - Complete chronograph data: Min/Max/Avg velocity (m/s), Extreme Spread (ES), Standard Deviation (SD).
   - **Unlimited photos** with individual descriptions per photo. Photos stored locally (`public/uploads/range-logs`).
-  - List view with photo count badges, velocity summaries, etc.
+  - List view with photo count badges, velocity summaries, etc. Recent sessions are shown first on the Overview dashboard (before Load Logs).
   - Unified experience:
     - `/range/new` – create (optionally prefilled from a recipe link)
     - `/range/[id]` – readonly detail view (same form, disabled controls)
     - `/range/[id]/edit` – edit (same form)
   - After saving an edit you are returned to the readonly detail page.
   - Edit descriptions or mark photos for deletion when editing a session.
+
 
 - **Consistent UX across the app**
   - Click any row to edit (or view for range sessions).
@@ -89,11 +91,11 @@ pnpm dev
 ## Project Structure (key parts)
 
 - `app/` – Next.js App Router
-  - `page.tsx` – Overview dashboard
+  - `page.tsx` – Overview dashboard (Range Sessions + Load Logs first in cards + sections, then Recipes, then materials inventory tables; reuses *Row components for previews)
   - `primers/`, `projectiles/`, `propellants/` – inventory sections (table + form + actions)
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range
-  - `logs/` – load logs + snapshots + restore-on-delete
-  - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling
+  - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
+  - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
