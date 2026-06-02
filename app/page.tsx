@@ -260,6 +260,28 @@ export default async function Overview() {
         )}
       </div>
 
+      {/* Materials (collapsible: primers, projectiles, propellants) */}
+      <details open className="group">
+        <summary className="flex items-center gap-3 mb-4 cursor-pointer list-none select-none [&::-webkit-details-marker]:hidden">
+          <svg
+            className="w-5 h-5 text-zinc-500 transition-transform group-open:rotate-90"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              d="M7.05 4.55a.75.75 0 0 1 1.06 0l5 5a.75.75 0 0 1 0 1.06l-5 5a.75.75 0 1 1-1.06-1.06L11.44 10 7.05 5.61a.75.75 0 0 1 0-1.06z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <h2 className="text-2xl font-semibold">Materials</h2>
+          <span className="text-sm text-zinc-500">
+            ({primers.length} primers • {projectiles.length} projectiles • {propellants.length} propellants)
+          </span>
+        </summary>
+
+        <div className="pt-2">
       {/* Primers Section */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
@@ -405,6 +427,8 @@ export default async function Overview() {
           <p className="text-zinc-500">No propellants added yet.</p>
         )}
       </div>
+        </div>
+      </details>
     </div>
   );
 }

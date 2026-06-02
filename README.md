@@ -44,7 +44,9 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Edit descriptions or mark photos for deletion when editing a session.
 
 
-- **Settings / AI configuration** (`/settings` – gear icon)
+- **Settings** (`/settings` – gear icon)
+  - **Appearance**: Light / Dark / System theme switch. The choice is saved per-device in `localStorage` and applied before first paint (no flash); "System" follows the OS preference and updates live when it changes.
+  - **AI configuration**
   - Configure the AI model the app uses. Single switchable config (provider dropdown + fields), designed to alternate between providers; **Grok (xAI)** is the first supported provider.
   - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.
   - **Test connection** button validates the key against the provider (xAI is OpenAI-compatible: `GET /models` with a bearer token) and reports success/failure via a toast.
