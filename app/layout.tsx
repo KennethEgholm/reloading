@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import Image from "next/image";
 import { Settings } from "lucide-react";
+import { MaterialsMenu } from "./MaterialsMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,29 +56,9 @@ export default function RootLayout({
                 <span className="font-semibold text-lg tracking-tight">Reloading Tool</span>
               </a>
               <div className="flex items-center gap-1 text-sm">
-                <a 
-                  href="/primers" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <Image src="/images/primer.svg" alt="Primers" width={20} height={20} />
-                  Primers
-                </a>
-                <a 
-                  href="/projectiles" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <Image src="/images/projectile.svg" alt="Projectiles" width={20} height={20} />
-                  Projectiles
-                </a>
-                <a 
-                  href="/propellants" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <Image src="/images/propellant.svg" alt="Propellants" width={20} height={20} />
-                  Propellants
-                </a>
-                <a 
-                  href="/recipes" 
+                <MaterialsMenu />
+                <a
+                  href="/recipes"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
                   <Image src="/images/recipe.svg" alt="Recipes" width={20} height={20} />
@@ -87,8 +68,8 @@ export default function RootLayout({
                   href="/logs" 
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  <Image src="/images/log.svg" alt="Log" width={20} height={20} />
-                  Log
+                  <Image src="/images/log.svg" alt="Reloading Log" width={20} height={20} />
+                  Reloading Log
                 </a>
                 <a 
                   href="/range" 
