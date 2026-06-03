@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getRecipeById } from '../actions'
 import { RecipeAiCheck } from './RecipeAiCheck'
+import { formatDate } from '@/lib/format'
 
 export default async function RecipeDetailPage({
   params,
@@ -140,7 +141,7 @@ export default async function RecipeDetailPage({
               >
                 <div className="flex justify-between">
                   <div>
-                    <span className="font-medium">{new Date(session.date).toLocaleDateString()}</span>
+                    <span className="font-medium">{formatDate(session.date)}</span>
                     {session.location && <span className="text-zinc-500 ml-2">• {session.location}</span>}
                   </div>
                   <div className="text-emerald-600 dark:text-emerald-400 font-medium">
@@ -187,7 +188,7 @@ export default async function RecipeDetailPage({
               >
                 <div className="flex justify-between">
                   <div>
-                    <span className="font-medium">{new Date(load.date).toLocaleDateString()}</span>
+                    <span className="font-medium">{formatDate(load.date)}</span>
                   </div>
                   <div className="text-emerald-600 dark:text-emerald-400 font-medium">
                     {load.quantity} rounds

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatDate } from '@/lib/format';
 
 interface LoadLogRowProps {
   log: any; // Matches the shape from getLoadLogs (includes snapshots)
@@ -14,7 +15,7 @@ export function LoadLogRow({ log }: LoadLogRowProps) {
         <div>
           <div className="font-semibold text-lg">{log.recipeName}</div>
           <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            {new Date(log.date).toLocaleDateString()} — {log.quantity} rounds
+            {formatDate(log.date)} — {log.quantity} rounds
           </div>
         </div>
         <div className="text-right">

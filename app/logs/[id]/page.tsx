@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getLoadLogById } from '../actions'
 import Link from 'next/link'
 import { DeleteLoadLogButton } from '../DeleteLoadLogButton'
+import { formatDateLong } from '@/lib/format'
 
 export default async function LoadLogDetailPage({
   params,
@@ -34,12 +35,7 @@ export default async function LoadLogDetailPage({
           <div className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{log.caliber}</div>
           <div className="mt-4 flex items-center gap-4 text-sm">
             <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full">
-              {new Date(log.date).toLocaleDateString(undefined, {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {formatDateLong(log.date)}
             </span>
             <span className="font-medium text-emerald-600 dark:text-emerald-400 text-lg">
               {log.quantity} rounds

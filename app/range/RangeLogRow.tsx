@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { formatDate } from '@/lib/format';
 
 interface RangeLogRowProps {
   log: any; // We can improve typing later
@@ -56,7 +57,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
               <div>
                 <div className="font-semibold text-lg">{log.recipe.name}</div>
                 <div className="text-sm text-zinc-500">
-                  {new Date(log.date).toLocaleDateString()} • {log.roundsFired} rounds
+                  {formatDate(log.date)} • {log.roundsFired} rounds
                   {log.location && ` • ${log.location}`}
                 </div>
               </div>
@@ -119,7 +120,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             <div className="mt-3 text-center text-white max-w-2xl">
               <div className="text-lg font-semibold">{log.recipe.name}</div>
               <div className="text-sm opacity-80">
-                {new Date(log.date).toLocaleDateString()} • {log.roundsFired} rounds
+                {formatDate(log.date)} • {log.roundsFired} rounds
                 {log.location && ` • ${log.location}`}
               </div>
               {log.mainImage.description && (

@@ -1,5 +1,7 @@
 'use client'
 
+import { formatDateTime } from '@/lib/format'
+
 // Shared rendering for an AI safety-check result + the persistent disclaimer.
 // Used by both the recipe detail view (RecipeAiCheck) and the edit-mode form
 // (RecipeForm) so the verdict looks identical wherever it is shown.
@@ -62,7 +64,7 @@ export function AiDisclaimer() {
 export function AiVerdictDisplay({ verdict, summary, concerns, model, checkedAt }: AiVerdictData) {
   const style = VERDICT_STYLES[verdict ?? 'UNKNOWN'] ?? VERDICT_STYLES.UNKNOWN
   const concernList = parseConcerns(concerns)
-  const checkedAtLabel = checkedAt ? new Date(checkedAt).toLocaleString() : null
+  const checkedAtLabel = checkedAt ? formatDateTime(checkedAt) : null
 
   return (
     <div className="space-y-3">
