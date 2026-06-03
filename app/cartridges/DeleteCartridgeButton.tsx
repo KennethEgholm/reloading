@@ -11,9 +11,10 @@ export function DeleteCartridgeButton({ id }: { id: string }) {
       onClick={async () => {
         if (confirm('Delete this cartridge?')) {
           try {
-            await deleteCartridge(id);
-            toast.success('Cartridge deleted');
-          } catch (error) {
+            const result = await deleteCartridge(id);
+            if (result.ok) toast.success('Cartridge deleted');
+            else toast.error(result.error);
+          } catch {
             toast.error('Failed to delete cartridge');
           }
         }

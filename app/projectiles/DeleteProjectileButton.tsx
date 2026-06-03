@@ -11,9 +11,10 @@ export function DeleteProjectileButton({ id }: { id: string }) {
       onClick={async () => {
         if (confirm('Delete this projectile?')) {
           try {
-            await deleteProjectile(id);
-            toast.success('Projectile deleted');
-          } catch (error) {
+            const result = await deleteProjectile(id);
+            if (result.ok) toast.success('Projectile deleted');
+            else toast.error(result.error);
+          } catch {
             toast.error('Failed to delete projectile');
           }
         }

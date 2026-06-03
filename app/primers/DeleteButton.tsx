@@ -11,9 +11,10 @@ export function DeleteButton({ id }: { id: string }) {
       onClick={async () => {
         if (confirm('Delete this primer?')) {
           try {
-            await deletePrimer(id);
-            toast.success('Primer deleted');
-          } catch (error) {
+            const result = await deletePrimer(id);
+            if (result.ok) toast.success('Primer deleted');
+            else toast.error(result.error);
+          } catch {
             toast.error('Failed to delete primer');
           }
         }

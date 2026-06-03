@@ -11,9 +11,10 @@ export function DeletePropellantButton({ id }: { id: string }) {
       onClick={async () => {
         if (confirm('Delete this propellant?')) {
           try {
-            await deletePropellant(id);
-            toast.success('Propellant deleted');
-          } catch (error) {
+            const result = await deletePropellant(id);
+            if (result.ok) toast.success('Propellant deleted');
+            else toast.error(result.error);
+          } catch {
             toast.error('Failed to delete propellant');
           }
         }
