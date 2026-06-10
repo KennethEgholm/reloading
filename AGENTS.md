@@ -5,6 +5,8 @@ Instructions for AI agents / future sessions working on this codebase.
 ## Primary Rule
 **Always keep README.md updated.** When you add, change, or remove a significant feature, page, setup step, or architectural detail, edit the README so it accurately reflects the current state of the app. The user explicitly requested this.
 
+**Before any commit, update both the README and the architecture diagrams (`docs/architecture.md`) if the changes affect them.** Whenever a change touches the architecture, data model, routes, key flows, or anything depicted in the Mermaid diagrams, update `docs/architecture.md` to match the current state before committing. The same applies to README — keep it accurate before every commit.
+
 ## Project Goals & Non-Negotiables
 - Full production-usable reloading manager (inventory + recipes + load logs + range sessions).
 - **Data integrity first**: Load logs and range sessions must survive recipe/component changes. Use snapshots + transactions for inventory adjustments.
