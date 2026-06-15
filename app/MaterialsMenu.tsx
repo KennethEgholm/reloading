@@ -3,17 +3,19 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Boxes, ChevronDown } from 'lucide-react'
-
-const MATERIALS = [
-  { href: '/primers', label: 'Primers', icon: '/images/primer.svg' },
-  { href: '/projectiles', label: 'Projectiles', icon: '/images/projectile.svg' },
-  { href: '/propellants', label: 'Propellants', icon: '/images/propellant.svg' },
-  { href: '/cartridges', label: 'Cartridges', icon: '/images/cartridge.svg' },
-]
+import { useTranslations } from 'next-intl'
 
 export function MaterialsMenu() {
+  const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  const materials = [
+    { href: '/primers', label: t('primers'), icon: '/images/primer.svg' },
+    { href: '/projectiles', label: t('projectiles'), icon: '/images/projectile.svg' },
+    { href: '/propellants', label: t('propellants'), icon: '/images/propellant.svg' },
+    { href: '/cartridges', label: t('cartridges'), icon: '/images/cartridge.svg' },
+  ]
 
   // Close on outside click and on Escape.
   useEffect(() => {
@@ -42,7 +44,7 @@ export function MaterialsMenu() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       >
         <Boxes size={20} />
-        Materials
+        {t('materials')}
         <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -51,7 +53,7 @@ export function MaterialsMenu() {
           role="menu"
           className="absolute left-0 top-full mt-1 z-50 min-w-[12rem] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-1"
         >
-          {MATERIALS.map((m) => (
+          {materials.map((m) => (
             <a
               key={m.href}
               href={m.href}

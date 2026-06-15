@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "title": "Reloading Tool",
+    "description": "Inventory management for reloading components"
+  },
+  "nav": {
+    "home": "Reloading Tool",
+    "recipes": "Recipes",
+    "logs": "Reloading Log",
+    "range": "Range Sessions",
+    "settings": "Settings",
+    "personalInventory": "Personal Inventory",
+    "materials": "Materials"
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": "Your range sessions, load logs, recipes, and components",
+    "summary": {
+      "rangeSessions": "Range Sessions",
+      "logged_one": "{{count}} logged",
+      "logged_other": "{{count}} logged",
+      "roundsFired_one": "{{count}} round fired",
+      "roundsFired_other": "{{count}} rounds fired",
+      "loadLogs": "Load Logs",
+      "loads_one": "{{count}} load",
+      "loads_other": "{{count}} loads",
+      "roundsLoaded_one": "{{count}} round loaded",
+      "roundsLoaded_other": "{{count}} rounds loaded",
+      "recipes": "Recipes",
+      "saved_one": "{{count}} saved",
+      "saved_other": "{{count}} saved",
+      "primers": "Primers",
+      "types_one": "{{count}} type",
+      "types_other": "{{count}} types",
+      "pieces_one": "{{count}} piece",
+      "pieces_other": "{{count}} pieces",
+      "projectiles": "Projectiles",
+      "propellants": "Propellants",
+      "amountGrams": "{{count}} g",
+      "cartridges": "Cartridges",
+      "cases_one": "{{count}} case",
+      "cases_other": "{{count}} cases"
+    },
+    "sections": {
+      "rangeSessions": "Range Sessions",
+      "rangeSummary": "({{count}} logged • {{rounds}} rounds)",
+      "viewFullList": "View full list →",
+      "noRangeSessions": "No range sessions logged yet.",
+      "logFirstSession": "Log your first session",
+      "loadLogs": "Load Logs",
+      "loadSummary": "({{count}} loads • {{rounds}} rounds)",
+      "noLoadLogs": "No loads logged yet.",
+      "recipes": "Recipes",
+      "recipeSummary": "({{count}} saved)",
+      "recipeTable": {
+        "name": "Name",
+        "caliber": "Caliber",
+        "projectile": "Projectile",
+        "propellant": "Propellant",
+        "charge": "Charge",
+        "coal": "COAL",
+        "calcV0": "Calc V0",
+        "measV0": "Meas V0",
+        "fill": "Fill %",
+        "possible": "Possible"
+      },
+      "noRecipes": "No recipes saved yet.",
+      "materials": "Materials",
+      "materialsSummary": "({{primers}} primers • {{projectiles}} projectiles • {{propellants}} propellants • {{cartridges}} cartridges)",
+      "primers": "Primers",
+      "primerSummary": "({{count}} types • {{pieces}} pieces)",
+      "primerTable": {
+        "brand": "Brand",
+        "type": "Type",
+        "magnum": "Magnum",
+        "amount": "Amount",
+        "description": "Description",
+        "yes": "Yes"
+      },
+      "noPrimers": "No primers added yet.",
+      "projectiles": "Projectiles",
+      "projectileSummary": "({{count}} types)",
+      "projectileTable": {
+        "brand": "Brand",
+        "type": "Type",
+        "weight": "Weight (gr)",
+        "caliber": "Caliber",
+        "description": "Description"
+      },
+      "noProjectiles": "No projectiles added yet.",
+      "propellants": "Propellants",
+      "propellantSummary": "({{count}} types)",
+      "propellantTable": {
+        "brand": "Brand",
+        "type": "Type",
+        "amount": "Amount (g)",
+        "description": "Description"
+      },
+      "noPropellants": "No propellants added yet.",
+      "cartridges": "Cartridges",
+      "cartridgeSummary": "({{count}} types • {{cases}} cases)",
+      "cartridgeTable": {
+        "brand": "Brand",
+        "caliber": "Caliber",
+        "waterCapacity": "Water cap. (gr)",
+        "amount": "Amount",
+        "description": "Description"
+      },
+      "noCartridges": "No cartridges added yet."
+    }
+  },
+  "common": {
+    "back": "← Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "add": "Add",
+    "loading": "Loading...",
+    "empty": "—"
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "da": "Danish"
+  }
+}

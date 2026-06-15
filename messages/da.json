@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "title": "Håndlæsningsværktøj",
+    "description": "Lagerstyring af håndlæsningskomponenter"
+  },
+  "nav": {
+    "home": "Håndlæsningsværktøj",
+    "recipes": "Recepturer",
+    "logs": "Ladejournal",
+    "range": "Skydning",
+    "settings": "Indstillinger",
+    "personalInventory": "Personligt Lager",
+    "materials": "Materialer"
+  },
+  "overview": {
+    "title": "Oversigt",
+    "subtitle": "Dine skydninger, ladejournaler, recepturer og komponenter",
+    "summary": {
+      "rangeSessions": "Skydning",
+      "logged_one": "{{count}} logget",
+      "logged_other": "{{count}} logget",
+      "roundsFired_one": "{{count}} skud affyret",
+      "roundsFired_other": "{{count}} skud affyret",
+      "loadLogs": "Ladejournaler",
+      "loads_one": "{{count}} ladning",
+      "loads_other": "{{count}} ladninger",
+      "roundsLoaded_one": "{{count}} skud ladet",
+      "roundsLoaded_other": "{{count}} skud ladet",
+      "recipes": "Recepturer",
+      "saved_one": "{{count}} gemt",
+      "saved_other": "{{count}} gemt",
+      "primers": "Tændhætter",
+      "types_one": "{{count}} type",
+      "types_other": "{{count}} typer",
+      "pieces_one": "{{count}} stk.",
+      "pieces_other": "{{count}} stk.",
+      "projectiles": "Projektiler",
+      "propellants": "Krudt",
+      "amountGrams": "{{count}} g",
+      "cartridges": "Hylstre",
+      "cases_one": "{{count}} hylster",
+      "cases_other": "{{count}} hylstre"
+    },
+    "sections": {
+      "rangeSessions": "Skydning",
+      "rangeSummary": "({{count}} logget • {{rounds}} skud)",
+      "viewFullList": "Se fuld liste →",
+      "noRangeSessions": "Ingen skydninger logget endnu.",
+      "logFirstSession": "Log din første skydning",
+      "loadLogs": "Ladejournaler",
+      "loadSummary": "({{count}} ladninger • {{rounds}} skud)",
+      "noLoadLogs": "Ingen ladninger logget endnu.",
+      "recipes": "Recepturer",
+      "recipeSummary": "({{count}} gemt)",
+      "recipeTable": {
+        "name": "Navn",
+        "caliber": "Kaliber",
+        "projectile": "Projektil",
+        "propellant": "Krudt",
+        "charge": "Ladning",
+        "coal": "COAL",
+        "calcV0": "Beregnet V0",
+        "measV0": "Målt V0",
+        "fill": "Fyldning %",
+        "possible": "Mulige"
+      },
+      "noRecipes": "Ingen recepturer gemt endnu.",
+      "materials": "Materialer",
+      "materialsSummary": "({{primers}} tændhætter • {{projectiles}} projektiler • {{propellants}} krudttyper • {{cartridges}} hylstre)",
+      "primers": "Tændhætter",
+      "primerSummary": "({{count}} typer • {{pieces}} stk.)",
+      "primerTable": {
+        "brand": "Mærke",
+        "type": "Type",
+        "magnum": "Magnum",
+        "amount": "Antal",
+        "description": "Beskrivelse",
+        "yes": "Ja"
+      },
+      "noPrimers": "Ingen tændhætter tilføjet endnu.",
+      "projectiles": "Projektiler",
+      "projectileSummary": "({{count}} typer)",
+      "projectileTable": {
+        "brand": "Mærke",
+        "type": "Type",
+        "weight": "Vægt (gr)",
+        "caliber": "Kaliber",
+        "description": "Beskrivelse"
+      },
+      "noProjectiles": "Ingen projektiler tilføjet endnu.",
+      "propellants": "Krudt",
+      "propellantSummary": "({{count}} typer)",
+      "propellantTable": {
+        "brand": "Mærke",
+        "type": "Type",
+        "amount": "Mængde (g)",
+        "description": "Beskrivelse"
+      },
+      "noPropellants": "Ingen krudttyper tilføjet endnu.",
+      "cartridges": "Hylstre",
+      "cartridgeSummary": "({{count}} typer • {{cases}} hylstre)",
+      "cartridgeTable": {
+        "brand": "Mærke",
+        "caliber": "Kaliber",
+        "waterCapacity": "Vandkapacitet (gr)",
+        "amount": "Antal",
+        "description": "Beskrivelse"
+      },
+      "noCartridges": "Ingen hylstre tilføjet endnu."
+    }
+  },
+  "common": {
+    "back": "← Tilbage",
+    "edit": "Rediger",
+    "delete": "Slet",
+    "save": "Gem",
+    "cancel": "Annuller",
+    "add": "Tilføj",
+    "loading": "Indlæser...",
+    "empty": "—"
+  },
+  "localeSwitcher": {
+    "label": "Sprog",
+    "en": "Engelsk",
+    "da": "Dansk"
+  }
+}

@@ -1,9 +1,12 @@
 import { prisma } from '@/lib/prisma';
+import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
 
 export default async function Overview() {
+  const t = await getTranslations('overview');
+
   const [
     primers,
     projectiles,
@@ -73,51 +76,51 @@ export default async function Overview() {
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-4 mb-2">
-          <img src="/images/logo.svg" alt="Reloading Tool" className="w-12 h-12" />
-          <h1 className="text-4xl font-semibold tracking-tighter">Overview</h1>
+          <img src="/images/logo.svg" alt={t('title')} className="w-12 h-12" />
+          <h1 className="text-4xl font-semibold tracking-tighter">{t('title')}</h1>
         </div>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
-          Your range sessions, load logs, recipes, and components
+          {t('subtitle')}
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-10">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Range Sessions</div>
-          <div className="text-3xl font-semibold mt-1">{rangeCount} logged</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalRounds} rounds fired</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsFired', { count: totalRounds })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Load Logs</div>
-          <div className="text-3xl font-semibold mt-1">{loadCount} loads</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalLoaded} rounds</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.loadLogs')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.loads', { count: loadCount })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsLoaded', { count: totalLoaded })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Recipes</div>
-          <div className="text-3xl font-semibold mt-1">{recipes.length} saved</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.recipes')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.saved', { count: recipes.length })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Primers</div>
-          <div className="text-3xl font-semibold mt-1">{primers.length} types</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalPrimers} pieces</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.primers')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: primers.length })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.pieces', { count: totalPrimers })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Projectiles</div>
-          <div className="text-3xl font-semibold mt-1">{projectiles.length} types</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.projectiles')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: projectiles.length })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Propellants</div>
-          <div className="text-3xl font-semibold mt-1">{propellants.length} types</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalPropellantGrams.toFixed(1)} g</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: totalPropellantGrams.toFixed(1) })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">Cartridges</div>
-          <div className="text-3xl font-semibold mt-1">{cartridges.length} types</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{totalCases} cases</div>
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
+          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: cartridges.length })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.cases', { count: totalCases })}</div>
         </div>
       </div>
 
@@ -125,15 +128,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/range.svg" alt="Range Sessions" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Range Sessions</h2>
-            <span className="text-sm text-zinc-500">({rangeCount} logged • {totalRounds} rounds)</span>
+            <img src="/images/range.svg" alt={t('sections.rangeSessions')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.rangeSessions')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.rangeSummary', { count: rangeCount, rounds: totalRounds })}</span>
           </div>
-          <Link 
-            href="/range" 
+          <Link
+            href="/range"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -145,9 +148,9 @@ export default async function Overview() {
           </div>
         ) : (
           <p className="text-zinc-500">
-            No range sessions logged yet.{' '}
+            {t('sections.noRangeSessions')}{' '}
             <Link href="/range/new" className="text-blue-600 dark:text-blue-400 hover:underline">
-              Log your first session
+              {t('sections.logFirstSession')}
             </Link>
             .
           </p>
@@ -158,15 +161,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/log.svg" alt="Load Logs" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Load Logs</h2>
-            <span className="text-sm text-zinc-500">({loadCount} loads • {totalLoaded} rounds)</span>
+            <img src="/images/log.svg" alt={t('sections.loadLogs')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.loadLogs')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.loadSummary', { count: loadCount, rounds: totalLoaded })}</span>
           </div>
-          <Link 
-            href="/logs" 
+          <Link
+            href="/logs"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -177,7 +180,7 @@ export default async function Overview() {
             ))}
           </div>
         ) : (
-          <p className="text-zinc-500">No loads logged yet.</p>
+          <p className="text-zinc-500">{t('sections.noLoadLogs')}</p>
         )}
       </div>
 
@@ -185,15 +188,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/recipe.svg" alt="Recipes" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Recipes</h2>
-            <span className="text-sm text-zinc-500">({recipes.length} saved)</span>
+            <img src="/images/recipe.svg" alt={t('sections.recipes')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.recipes')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.recipeSummary', { count: recipes.length })}</span>
           </div>
-          <Link 
-            href="/recipes" 
+          <Link
+            href="/recipes"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -202,16 +205,16 @@ export default async function Overview() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-medium">Name</th>
-                  <th className="text-left px-6 py-3 font-medium">Caliber</th>
-                  <th className="text-left px-6 py-3 font-medium">Projectile</th>
-                  <th className="text-left px-6 py-3 font-medium">Propellant</th>
-                  <th className="text-right px-6 py-3 font-medium">Charge</th>
-                  <th className="text-right px-6 py-3 font-medium">COAL</th>
-                  <th className="text-right px-6 py-3 font-medium">Calc V0</th>
-                  <th className="text-right px-6 py-3 font-medium">Meas V0</th>
-                  <th className="text-right px-6 py-3 font-medium">Fill %</th>
-                  <th className="text-right px-6 py-3 font-medium">Possible</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.recipeTable.name')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.recipeTable.caliber')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.recipeTable.projectile')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.recipeTable.propellant')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.charge')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.coal')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.calcV0')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.measV0')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.fill')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.recipeTable.possible')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -254,7 +257,6 @@ export default async function Overview() {
                         }
                         const fromProjectile = projAmount;
 
-                        // Note: primer not included in this overview query
                         const min = Math.min(fromProjectile, fromPowder);
                         const possible = min === Infinity ? null : Math.max(0, min);
                         return possible !== null ? `${possible}×` : '—';
@@ -266,7 +268,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">No recipes saved yet.</p>
+          <p className="text-zinc-500">{t('sections.noRecipes')}</p>
         )}
       </div>
 
@@ -285,9 +287,14 @@ export default async function Overview() {
               clipRule="evenodd"
             />
           </svg>
-          <h2 className="text-2xl font-semibold">Materials</h2>
+          <h2 className="text-2xl font-semibold">{t('sections.materials')}</h2>
           <span className="text-sm text-zinc-500">
-            ({primers.length} primers • {projectiles.length} projectiles • {propellants.length} propellants • {cartridges.length} cartridges)
+            {t('sections.materialsSummary', {
+              primers: primers.length,
+              projectiles: projectiles.length,
+              propellants: propellants.length,
+              cartridges: cartridges.length,
+            })}
           </span>
         </summary>
 
@@ -296,15 +303,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/primer.svg" alt="Primers" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Primers</h2>
-            <span className="text-sm text-zinc-500">({primers.length} types • {totalPrimers} pieces)</span>
+            <img src="/images/primer.svg" alt={t('sections.primers')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.primers')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.primerSummary', { count: primers.length, pieces: totalPrimers })}</span>
           </div>
-          <Link 
-            href="/primers" 
+          <Link
+            href="/primers"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -313,11 +320,11 @@ export default async function Overview() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-medium">Brand</th>
-                  <th className="text-left px-6 py-3 font-medium">Type</th>
-                  <th className="text-center px-6 py-3 font-medium">Magnum</th>
-                  <th className="text-right px-6 py-3 font-medium">Amount</th>
-                  <th className="text-left px-6 py-3 font-medium">Description</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.primerTable.brand')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.primerTable.type')}</th>
+                  <th className="text-center px-6 py-3 font-medium">{t('sections.primerTable.magnum')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.primerTable.amount')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.primerTable.description')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -328,7 +335,7 @@ export default async function Overview() {
                       {primer.type.replace('_', ' ')}
                     </td>
                     <td className="px-6 py-3 text-center">
-                      {primer.magnum ? 'Yes' : '—'}
+                      {primer.magnum ? t('sections.primerTable.yes') : '—'}
                     </td>
                     <td className="px-6 py-3 text-right font-mono">{primer.amount}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
@@ -340,7 +347,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">No primers added yet.</p>
+          <p className="text-zinc-500">{t('sections.noPrimers')}</p>
         )}
       </div>
 
@@ -348,15 +355,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/projectile.svg" alt="Projectiles" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Projectiles</h2>
-            <span className="text-sm text-zinc-500">({projectiles.length} types)</span>
+            <img src="/images/projectile.svg" alt={t('sections.projectiles')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.projectiles')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.projectileSummary', { count: projectiles.length })}</span>
           </div>
-          <Link 
-            href="/projectiles" 
+          <Link
+            href="/projectiles"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -365,11 +372,11 @@ export default async function Overview() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-medium">Brand</th>
-                  <th className="text-left px-6 py-3 font-medium">Type</th>
-                  <th className="text-right px-6 py-3 font-medium">Weight (gr)</th>
-                  <th className="text-left px-6 py-3 font-medium">Caliber</th>
-                  <th className="text-left px-6 py-3 font-medium">Description</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.brand')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.type')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.weight')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.caliber')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.description')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -388,7 +395,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">No projectiles added yet.</p>
+          <p className="text-zinc-500">{t('sections.noProjectiles')}</p>
         )}
       </div>
 
@@ -396,15 +403,15 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/propellant.svg" alt="Propellants" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Propellants</h2>
-            <span className="text-sm text-zinc-500">({propellants.length} types)</span>
+            <img src="/images/propellant.svg" alt={t('sections.propellants')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.propellants')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.propellantSummary', { count: propellants.length })}</span>
           </div>
-          <Link 
-            href="/propellants" 
+          <Link
+            href="/propellants"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -413,10 +420,10 @@ export default async function Overview() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-medium">Brand</th>
-                  <th className="text-left px-6 py-3 font-medium">Type</th>
-                  <th className="text-right px-6 py-3 font-medium">Amount (g)</th>
-                  <th className="text-left px-6 py-3 font-medium">Description</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.propellantTable.brand')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.propellantTable.type')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.propellantTable.amount')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.propellantTable.description')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -434,7 +441,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">No propellants added yet.</p>
+          <p className="text-zinc-500">{t('sections.noPropellants')}</p>
         )}
       </div>
 
@@ -442,15 +449,15 @@ export default async function Overview() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/cartridge.svg" alt="Cartridges" className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">Cartridges</h2>
-            <span className="text-sm text-zinc-500">({cartridges.length} types • {totalCases} cases)</span>
+            <img src="/images/cartridge.svg" alt={t('sections.cartridges')} className="w-7 h-7" />
+            <h2 className="text-2xl font-semibold">{t('sections.cartridges')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.cartridgeSummary', { count: cartridges.length, cases: totalCases })}</span>
           </div>
           <Link
             href="/cartridges"
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            View full list →
+            {t('sections.viewFullList')}
           </Link>
         </div>
 
@@ -459,11 +466,11 @@ export default async function Overview() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
-                  <th className="text-left px-6 py-3 font-medium">Brand</th>
-                  <th className="text-left px-6 py-3 font-medium">Caliber</th>
-                  <th className="text-right px-6 py-3 font-medium">Water cap. (gr)</th>
-                  <th className="text-right px-6 py-3 font-medium">Amount</th>
-                  <th className="text-left px-6 py-3 font-medium">Description</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.cartridgeTable.brand')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.cartridgeTable.caliber')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.cartridgeTable.waterCapacity')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.cartridgeTable.amount')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.cartridgeTable.description')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -484,7 +491,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">No cartridges added yet.</p>
+          <p className="text-zinc-500">{t('sections.noCartridges')}</p>
         )}
       </div>
         </div>

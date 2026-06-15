@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import "./globals.css";
 import { Toaster } from "sonner";
 import Image from "next/image";
@@ -7,6 +9,7 @@ import Script from "next/script";
 import { Settings } from "lucide-react";
 import { MaterialsMenu } from "./MaterialsMenu";
 import { ThemeApplier } from "./ThemeApplier";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,22 +21,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Reloading Tool",
-  description: "Inventory management for reloading components",
-  icons: {
-    icon: "/images/logo.svg",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata');
+  return {
+    title: t('title'),
+    description: t('description'),
+    icons: {
+      icon: "/images/logo.svg",
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+  const t = await getTranslations('nav');
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
@@ -51,56 +61,58 @@ export default function RootLayout({
           {`(function(){try{var t=localStorage.getItem('theme')||'system';var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);}catch(e){}})();`}
         </Script>
         <ThemeApplier />
-        <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-          <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <a href="/" className="flex items-center gap-2.5">
-                <img src="/images/logo.svg" alt="Reloading Tool" className="w-9 h-9" />
-                <span className="font-semibold text-lg tracking-tight">Reloading Tool</span>
-              </a>
-              <div className="flex items-center gap-1 text-sm">
-                <MaterialsMenu />
+        <NextIntlClientProvider messages={messages}>
+          <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+            <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <a href="/" className="flex items-center gap-2.5">
+                  <img src="/images/logo.svg" alt={t('home')} className="w-9 h-9" />
+                  <span className="font-semibold text-lg tracking-tight">{t('home')}</span>
+                </a>
+                <div className="flex items-center gap-1 text-sm">
+                  <MaterialsMenu />
+                  <a
+                    href="/recipes"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <Image src="/images/recipe.svg" alt={t('recipes')} width={20} height={20} />
+                    {t('recipes')}
+                  </a>
+                  <a
+                    href="/logs"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <Image src="/images/log.svg" alt={t('logs')} width={20} height={20} />
+                    {t('logs')}
+                  </a>
+                  <a
+                    href="/range"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  >
+                    <Image src="/images/range.svg" alt={t('range')} width={20} height={20} />
+                    {t('range')}
+                  </a>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <LocaleSwitcher />
                 <a
-                  href="/recipes"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  href="/settings"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  <Image src="/images/recipe.svg" alt="Recipes" width={20} height={20} />
-                  Recipes
+                  <Settings size={20} />
+                  {t('settings')}
                 </a>
-                <a 
-                  href="/logs" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <Image src="/images/log.svg" alt="Reloading Log" width={20} height={20} />
-                  Reloading Log
-                </a>
-                <a 
-                  href="/range" 
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  <Image src="/images/range.svg" alt="Range Sessions" width={20} height={20} />
-                  Range Sessions
-                </a>
+                <span className="text-xs text-zinc-500 dark:text-zinc-500">
+                  {t('personalInventory')}
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <a
-                href="/settings"
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              >
-                <Settings size={20} />
-                Settings
-              </a>
-              <span className="text-xs text-zinc-500 dark:text-zinc-500">
-                Personal Inventory
-              </span>
-            </div>
-          </div>
-        </nav>
-        <main className="flex-1">{children}</main>
-        <Toaster position="top-center" richColors closeButton />
+          </nav>
+          <main className="flex-1">{children}</main>
+          <Toaster position="top-center" richColors closeButton />
+        </NextIntlClientProvider>
       </body>
     </html>
   );
 }
-
