@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
+import { rangeLogInputSchema, rangeLogUpdateInputSchema } from '@/lib/schemas'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/range-logs')
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -138,23 +139,39 @@ export async function getRecipesForRangeLog() {
 }
 
 export async function createRangeLog(formData: FormData) {
-  const date = new Date(formData.get('date') as string)
-  const location = (formData.get('location') as string) || null
-  const conditions = (formData.get('conditions') as string) || null
-  const recipeId = formData.get('recipeId') as string
-  const roundsFired = parseInt(formData.get('roundsFired') as string, 10)
+  const validated = rangeLogInputSchema.safeParse({
+    date: formData.get('date'),
+    location: formData.get('location'),
+    conditions: formData.get('conditions'),
+    recipeId: formData.get('recipeId'),
+    roundsFired: formData.get('roundsFired'),
+    velocityMin: formData.get('velocityMin'),
+    velocityMax: formData.get('velocityMax'),
+    velocityAvg: formData.get('velocityAvg'),
+    extremeSpread: formData.get('extremeSpread'),
+    stdDev: formData.get('stdDev'),
+    notes: formData.get('notes'),
+  })
 
-  const velocityMin = formData.get('velocityMin') ? parseFloat(formData.get('velocityMin') as string) : null
-  const velocityMax = formData.get('velocityMax') ? parseFloat(formData.get('velocityMax') as string) : null
-  const velocityAvg = formData.get('velocityAvg') ? parseFloat(formData.get('velocityAvg') as string) : null
-  const extremeSpread = formData.get('extremeSpread') ? parseFloat(formData.get('extremeSpread') as string) : null
-  const stdDev = formData.get('stdDev') ? parseFloat(formData.get('stdDev') as string) : null
-
-  const notes = (formData.get('notes') as string) || null
-
-  if (!recipeId || isNaN(roundsFired) || roundsFired <= 0) {
-    throw new Error('Recipe and rounds fired are required')
+  if (!validated.success) {
+    throw new Error(validated.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n'))
   }
+
+  const {
+    date: dateStr,
+    location,
+    conditions,
+    recipeId,
+    roundsFired,
+    velocityMin,
+    velocityMax,
+    velocityAvg,
+    extremeSpread,
+    stdDev,
+    notes,
+  } = validated.data
+
+  const date = new Date(dateStr)
 
   const imageFiles = formData.getAll('newImages') as File[]
   const descriptions = formData.getAll('newImageDescriptions') as string[]
@@ -259,24 +276,41 @@ export async function deleteRangeLogImage(imageId: string) {
 }
 
 export async function updateRangeLog(id: string, formData: FormData) {
-  const date = new Date(formData.get('date') as string)
-  const location = (formData.get('location') as string) || null
-  const conditions = (formData.get('conditions') as string) || null
-  const roundsFired = parseInt(formData.get('roundsFired') as string, 10)
+  const validated = rangeLogUpdateInputSchema.safeParse({
+    date: formData.get('date'),
+    location: formData.get('location'),
+    conditions: formData.get('conditions'),
+    recipeId: formData.get('recipeId'),
+    roundsFired: formData.get('roundsFired'),
+    velocityMin: formData.get('velocityMin'),
+    velocityMax: formData.get('velocityMax'),
+    velocityAvg: formData.get('velocityAvg'),
+    extremeSpread: formData.get('extremeSpread'),
+    stdDev: formData.get('stdDev'),
+    notes: formData.get('notes'),
+    mainImageId: formData.get('mainImageId'),
+  })
 
-  const velocityMin = formData.get('velocityMin') ? parseFloat(formData.get('velocityMin') as string) : null
-  const velocityMax = formData.get('velocityMax') ? parseFloat(formData.get('velocityMax') as string) : null
-  const velocityAvg = formData.get('velocityAvg') ? parseFloat(formData.get('velocityAvg') as string) : null
-  const extremeSpread = formData.get('extremeSpread') ? parseFloat(formData.get('extremeSpread') as string) : null
-  const stdDev = formData.get('stdDev') ? parseFloat(formData.get('stdDev') as string) : null
-
-  const notes = (formData.get('notes') as string) || null
-  const recipeId = formData.get('recipeId') as string | null
-  const mainImageId = (formData.get('mainImageId') as string) || null
-
-  if (isNaN(roundsFired) || roundsFired <= 0) {
-    throw new Error('Rounds fired must be a positive number')
+  if (!validated.success) {
+    throw new Error(validated.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n'))
   }
+
+  const {
+    date: dateStr,
+    location,
+    conditions,
+    recipeId,
+    roundsFired,
+    velocityMin,
+    velocityMax,
+    velocityAvg,
+    extremeSpread,
+    stdDev,
+    notes,
+    mainImageId,
+  } = validated.data
+
+  const date = new Date(dateStr)
 
   const newImageFiles = formData.getAll('newImages') as File[]
   const newDescriptions = formData.getAll('newImageDescriptions') as string[]
