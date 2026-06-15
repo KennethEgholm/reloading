@@ -139,8 +139,6 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     if (isReadOnly) return;
     setIsSubmitting(true)
 
-    console.log('[RangeLogForm] before new photo append, newImages in FormData:', formData.getAll('newImages').length, 'newImageDescriptions:', formData.getAll('newImageDescriptions').length)
-
     // Append image files and descriptions for new images
     images.forEach((img, index) => {
       if (img.file) {
@@ -148,8 +146,6 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
         formData.append('newImageDescriptions', img.description)
       }
     })
-
-    console.log('[RangeLogForm] after new photo append, newImages in FormData:', formData.getAll('newImages').length, 'newImageDescriptions:', formData.getAll('newImageDescriptions').length)
 
     // For edit mode: append existing image data
     if (isEdit && initialData) {
