@@ -76,7 +76,9 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                   Edit
                 </a>
                 <span aria-hidden="true" className="text-zinc-300">|</span>
-                <DeleteRangeLogButton id={log.id} />
+                <span onClick={(e) => e.stopPropagation()}>
+                  <DeleteRangeLogButton id={log.id} />
+                </span>
               </div>
             </div>
 

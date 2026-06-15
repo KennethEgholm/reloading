@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
@@ -307,6 +308,19 @@ export async function deleteRangeLog(id: string): Promise<DeleteResult> {
   revalidatePath('/')
 
   return { ok: true }
+}
+
+// Server-only delete used by the detail-page form. The form submission lets
+// Next.js intercept the redirect and navigate away from the deleted URL
+// before the page can render a 404.
+export async function deleteRangeLogAndRedirect(id: string): Promise<void> {
+  const result = await deleteRangeLog(id)
+  if (!result.ok) {
+    // We cannot return data from a form action and also redirect. Throwing
+    // a plain error here will be shown as a generic failure by the form.
+    throw new Error(result.error)
+  }
+  redirect('/range')
 }
 
 export async function updateRangeLog(id: string, formData: FormData) {

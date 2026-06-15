@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { getRangeLogById, getRecipesForRangeLog } from '../actions'
+import { getRangeLogById, getRecipesForRangeLog, deleteRangeLogAndRedirect } from '../actions'
 import { RangeLogForm } from '../RangeLogForm'
 import { DeleteRangeLogButton } from '../DeleteRangeLogButton'
 
@@ -38,7 +38,14 @@ export default async function RangeLogDetailPage({
         >
           Edit
         </Link>
-        <DeleteRangeLogButton id={id} redirectTo="/range" />
+        <form action={deleteRangeLogAndRedirect.bind(null, id)}>
+          <button
+            type="submit"
+            className="text-red-600 hover:text-red-700 text-sm font-medium"
+          >
+            Delete
+          </button>
+        </form>
       </div>
 
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8">
