@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { chatCompletion, parseJsonFromModel, DEFAULT_BASE_URLS, AiError } from '@/lib/ai'
+import type { DeleteResult } from '@/lib/types'
 
 export async function createRecipe(formData: FormData) {
   const name = formData.get('name') as string
@@ -42,9 +43,23 @@ export async function createRecipe(formData: FormData) {
   revalidatePath('/recipes')
 }
 
-export async function deleteRecipe(id: string) {
+// Returns a result object (see DeleteResult) because Next.js redacts thrown
+// Server Action error messages in production builds. We guard against deleting
+// recipes that are still referenced by RangeLog rows, which would otherwise
+// produce an ugly raw Prisma foreign-key error.
+export async function deleteRecipe(id: string): Promise<DeleteResult> {
+  const inRangeSessions = await prisma.rangeLog.count({ where: { recipeId: id } })
+  if (inRangeSessions > 0) {
+    return {
+      ok: false,
+      error: `Can't delete: this recipe is used by ${inRangeSessions} range session${inRangeSessions === 1 ? '' : 's'}. Remove it from ${inRangeSessions === 1 ? 'that session' : 'those sessions'} first.`,
+    }
+  }
+
   await prisma.recipe.delete({ where: { id } })
   revalidatePath('/recipes')
+  revalidatePath('/')
+  return { ok: true }
 }
 
 export async function updateRecipe(id: string, formData: FormData) {

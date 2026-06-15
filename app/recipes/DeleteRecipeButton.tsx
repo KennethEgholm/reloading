@@ -11,8 +11,9 @@ export function DeleteRecipeButton({ id }: { id: string }) {
       onClick={async () => {
         if (confirm('Delete this recipe?')) {
           try {
-            await deleteRecipe(id);
-            toast.success('Recipe deleted');
+            const result = await deleteRecipe(id);
+            if (result.ok) toast.success('Recipe deleted');
+            else toast.error(result.error);
           } catch (error) {
             toast.error('Failed to delete recipe');
           }

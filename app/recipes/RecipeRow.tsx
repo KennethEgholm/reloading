@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { RecipeForm } from './RecipeForm';
 import { deleteRecipe } from './actions';
+import { toast } from 'sonner';
 
 interface RecipeRowProps {
   recipe: any;
@@ -39,7 +40,13 @@ export function RecipeRow({ recipe, projectiles, propellants, primers }: RecipeR
             onClick={async (e) => {
               e.stopPropagation();
               if (confirm('Delete this recipe?')) {
-                await deleteRecipe(recipe.id);
+                try {
+                  const result = await deleteRecipe(recipe.id);
+                  if (result.ok) toast.success('Recipe deleted');
+                  else toast.error(result.error);
+                } catch {
+                  toast.error('Failed to delete recipe');
+                }
               }
             }}
             className="text-red-600 hover:text-red-700 text-xs"
