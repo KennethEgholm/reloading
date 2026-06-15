@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getRangeLogById, getRecipesForRangeLog } from '../actions'
 import { RangeLogForm } from '../RangeLogForm'
+import { DeleteRangeLogButton } from '../DeleteRangeLogButton'
 
 export default async function RangeLogDetailPage({
   params,
@@ -31,6 +32,13 @@ export default async function RangeLogDetailPage({
         >
           + Log another session
         </Link>
+        <Link
+          href={`/range/${id}/edit`}
+          className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        >
+          Edit
+        </Link>
+        <DeleteRangeLogButton id={id} redirectTo="/range" />
       </div>
 
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8">

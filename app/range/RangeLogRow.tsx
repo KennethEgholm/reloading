@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { formatDate } from '@/lib/format';
+import { DeleteRangeLogButton } from './DeleteRangeLogButton';
 
 interface RangeLogRowProps {
   log: any; // We can improve typing later
@@ -74,6 +75,8 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                 >
                   Edit
                 </a>
+                <span aria-hidden="true" className="text-zinc-300">|</span>
+                <DeleteRangeLogButton id={log.id} />
               </div>
             </div>
 

@@ -6,6 +6,7 @@ import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { rangeLogInputSchema, rangeLogUpdateInputSchema } from '@/lib/schemas'
+import type { DeleteResult } from '@/lib/types'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/range-logs')
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -273,6 +274,39 @@ export async function deleteRangeLogImage(imageId: string) {
   revalidatePath(`/range/${image.rangeLogId}`)
   revalidatePath('/range')
   revalidatePath('/')
+}
+
+// Delete a whole range session and clean up every uploaded photo file.
+// The RangeLogImage rows are removed by the DB cascade; this also unlinks
+// the files from disk so they do not become orphaned.
+export async function deleteRangeLog(id: string): Promise<DeleteResult> {
+  const log = await prisma.rangeLog.findUnique({
+    where: { id },
+    include: { images: true },
+  })
+
+  if (!log) {
+    return { ok: false, error: 'Range session not found' }
+  }
+
+  // Clear mainImageId before deleting the log so the cascading delete
+  // does not trip over the self-referential SetNull relation.
+  await prisma.rangeLog.update({
+    where: { id },
+    data: { mainImageId: null },
+  })
+
+  // Delete all associated files first (best effort).
+  const filenames = log.images.map((img) => img.filename)
+  await cleanupUploadFiles(filenames)
+
+  // The cascade removes RangeLogImage rows.
+  await prisma.rangeLog.delete({ where: { id } })
+
+  revalidatePath('/range')
+  revalidatePath('/')
+
+  return { ok: true }
 }
 
 export async function updateRangeLog(id: string, formData: FormData) {
