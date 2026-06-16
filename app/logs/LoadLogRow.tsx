@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/format';
 
 interface LoadLogRowProps {
@@ -6,6 +9,9 @@ interface LoadLogRowProps {
 }
 
 export function LoadLogRow({ log }: LoadLogRowProps) {
+  const t = useTranslations('logs');
+  const locale = useLocale();
+
   return (
     <Link
       href={`/logs/${log.id}`}
@@ -15,12 +21,12 @@ export function LoadLogRow({ log }: LoadLogRowProps) {
         <div>
           <div className="font-semibold text-lg">{log.recipeName}</div>
           <div className="text-sm text-zinc-500 dark:text-zinc-400">
-            {formatDate(log.date)} — {log.quantity} rounds
+            {formatDate(log.date, locale)} — {t('row.rounds', { count: log.quantity })}
           </div>
         </div>
         <div className="text-right">
           <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-            {log.quantity}× loaded
+            {t('row.loaded', { count: log.quantity })}
           </div>
         </div>
       </div>

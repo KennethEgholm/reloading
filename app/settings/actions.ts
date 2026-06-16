@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 
@@ -13,16 +14,18 @@ const DEFAULT_BASE_URLS: Record<string, string> = {
 }
 
 // Validation at the trust boundary (server action), independent of the client form.
-const aiSettingsSchema = z.object({
-  provider: z.string().min(1, 'Provider is required'),
-  // Empty string means "keep the existing key" (the form sends '' when the user
-  // didn't type a new key over the masked placeholder).
-  apiKey: z.string().optional(),
-  model: z.string().optional(),
-  baseUrl: z.string().url('Base URL must be a valid URL').optional().or(z.literal('')),
-  temperature: z.coerce.number().min(0).max(2).optional(),
-  maxTokens: z.coerce.number().int().positive().optional(),
-})
+function createAiSettingsSchema(t: (key: string) => string) {
+  return z.object({
+    provider: z.string().min(1, t('errors.providerRequired')),
+    // Empty string means "keep the existing key" (the form sends '' when the user
+    // didn't type a new key over the masked placeholder).
+    apiKey: z.string().optional(),
+    model: z.string().optional(),
+    baseUrl: z.string().url(t('errors.baseUrlInvalid')).optional().or(z.literal('')),
+    temperature: z.coerce.number().min(0).max(2, t('errors.temperatureRange')).optional(),
+    maxTokens: z.coerce.number().int().positive(t('errors.maxTokensPositive')).optional(),
+  })
+}
 
 export async function getAiSettings() {
   return prisma.aiSettings.findUnique({ where: { id: SINGLETON_ID } })
@@ -36,7 +39,8 @@ function str(formData: FormData, key: string): string | undefined {
 }
 
 export async function saveAiSettings(formData: FormData) {
-  const parsed = aiSettingsSchema.safeParse({
+  const t = await getTranslations('settings')
+  const parsed = createAiSettingsSchema(t).safeParse({
     provider: str(formData, 'provider') ?? 'grok',
     apiKey: formData.get('apiKey') === null ? undefined : (formData.get('apiKey') as string),
     model: str(formData, 'model'),
@@ -89,6 +93,7 @@ export interface TestConnectionResult {
  * rather than throwing so the client can surface it via a toast.
  */
 export async function testAiConnection(formData: FormData): Promise<TestConnectionResult> {
+  const t = await getTranslations('settings')
   const provider = str(formData, 'provider') ?? 'grok'
   const baseUrl = str(formData, 'baseUrl') ?? DEFAULT_BASE_URLS[provider]
   let apiKey = formData.get('apiKey') ? (formData.get('apiKey') as string).trim() : ''
@@ -100,22 +105,26 @@ export async function testAiConnection(formData: FormData): Promise<TestConnecti
   }
 
   if (!apiKey) {
-    return { ok: false, message: 'No API key provided. Enter a key and try again.' }
+    return { ok: false, message: t('errors.noApiKey') }
   }
   if (!baseUrl) {
-    return { ok: false, message: 'No base URL configured for this provider.' }
+    return { ok: false, message: t('errors.noBaseUrl') }
   }
 
   switch (provider) {
     case 'grok':
-      return testOpenAiCompatible(baseUrl, apiKey)
+      return testOpenAiCompatible(baseUrl, apiKey, t)
     default:
-      return { ok: false, message: `Provider "${provider}" is not supported yet.` }
+      return { ok: false, message: t('errors.providerNotSupported', { provider }) }
   }
 }
 
 // xAI (Grok) is OpenAI-compatible: GET /models with a bearer token validates the key.
-async function testOpenAiCompatible(baseUrl: string, apiKey: string): Promise<TestConnectionResult> {
+async function testOpenAiCompatible(
+  baseUrl: string,
+  apiKey: string,
+  t: Awaited<ReturnType<typeof getTranslations>>
+): Promise<TestConnectionResult> {
   const url = `${baseUrl.replace(/\/$/, '')}/models`
   try {
     const res = await fetch(url, {
@@ -134,7 +143,9 @@ async function testOpenAiCompatible(baseUrl: string, apiKey: string): Promise<Te
       }
       return {
         ok: true,
-        message: count !== undefined ? `Connected. ${count} models available.` : 'Connected.',
+        message: count !== undefined
+          ? t('toast.testSuccess', { count })
+          : t('toast.testSuccessNoCount'),
       }
     }
 
@@ -158,17 +169,17 @@ async function testOpenAiCompatible(baseUrl: string, apiKey: string): Promise<Te
       /incorrect api key|invalid api key|invalid.*token|authentication/i.test(providerMsg)
 
     if (looksLikeBadKey) {
-      return { ok: false, message: 'Invalid API key.' }
+      return { ok: false, message: t('errors.invalidApiKey') }
     }
 
     return {
       ok: false,
       message: providerMsg
-        ? `Request failed (HTTP ${res.status}): ${providerMsg}`
-        : `Request failed (HTTP ${res.status}).`,
+        ? t('errors.requestFailed', { status: res.status, message: providerMsg })
+        : t('errors.requestFailedNoMessage', { status: res.status }),
     }
   } catch (e) {
     const detail = e instanceof Error ? e.message : 'unknown error'
-    return { ok: false, message: `Could not reach ${url}: ${detail}` }
+    return { ok: false, message: t('errors.couldNotReach', { url, detail }) }
   }
 }

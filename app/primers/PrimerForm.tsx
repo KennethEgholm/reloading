@@ -1,21 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PrimerType } from '@prisma/client';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
-const primerSchema = z.object({
-  brand: z.string().min(1, 'Brand is required'),
-  type: z.nativeEnum(PrimerType),
-  magnum: z.boolean(),
-  amount: z.coerce.number().min(0),
-  description: z.string().optional(),
-});
+function createPrimerSchema(t: (key: string) => string) {
+  return z.object({
+    brand: z.string().min(1, t('form.validation.brandRequired')),
+    type: z.nativeEnum(PrimerType),
+    magnum: z.boolean(),
+    amount: z.coerce.number().min(0),
+    description: z.string().optional(),
+  });
+}
 
-type PrimerFormData = z.infer<typeof primerSchema>;
+type PrimerFormData = z.infer<ReturnType<typeof createPrimerSchema>>;
 
 interface PrimerFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -27,6 +30,9 @@ interface PrimerFormProps {
 }
 
 export function PrimerForm({ action, defaultValues, title, submitLabel, open, onOpenChange }: PrimerFormProps) {
+  const t = useTranslations('primers');
+  const primerSchema = useMemo(() => createPrimerSchema(t), [t]);
+
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open! : uncontrolledOpen;
@@ -66,9 +72,9 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
       await action(formData);
       setIsOpen(false);
       reset();
-      toast.success(defaultValues?.id ? 'Primer updated' : 'Primer created');
-    } catch (error) {
-      toast.error('Something went wrong');
+      toast.success(defaultValues?.id ? t('toast.updated') : t('toast.created'));
+    } catch {
+      toast.error(t('toast.failed'));
     }
   };
 
@@ -127,7 +133,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
           onClick={() => setIsOpen(true)}
           className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
-          {title === 'Add New Primer' ? '+ Add Primer' : 'Edit'}
+          {t('page.addButton')}
         </button>
       )}
 
@@ -138,7 +144,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
 
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Brand</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
                   {...register('brand')}
                   ref={(e) => {
@@ -147,13 +153,13 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                     brandInputRef.current = e;
                   }}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
-                  placeholder="CCI, Federal, Winchester..."
+                  placeholder={t('form.brandPlaceholder')}
                 />
                 {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Type</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
                 <select
                   {...register('type')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
@@ -173,11 +179,11 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                   {...register('magnum')}
                   className="w-4 h-4"
                 />
-                <label htmlFor="magnum" className="text-sm">Magnum</label>
+                <label htmlFor="magnum" className="text-sm">{t('form.magnum')}</label>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Amount</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                 <input
                   type="number"
                   {...register('amount')}
@@ -186,12 +192,12 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Description (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Lot number, notes..."
+                  placeholder={t('form.descriptionPlaceholder')}
                 />
               </div>
 
@@ -204,14 +210,14 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                   }}
                   className="flex-1 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm"
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : submitLabel}
+                  {isSubmitting ? t('form.saving') : submitLabel}
                 </button>
               </div>
             </form>

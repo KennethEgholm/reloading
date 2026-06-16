@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { RecipeForm } from './RecipeForm';
 import { deleteRecipe } from './actions';
 import { toast } from 'sonner';
@@ -10,14 +11,16 @@ interface RecipeRowProps {
   projectiles: any[];
   propellants: any[];
   primers: any[];
+  cartridges: any[];
 }
 
-export function RecipeRow({ recipe, projectiles, propellants, primers }: RecipeRowProps) {
+export function RecipeRow({ recipe, projectiles, propellants, primers, cartridges }: RecipeRowProps) {
+  const t = useTranslations('recipes');
   const [editOpen, setEditOpen] = useState(false);
 
   return (
     <>
-      <tr 
+      <tr
         className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
         onClick={() => setEditOpen(true)}
       >
@@ -39,19 +42,19 @@ export function RecipeRow({ recipe, projectiles, propellants, primers }: RecipeR
           <button
             onClick={async (e) => {
               e.stopPropagation();
-              if (confirm('Delete this recipe?')) {
+              if (confirm(t('delete.confirm'))) {
                 try {
                   const result = await deleteRecipe(recipe.id);
-                  if (result.ok) toast.success('Recipe deleted');
+                  if (result.ok) toast.success(t('toast.deleted'));
                   else toast.error(result.error);
                 } catch {
-                  toast.error('Failed to delete recipe');
+                  toast.error(t('toast.deleteFailed'));
                 }
               }
             }}
             className="text-red-600 hover:text-red-700 text-xs"
           >
-            Delete
+            {t('delete.button')}
           </button>
         </td>
       </tr>
@@ -65,6 +68,7 @@ export function RecipeRow({ recipe, projectiles, propellants, primers }: RecipeR
         projectiles={projectiles}
         propellants={propellants}
         primers={primers}
+        cartridges={cartridges}
         open={editOpen}
         onOpenChange={setEditOpen}
       />

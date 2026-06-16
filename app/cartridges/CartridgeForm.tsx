@@ -1,20 +1,23 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
-const cartridgeSchema = z.object({
-  brand: z.string().min(1, 'Brand is required'),
-  caliber: z.string().min(1, 'Caliber is required'),
-  waterCapacityGr: z.coerce.number().min(0, 'Capacity cannot be negative').optional(),
-  amount: z.coerce.number().int().min(0, 'Amount cannot be negative'),
-  description: z.string().optional(),
-});
+function createCartridgeSchema(t: (key: string) => string) {
+  return z.object({
+    brand: z.string().min(1, t('form.validation.brandRequired')),
+    caliber: z.string().min(1, t('form.validation.caliberRequired')),
+    waterCapacityGr: z.coerce.number().min(0, t('form.validation.capacityNegative')).optional(),
+    amount: z.coerce.number().int().min(0, t('form.validation.amountNegative')),
+    description: z.string().optional(),
+  });
+}
 
-type CartridgeFormData = z.infer<typeof cartridgeSchema>;
+type CartridgeFormData = z.infer<ReturnType<typeof createCartridgeSchema>>;
 
 interface CartridgeFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -26,6 +29,9 @@ interface CartridgeFormProps {
 }
 
 export function CartridgeForm({ action, defaultValues, title, submitLabel, open, onOpenChange }: CartridgeFormProps) {
+  const t = useTranslations('cartridges');
+  const cartridgeSchema = useMemo(() => createCartridgeSchema(t), [t]);
+
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open! : uncontrolledOpen;
@@ -67,9 +73,9 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
       await action(formData);
       setIsOpen(false);
       reset();
-      toast.success(defaultValues?.id ? 'Cartridge updated' : 'Cartridge created');
-    } catch (error) {
-      toast.error('Something went wrong');
+      toast.success(defaultValues?.id ? t('toast.updated') : t('toast.created'));
+    } catch {
+      toast.error(t('toast.failed'));
     }
   };
 
@@ -127,7 +133,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
           onClick={() => setIsOpen(true)}
           className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
-          + Add Cartridge
+          {t('page.addButton')}
         </button>
       )}
 
@@ -138,7 +144,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
 
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Brand / Name</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
                   {...register('brand')}
                   ref={(e) => {
@@ -146,30 +152,30 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
                     brandInputRef.current = e;
                   }}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Lapua, Starline, Hornady..."
+                  placeholder={t('form.brandPlaceholder')}
                 />
                 {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Caliber</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                 <input
                   {...register('caliber')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder=".308 Win, 6.5 Creedmoor..."
+                  placeholder={t('form.caliberPlaceholder')}
                 />
                 {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Water capacity (gr H₂O)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.waterCapacity')}</label>
                   <input
                     type="number"
                     step="0.1"
                     {...register('waterCapacityGr')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                    placeholder="Optional"
+                    placeholder={t('form.waterCapacityPlaceholder')}
                   />
                   {errors.waterCapacityGr && (
                     <p className="text-red-600 text-xs mt-1">{errors.waterCapacityGr.message}</p>
@@ -177,7 +183,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Amount (cases)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                   <input
                     type="number"
                     step="1"
@@ -189,12 +195,12 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Description (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Lot number, times fired, notes..."
+                  placeholder={t('form.descriptionPlaceholder')}
                 />
               </div>
 
@@ -207,14 +213,14 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
                   }}
                   className="flex-1 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm"
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : submitLabel}
+                  {isSubmitting ? t('form.saving') : submitLabel}
                 </button>
               </div>
             </form>

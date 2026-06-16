@@ -1,11 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 import { chatCompletion, parseJsonFromModel, DEFAULT_BASE_URLS, AiError } from '@/lib/ai'
 import type { DeleteResult } from '@/lib/types'
 
 export async function createRecipe(formData: FormData) {
+  const t = await getTranslations('recipes')
   const name = formData.get('name') as string
   const caliber = formData.get('caliber') as string
   const projectileId = formData.get('projectileId') as string
@@ -20,7 +22,7 @@ export async function createRecipe(formData: FormData) {
   const notes = (formData.get('notes') as string) || null
 
   if (!name || !caliber || !projectileId || !propellantId) {
-    throw new Error('Name, caliber, projectile, and propellant are required')
+    throw new Error(t('errors.requiredForCheck'))
   }
 
   await prisma.recipe.create({
@@ -48,11 +50,12 @@ export async function createRecipe(formData: FormData) {
 // recipes that are still referenced by RangeLog rows, which would otherwise
 // produce an ugly raw Prisma foreign-key error.
 export async function deleteRecipe(id: string): Promise<DeleteResult> {
+  const t = await getTranslations('recipes')
   const inRangeSessions = await prisma.rangeLog.count({ where: { recipeId: id } })
   if (inRangeSessions > 0) {
     return {
       ok: false,
-      error: `Can't delete: this recipe is used by ${inRangeSessions} range session${inRangeSessions === 1 ? '' : 's'}. Remove it from ${inRangeSessions === 1 ? 'that session' : 'those sessions'} first.`,
+      error: t('delete.inUse', { count: inRangeSessions }),
     }
   }
 
@@ -63,6 +66,7 @@ export async function deleteRecipe(id: string): Promise<DeleteResult> {
 }
 
 export async function updateRecipe(id: string, formData: FormData) {
+  const t = await getTranslations('recipes')
   const name = formData.get('name') as string
   const caliber = formData.get('caliber') as string
   const projectileId = formData.get('projectileId') as string
@@ -77,7 +81,7 @@ export async function updateRecipe(id: string, formData: FormData) {
   const notes = (formData.get('notes') as string) || null
 
   if (!name || !caliber || !projectileId || !propellantId) {
-    throw new Error('Name, caliber, projectile, and propellant are required')
+    throw new Error(t('errors.requiredForCheck'))
   }
 
   await prisma.recipe.update({
@@ -172,11 +176,11 @@ interface RecipeAssessmentInput {
  * Pure with respect to the database — does not persist. Throws Error with a
  * user-friendly message (callers surface it as a toast).
  */
-async function assessRecipeData(input: RecipeAssessmentInput): Promise<AiAssessment & { model: string }> {
+async function assessRecipeData(input: RecipeAssessmentInput, t: Awaited<ReturnType<typeof getTranslations>>): Promise<AiAssessment & { model: string }> {
   const settings = await prisma.aiSettings.findUnique({ where: { id: 'singleton' } })
 
   if (!settings?.apiKey || !settings.model) {
-    throw new Error('Configure an AI model in Settings first.')
+    throw new Error(t('errors.configureAi'))
   }
 
   // Build a compact description including ONLY fields that hold data. Empty/unset
@@ -268,13 +272,14 @@ async function persistAssessment(recipeId: string, result: AiAssessment & { mode
  * Used by the recipe detail view button.
  */
 export async function runRecipeAiCheck(recipeId: string) {
+  const t = await getTranslations('recipes')
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
     include: { projectile: true, propellant: true, primer: true, cartridge: true },
   })
 
   if (!recipe) {
-    throw new Error('Recipe not found')
+    throw new Error(t('errors.recipeNotFound'))
   }
 
   const result = await assessRecipeData({
@@ -297,7 +302,7 @@ export async function runRecipeAiCheck(recipeId: string) {
     measuredV0: recipe.measuredV0,
     fillRate: recipe.fillRate,
     notes: recipe.notes,
-  })
+  }, t)
 
   await persistAssessment(recipeId, result)
   revalidatePath(`/recipes/${recipeId}`)
@@ -333,8 +338,9 @@ export interface RecipeAiCheckResult extends AiAssessment {
  * stored verdict never describes data that isn't actually saved yet.
  */
 export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promise<RecipeAiCheckResult> {
+  const t = await getTranslations('recipes')
   if (!input.name?.trim() || !input.caliber?.trim() || !input.projectileId || !input.propellantId) {
-    throw new Error('Name, caliber, projectile, and propellant are required to run a check.')
+    throw new Error(t('errors.requiredForCheck'))
   }
 
   const [projectile, propellant, primer, cartridge] = await Promise.all([
@@ -344,8 +350,8 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     input.cartridgeId ? prisma.cartridge.findUnique({ where: { id: input.cartridgeId } }) : Promise.resolve(null),
   ])
 
-  if (!projectile) throw new Error('Selected projectile not found.')
-  if (!propellant) throw new Error('Selected propellant not found.')
+  if (!projectile) throw new Error(t('errors.projectileNotFound'))
+  if (!propellant) throw new Error(t('errors.propellantNotFound'))
 
   const result = await assessRecipeData({
     name: input.name,
@@ -367,7 +373,7 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     measuredV0: input.measuredV0,
     fillRate: input.fillRate,
     notes: input.notes,
-  })
+  }, t)
 
   // Persist only when the form values match the saved recipe, so the stored
   // verdict always reflects saved data.

@@ -1,26 +1,29 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { deleteProjectile } from './actions';
 import { toast } from 'sonner';
 
 export function DeleteProjectileButton({ id }: { id: string }) {
+  const t = useTranslations('projectiles');
+
   return (
     <button
       type="button"
       className="text-red-600 hover:text-red-700 px-2 py-1 text-xs"
       onClick={async () => {
-        if (confirm('Delete this projectile?')) {
+        if (confirm(t('delete.confirm'))) {
           try {
             const result = await deleteProjectile(id);
-            if (result.ok) toast.success('Projectile deleted');
+            if (result.ok) toast.success(t('toast.deleted'));
             else toast.error(result.error);
           } catch {
-            toast.error('Failed to delete projectile');
+            toast.error(t('toast.failed'));
           }
         }
       }}
     >
-      Delete
+      {t('delete.button')}
     </button>
   );
 }

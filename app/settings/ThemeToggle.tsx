@@ -1,25 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Sun, Moon, Monitor } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
 
-const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor },
-]
-
-/** Resolves a theme preference to whether the dark class should be on, and applies it. */
-function applyTheme(theme: Theme) {
-  const isDark =
-    theme === 'dark' ||
-    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-  document.documentElement.classList.toggle('dark', isDark)
-}
-
 export function ThemeToggle() {
+  const t = useTranslations('settings')
+
+  const OPTIONS: { value: Theme; label: string; icon: typeof Sun }[] = [
+    { value: 'light', label: t('page.theme.light'), icon: Sun },
+    { value: 'dark', label: t('page.theme.dark'), icon: Moon },
+    { value: 'system', label: t('page.theme.system'), icon: Monitor },
+  ]
+
+  /** Resolves a theme preference to whether the dark class should be on, and applies it. */
+  function applyTheme(theme: Theme) {
+    const isDark =
+      theme === 'dark' ||
+      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    document.documentElement.classList.toggle('dark', isDark)
+  }
+
   // Default 'system' on the server / first render; corrected from localStorage on mount.
   const [theme, setTheme] = useState<Theme>('system')
 

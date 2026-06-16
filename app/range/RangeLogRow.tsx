@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/format';
 import { DeleteRangeLogButton } from './DeleteRangeLogButton';
 
@@ -11,6 +12,8 @@ interface RangeLogRowProps {
 
 export function RangeLogRow({ log }: RangeLogRowProps) {
   const router = useRouter();
+  const t = useTranslations('range');
+  const locale = useLocale();
   const [showPhotoOverlay, setShowPhotoOverlay] = useState(false);
 
   const goToDetail = () => {
@@ -58,14 +61,14 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
               <div>
                 <div className="font-semibold text-lg">{log.recipe.name}</div>
                 <div className="text-sm text-zinc-500">
-                  {formatDate(log.date)} • {log.roundsFired} rounds
+                  {formatDate(log.date, locale)} • {t('row.rounds', { count: log.roundsFired })}
                   {log.location && ` • ${log.location}`}
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 {imageCount > 0 && (
                   <div className="text-xs px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded">
-                    📷 {imageCount}
+                    {t('row.photoCount', { count: imageCount })}
                   </div>
                 )}
                 <a
@@ -73,7 +76,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                   className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
                   onClick={goToEdit}
                 >
-                  Edit
+                  {t('row.edit')}
                 </a>
                 <span aria-hidden="true" className="text-zinc-300">|</span>
                 <span onClick={(e) => e.stopPropagation()}>
@@ -84,8 +87,8 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
 
             {(log.velocityAvg || log.extremeSpread) && (
               <div className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                {log.velocityAvg && `Avg: ${log.velocityAvg.toFixed(0)} m/s`}
-                {log.extremeSpread && ` • ES: ${log.extremeSpread.toFixed(0)}`}
+                {log.velocityAvg && t('row.avg', { value: log.velocityAvg.toFixed(0) })}
+                {log.extremeSpread && ` • ${t('row.es', { value: log.extremeSpread.toFixed(0) })}`}
               </div>
             )}
 
@@ -111,7 +114,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             <button
               onClick={() => setShowPhotoOverlay(false)}
               className="absolute -top-3 -right-3 z-10 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-full w-9 h-9 flex items-center justify-center text-2xl font-bold shadow hover:bg-zinc-100 dark:hover:bg-zinc-800"
-              aria-label="Close"
+              aria-label={t('row.closeOverlay')}
             >
               ×
             </button>
@@ -125,7 +128,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             <div className="mt-3 text-center text-white max-w-2xl">
               <div className="text-lg font-semibold">{log.recipe.name}</div>
               <div className="text-sm opacity-80">
-                {formatDate(log.date)} • {log.roundsFired} rounds
+                {formatDate(log.date, locale)} • {t('row.rounds', { count: log.roundsFired })}
                 {log.location && ` • ${log.location}`}
               </div>
               {log.mainImage.description && (
@@ -136,7 +139,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                 className="inline-block mt-3 text-blue-400 hover:underline text-sm"
                 onClick={() => setShowPhotoOverlay(false)}
               >
-                View full session →
+                {t('row.viewFullSession')}
               </a>
             </div>
           </div>

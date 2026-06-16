@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PrimerForm } from './PrimerForm';
 import { DeleteButton } from './DeleteButton';
 import { PrimerType } from '@prisma/client';
@@ -17,6 +18,7 @@ interface PrimersTableProps {
 }
 
 export function PrimersTable({ primers }: PrimersTableProps) {
+  const t = useTranslations('primers');
   const [editingPrimer, setEditingPrimer] = useState<any | null>(null);
 
   const handleRowClick = (primer: any) => {
@@ -33,11 +35,11 @@ export function PrimersTable({ primers }: PrimersTableProps) {
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Brand</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Type</th>
-              <th className="text-center px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Magnum</th>
-              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Amount</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">Description</th>
+              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.brand')}</th>
+              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.type')}</th>
+              <th className="text-center px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.magnum')}</th>
+              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.amount')}</th>
+              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.description')}</th>
               <th className="w-40"></th>
             </tr>
           </thead>
@@ -45,7 +47,7 @@ export function PrimersTable({ primers }: PrimersTableProps) {
             {primers.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
-                  No primers yet.
+                  {t('table.empty')}
                 </td>
               </tr>
             )}
@@ -63,7 +65,7 @@ export function PrimersTable({ primers }: PrimersTableProps) {
                 <td className="px-6 py-4 text-center">
                   {primer.magnum ? (
                     <span className="inline-block px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
-                      Magnum
+                      {t('form.magnum')}
                     </span>
                   ) : (
                     <span className="text-zinc-400">—</span>
@@ -91,8 +93,8 @@ export function PrimersTable({ primers }: PrimersTableProps) {
           await updatePrimer(editingPrimer.id, formData);
         }}
         defaultValues={editingPrimer}
-        title="Edit Primer"
-        submitLabel="Save Changes"
+        title={t('form.titleEdit')}
+        submitLabel={t('form.saveChanges')}
         open={!!editingPrimer}
         onOpenChange={(open) => {
           if (!open) setEditingPrimer(null);

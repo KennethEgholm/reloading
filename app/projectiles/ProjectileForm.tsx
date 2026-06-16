@@ -1,21 +1,24 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
-const projectileSchema = z.object({
-  brand: z.string().min(1, 'Brand is required'),
-  type: z.string().min(1, 'Type is required'),
-  weightGr: z.coerce.number().positive('Weight must be positive'),
-  caliber: z.string().min(1, 'Caliber is required'),
-  amount: z.coerce.number().int().min(0).default(0),
-  description: z.string().optional(),
-});
+function createProjectileSchema(t: (key: string) => string) {
+  return z.object({
+    brand: z.string().min(1, t('form.validation.brandRequired')),
+    type: z.string().min(1, t('form.validation.typeRequired')),
+    weightGr: z.coerce.number().positive(t('form.validation.weightPositive')),
+    caliber: z.string().min(1, t('form.validation.caliberRequired')),
+    amount: z.coerce.number().int().min(0).default(0),
+    description: z.string().optional(),
+  });
+}
 
-type ProjectileFormData = z.infer<typeof projectileSchema>;
+type ProjectileFormData = z.infer<ReturnType<typeof createProjectileSchema>>;
 
 interface ProjectileFormProps {
   action: (formData: FormData) => Promise<void>;
@@ -27,6 +30,9 @@ interface ProjectileFormProps {
 }
 
 export function ProjectileForm({ action, defaultValues, title, submitLabel, open, onOpenChange }: ProjectileFormProps) {
+  const t = useTranslations('projectiles');
+  const projectileSchema = useMemo(() => createProjectileSchema(t), [t]);
+
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open! : uncontrolledOpen;
@@ -68,9 +74,9 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
       await action(formData);
       setIsOpen(false);
       reset();
-      toast.success(defaultValues?.id ? 'Projectile updated' : 'Projectile created');
-    } catch (error) {
-      toast.error('Something went wrong');
+      toast.success(defaultValues?.id ? t('toast.updated') : t('toast.created'));
+    } catch {
+      toast.error(t('toast.failed'));
     }
   };
 
@@ -130,7 +136,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
           onClick={() => setIsOpen(true)}
           className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
-          {title === 'Add New Projectile' ? '+ Add Projectile' : 'Edit'}
+          {t('page.addButton')}
         </button>
       )}
 
@@ -141,7 +147,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
 
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">Brand</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
                   {...register('brand')}
                   ref={(e) => {
@@ -150,23 +156,23 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
                     brandInputRef.current = e;
                   }}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Sierra, Hornady, Berger..."
+                  placeholder={t('form.brandPlaceholder')}
                 />
                 {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Type</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
                 <input
                   {...register('type')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Game King, MatchKing, Tipped..."
+                  placeholder={t('form.typePlaceholder')}
                 />
                 {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Weight (grains)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.weight')}</label>
                 <input
                   type="number"
                   step="0.1"
@@ -177,17 +183,17 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Caliber</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                 <input
                   {...register('caliber')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="9mm, .308, 5.56..."
+                  placeholder={t('form.caliberPlaceholder')}
                 />
                 {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Amount in stock</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                 <input
                   type="number"
                   step="1"
@@ -198,12 +204,12 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Description (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Notes, BC, etc."
+                  placeholder={t('form.descriptionPlaceholder')}
                 />
               </div>
 
@@ -216,14 +222,14 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
                   }}
                   className="flex-1 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm"
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : submitLabel}
+                  {isSubmitting ? t('form.saving') : submitLabel}
                 </button>
               </div>
             </form>

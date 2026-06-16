@@ -9,7 +9,6 @@ import Script from "next/script";
 import { Settings } from "lucide-react";
 import { MaterialsMenu } from "./MaterialsMenu";
 import { ThemeApplier } from "./ThemeApplier";
-import { LocaleSwitcher } from "./LocaleSwitcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -95,7 +94,6 @@ export default async function RootLayout({
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <LocaleSwitcher />
                 <a
                   href="/settings"
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

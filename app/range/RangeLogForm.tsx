@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { createRangeLog, updateRangeLog } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -28,6 +29,7 @@ interface ImageInput {
 
 export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, readonly = false }: RangeLogFormProps) {
   const router = useRouter();
+  const t = useTranslations('range')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isEdit = !!initialData
   const isReadOnly = readonly || false
@@ -50,8 +52,8 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const [images, setImages] = useState<ImageInput[]>([{ file: null, description: '' }])
   const [overlayIndex, setOverlayIndex] = useState<number | null>(null)
 
-  const today = initialData?.date 
-    ? new Date(initialData.date).toISOString().split('T')[0] 
+  const today = initialData?.date
+    ? new Date(initialData.date).toISOString().split('T')[0]
     : new Date().toISOString().split('T')[0]
 
   const addImageField = () => {
@@ -125,7 +127,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     if (field === 'file') {
       const file = value as File | null
       if (file && file.size > MAX_IMAGE_SIZE) {
-        toast.error(`Photo "${file.name}" is too large. Maximum size is 10 MB.`)
+        toast.error(t('toast.photoTooLarge', { name: file.name }))
         return
       }
       newImages[index].file = file
@@ -169,16 +171,16 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     try {
       if (isEdit && logId) {
         await updateRangeLog(logId, formData)
-        toast.success('Range session updated!')
+        toast.success(t('toast.updated'))
         router.push(`/range/${logId}`);
       } else {
         await createRangeLog(formData)
-        toast.success('Range session logged!')
+        toast.success(t('toast.saved'))
         setImages([{ file: null, description: '' }])
         router.push('/range');
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save session'
+      const message = error instanceof Error ? error.message : t('toast.saveFailed')
       toast.error(message)
     } finally {
       setIsSubmitting(false)
@@ -194,7 +196,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     <form action={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5">Date</label>
+          <label className="block text-sm font-medium mb-1.5">{t('form.date')}</label>
           <input
             type="date"
             name="date"
@@ -205,12 +207,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">Location</label>
+          <label className="block text-sm font-medium mb-1.5">{t('form.location')}</label>
           <input
             type="text"
             name="location"
             defaultValue={initialData?.location || ''}
-            placeholder="Local range, 100m bay..."
+            placeholder={t('form.locationPlaceholder')}
             disabled={isReadOnly}
             className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
           />
@@ -218,7 +220,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">Recipe Used</label>
+        <label className="block text-sm font-medium mb-1.5">{t('form.recipe')}</label>
         <select
           name="recipeId"
           required
@@ -226,7 +228,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           disabled={isReadOnly}
           className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
         >
-          <option value="">Select recipe...</option>
+          <option value="">{t('form.recipePlaceholder')}</option>
           {recipes.map((r) => (
             <option key={r.id} value={r.id}>
               {r.name} — {r.caliber}
@@ -236,7 +238,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">Rounds Fired</label>
+        <label className="block text-sm font-medium mb-1.5">{t('form.roundsFired')}</label>
         <input
           type="number"
           name="roundsFired"
@@ -249,12 +251,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">Conditions / Weather</label>
+        <label className="block text-sm font-medium mb-1.5">{t('form.conditions')}</label>
         <textarea
           name="conditions"
           rows={2}
           defaultValue={initialData?.conditions || ''}
-          placeholder="Sunny, 18°C, light crosswind..."
+          placeholder={t('form.conditionsPlaceholder')}
           disabled={isReadOnly}
           className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
         />
@@ -263,34 +265,34 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       {/* Chronograph Data */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">Min (m/s)</label>
+          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMin')}</label>
           <input type="number" step="1" name="velocityMin" defaultValue={initialData?.velocityMin ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">Max (m/s)</label>
+          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMax')}</label>
           <input type="number" step="1" name="velocityMax" defaultValue={initialData?.velocityMax ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">Avg (m/s)</label>
+          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityAvg')}</label>
           <input type="number" step="1" name="velocityAvg" defaultValue={initialData?.velocityAvg ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">ES</label>
+          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityES')}</label>
           <input type="number" step="1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">SD</label>
+          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocitySD')}</label>
           <input type="number" step="1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">Notes</label>
+        <label className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
         <textarea
           name="notes"
           rows={3}
           defaultValue={initialData?.notes || ''}
-          placeholder="Groups, feeding, extraction, observations..."
+          placeholder={t('form.notesPlaceholder')}
           disabled={isReadOnly}
           className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
         />
@@ -299,7 +301,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       {/* Existing Photos */}
       {isEdit && existingImages.length > 0 && (
         <div>
-          <label className="block text-sm font-medium mb-2">Photos</label>
+          <label className="block text-sm font-medium mb-2">{t('form.photos')}</label>
           <div className="space-y-3 mb-4">
             {existingImages.map((img: {id: string, filename?: string, description: string, markedForDelete?: boolean, isMain?: boolean}) => (
               <div key={img.id} className="flex gap-3 items-start border border-zinc-200 dark:border-zinc-700 rounded-xl p-3">
@@ -320,7 +322,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                     <div className="text-sm flex items-center gap-2">
                       {img.description || '—'}
                       {img.isMain && (
-                        <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">Main thumbnail</span>
+                        <span className="text-[10px] bg-yellow-100 text-yellow-800 px-1.5 py-0.5 rounded">{t('form.mainThumbnail')}</span>
                       )}
                     </div>
                   ) : (
@@ -329,7 +331,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                         type="text"
                         value={img.description}
                         onChange={(e) => updateExistingDescription(img.id, e.target.value)}
-                        placeholder="Photo description"
+                        placeholder={t('form.photoDescription')}
                         className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-3 py-1.5 text-sm"
                       />
                       <label className="flex items-center gap-2 mt-2 text-sm text-red-600">
@@ -338,7 +340,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                           checked={img.markedForDelete}
                           onChange={() => toggleDeleteExisting(img.id)}
                         />
-                        Delete this photo
+                        {t('form.deletePhoto')}
                       </label>
                       <button
                         type="button"
@@ -346,7 +348,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                         disabled={img.markedForDelete}
                         className={`mt-1 text-xs px-2 py-0.5 rounded ${img.isMain ? 'bg-yellow-200 text-yellow-900 font-medium' : 'bg-zinc-100 dark:bg-zinc-800 hover:bg-yellow-100'} disabled:opacity-50`}
                       >
-                        {img.isMain ? '★ Main thumbnail' : 'Set as main'}
+                        {img.isMain ? t('form.isMain') : t('form.setAsMain')}
                       </button>
                     </>
                   )}
@@ -361,13 +363,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       {!isReadOnly && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-sm font-medium">Photos (optional)</label>
+            <label className="block text-sm font-medium">{t('form.photosOptional')}</label>
             <button
               type="button"
               onClick={addImageField}
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
-              + Add another photo
+              {t('form.addPhoto')}
             </button>
           </div>
 
@@ -381,7 +383,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             />
             <input
               type="text"
-              placeholder="Photo description"
+              placeholder={t('form.photoDescription')}
               value={img.description}
               onChange={(e) => updateImage(index, 'description', e.target.value)}
               className="flex-1 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 text-sm"
@@ -392,12 +394,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                 onClick={() => removeImageField(index)}
                 className="text-red-500 px-2"
               >
-                ×
+                {t('form.removePhoto')}
               </button>
             )}
           </div>
         ))}
-        <p className="text-xs text-zinc-500 mt-1">You can add as many photos as you want. Each can have its own description. Max 10 MB per photo.</p>
+        <p className="text-xs text-zinc-500 mt-1">{t('form.photoMaxSize')}</p>
       </div>
       )}
 
@@ -407,7 +409,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           disabled={isSubmitting}
           className="w-full py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium disabled:opacity-50 mt-2"
         >
-          {isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Save Range Session')}
+          {isSubmitting ? t('form.saving') : (isEdit ? t('form.saveChanges') : t('form.save'))}
         </button>
       )}
 
@@ -416,7 +418,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           href={`/range/${logId}/edit`}
           className="block w-full text-center py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 mt-2"
         >
-          Edit this session
+          {t('form.editSession')}
         </Link>
       )}
     </form>
@@ -434,7 +436,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           <button
             onClick={closeOverlay}
             className="absolute -top-3 -right-3 z-10 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-full w-9 h-9 flex items-center justify-center text-2xl font-bold shadow hover:bg-zinc-100 dark:hover:bg-zinc-800"
-            aria-label="Close"
+            aria-label={t('overlay.close')}
           >
             ×
           </button>
@@ -451,7 +453,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             )}
             {existingImages.length > 1 && (
               <div className="text-xs opacity-60 mb-2">
-                {overlayIndex + 1} / {existingImages.length}
+                {t('overlay.counter', { current: overlayIndex + 1, total: existingImages.length })}
               </div>
             )}
           </div>
@@ -462,13 +464,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                 onClick={() => setOverlayIndex((overlayIndex - 1 + existingImages.length) % existingImages.length)}
                 className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
               >
-                ← Previous
+                {t('overlay.previous')}
               </button>
               <button
                 onClick={() => setOverlayIndex((overlayIndex + 1) % existingImages.length)}
                 className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-xl text-sm transition"
               >
-                Next →
+                {t('overlay.next')}
               </button>
             </div>
           )}

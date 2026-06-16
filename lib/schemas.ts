@@ -6,29 +6,35 @@ import { z } from 'zod'
  * Keep these in sync with the corresponding forms. They deliberately use
  * z.coerce or raw string parsing for FormData values rather than trying to
  * share RHF schemas (RHF operates on objects; actions operate on FormData).
+ *
+ * Error messages are supplied by a translation function so validation failures
+ * are surfaced in the user's active locale.
  */
 
-export const rangeLogInputSchema = z.object({
-  date: z.string().min(1, 'Date is required'),
-  location: z.string().nullish(),
-  conditions: z.string().nullish(),
-  recipeId: z.string().min(1, 'Recipe is required'),
-  roundsFired: z.coerce.number().int().min(1, 'Rounds fired must be at least 1'),
-  velocityMin: z.coerce.number().min(0).nullish(),
-  velocityMax: z.coerce.number().min(0).nullish(),
-  velocityAvg: z.coerce.number().min(0).nullish(),
-  extremeSpread: z.coerce.number().min(0).nullish(),
-  stdDev: z.coerce.number().min(0).nullish(),
-  notes: z.string().nullish(),
-})
+export function createRangeLogInputSchema(t: (key: string) => string) {
+  return z.object({
+    date: z.string().min(1, t('range.errors.validation.dateRequired')),
+    location: z.string().nullish(),
+    conditions: z.string().nullish(),
+    recipeId: z.string().min(1, t('range.errors.validation.recipeRequired')),
+    roundsFired: z.coerce.number().int().min(1, t('range.errors.validation.roundsFiredMin')),
+    velocityMin: z.coerce.number().min(0, t('range.errors.validation.velocityMinPositive')).nullish(),
+    velocityMax: z.coerce.number().min(0, t('range.errors.validation.velocityMaxPositive')).nullish(),
+    velocityAvg: z.coerce.number().min(0, t('range.errors.validation.velocityAvgPositive')).nullish(),
+    extremeSpread: z.coerce.number().min(0, t('range.errors.validation.extremeSpreadPositive')).nullish(),
+    stdDev: z.coerce.number().min(0, t('range.errors.validation.stdDevPositive')).nullish(),
+    notes: z.string().nullish(),
+  })
+}
 
-export type RangeLogInput = z.infer<typeof rangeLogInputSchema>
+export type RangeLogInput = z.infer<ReturnType<typeof createRangeLogInputSchema>>
 
-const recipeIdRefinement = z.string().min(1).nullish()
+export function createRangeLogUpdateInputSchema(t: (key: string) => string) {
+  const base = createRangeLogInputSchema(t)
+  return base.extend({
+    recipeId: z.string().nullish(),
+    mainImageId: z.string().nullish(),
+  })
+}
 
-export const rangeLogUpdateInputSchema = rangeLogInputSchema.extend({
-  recipeId: recipeIdRefinement,
-  mainImageId: z.string().nullish(),
-})
-
-export type RangeLogUpdateInput = z.infer<typeof rangeLogUpdateInputSchema>
+export type RangeLogUpdateInput = z.infer<ReturnType<typeof createRangeLogUpdateInputSchema>>

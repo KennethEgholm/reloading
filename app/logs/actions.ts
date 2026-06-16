@@ -1,11 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 
 const GRAIN_TO_GRAM = 0.06479891
 
 export async function createLoadLog(formData: FormData) {
+  const t = await getTranslations('logs')
   const recipeId = formData.get('recipeId') as string
   const quantityStr = formData.get('quantity') as string
   const dateStr = formData.get('date') as string
@@ -14,7 +16,7 @@ export async function createLoadLog(formData: FormData) {
   const quantity = parseInt(quantityStr, 10)
 
   if (!recipeId || isNaN(quantity) || quantity <= 0) {
-    throw new Error('Recipe and a positive quantity are required')
+    throw new Error(t('errors.recipeRequired'))
   }
 
   // Fetch the recipe with its components
@@ -28,11 +30,11 @@ export async function createLoadLog(formData: FormData) {
   })
 
   if (!recipe) {
-    throw new Error('Recipe not found')
+    throw new Error(t('errors.recipeNotFound'))
   }
 
   if (!recipe.chargeGr) {
-    throw new Error('This recipe has no charge weight defined. Cannot calculate propellant usage.')
+    throw new Error(t('errors.noCharge'))
   }
 
   const propellantConsumptionGr = quantity * recipe.chargeGr * GRAIN_TO_GRAM
@@ -41,17 +43,31 @@ export async function createLoadLog(formData: FormData) {
   const errors: string[] = []
 
   if (recipe.projectile.amount < quantity) {
-    errors.push(`Not enough ${recipe.projectile.brand} ${recipe.projectile.type || ''} projectiles (need ${quantity}, have ${recipe.projectile.amount})`)
+    errors.push(t('errors.insufficientProjectiles', {
+      brand: recipe.projectile.brand,
+      type: recipe.projectile.type || '',
+      need: quantity,
+      have: recipe.projectile.amount,
+    }))
   }
 
   if (recipe.primer && recipe.primer.amount < quantity) {
-    errors.push(`Not enough ${recipe.primer.brand} primers (need ${quantity}, have ${recipe.primer.amount})`)
+    errors.push(t('errors.insufficientPrimers', {
+      brand: recipe.primer.brand,
+      need: quantity,
+      have: recipe.primer.amount,
+    }))
   }
 
   if (recipe.propellant.amountGr < propellantConsumptionGr) {
     const needed = propellantConsumptionGr.toFixed(1)
     const have = recipe.propellant.amountGr.toFixed(1)
-    errors.push(`Not enough ${recipe.propellant.brand} ${recipe.propellant.type} (need ~${needed}g, have ${have}g)`)
+    errors.push(t('errors.insufficientPropellant', {
+      brand: recipe.propellant.brand,
+      type: recipe.propellant.type,
+      need: needed,
+      have: have,
+    }))
   }
 
   if (errors.length > 0) {
@@ -150,10 +166,11 @@ export async function getRecipesForLog() {
 }
 
 export async function deleteLoadLog(id: string) {
+  const t = await getTranslations('logs')
   const log = await prisma.loadLog.findUnique({ where: { id } })
 
   if (!log) {
-    throw new Error('Load log not found')
+    throw new Error(t('errors.notFound'))
   }
 
   const GRAIN_TO_GRAM = 0.06479891

@@ -1,29 +1,32 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
 
-const recipeSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  caliber: z.string().min(1, 'Caliber is required'),
-  projectileId: z.string().min(1, 'Projectile is required'),
-  propellantId: z.string().min(1, 'Propellant is required'),
-  primerId: z.string().optional(),
-  cartridgeId: z.string().optional(),
-  chargeGr: z.coerce.number().optional(),
-  coal: z.coerce.number().optional(),
-  calculatedV0: z.coerce.number().optional(),
-  measuredV0: z.coerce.number().optional(),
-  fillRate: z.coerce.number().optional(),
-  notes: z.string().optional(),
-});
+function createRecipeSchema(t: (key: string) => string) {
+  return z.object({
+    name: z.string().min(1, t('form.validation.nameRequired')),
+    caliber: z.string().min(1, t('form.validation.caliberRequired')),
+    projectileId: z.string().min(1, t('form.validation.projectileRequired')),
+    propellantId: z.string().min(1, t('form.validation.propellantRequired')),
+    primerId: z.string().optional(),
+    cartridgeId: z.string().optional(),
+    chargeGr: z.coerce.number().optional(),
+    coal: z.coerce.number().optional(),
+    calculatedV0: z.coerce.number().optional(),
+    measuredV0: z.coerce.number().optional(),
+    fillRate: z.coerce.number().optional(),
+    notes: z.string().optional(),
+  });
+}
 
-type RecipeFormData = z.infer<typeof recipeSchema>;
+type RecipeFormData = z.infer<ReturnType<typeof createRecipeSchema>>;
 
 interface RecipeFormProps {
   action?: (formData: FormData) => Promise<void>;
@@ -52,6 +55,9 @@ export function RecipeForm({
   open,
   onOpenChange,
 }: RecipeFormProps) {
+  const t = useTranslations('recipes');
+  const recipeSchema = useMemo(() => createRecipeSchema(t), [t]);
+
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const isControlled = open !== undefined;
   const isOpen = isControlled ? open! : uncontrolledOpen;
@@ -62,8 +68,8 @@ export function RecipeForm({
 
   const isEdit = !!defaultValues?.id;
 
-  const displayTitle = title ?? (isEdit ? 'Edit Recipe' : 'Add New Recipe');
-  const displaySubmitLabel = submitLabel ?? (isEdit ? 'Save Changes' : 'Save Recipe');
+  const displayTitle = title ?? (isEdit ? t('form.titleEdit') : t('form.titleAdd'));
+  const displaySubmitLabel = submitLabel ?? (isEdit ? t('form.saveChanges') : t('form.save'));
 
   const {
     register,
@@ -124,7 +130,7 @@ export function RecipeForm({
   const handleAiCheck = async () => {
     const values = getValues();
     if (!values.name?.trim() || !values.caliber?.trim() || !values.projectileId || !values.propellantId) {
-      toast.error('Fill in name, caliber, projectile, and propellant before running the check.');
+      toast.error(t('toast.aiCheckRequiredFields'));
       return;
     }
     setAiChecking(true);
@@ -145,9 +151,9 @@ export function RecipeForm({
         notes: values.notes ?? null,
       });
       setAiResult(result);
-      toast.success(result.persisted ? 'AI safety check complete (saved)' : 'AI safety check complete');
+      toast.success(result.persisted ? t('toast.aiCheckSaved') : t('toast.aiCheckComplete'));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'AI check failed';
+      const message = error instanceof Error ? error.message : t('toast.aiCheckFailed');
       toast.error(message);
     } finally {
       setAiChecking(false);
@@ -172,15 +178,15 @@ export function RecipeForm({
     try {
       if (isEdit && updateAction && defaultValues?.id) {
         await updateAction(defaultValues.id, formData);
-        toast.success('Recipe updated');
+        toast.success(t('toast.updated'));
       } else if (action) {
         await action(formData);
-        toast.success('Recipe saved');
+        toast.success(t('toast.saved'));
       }
       setIsOpen(false);
       reset();
-    } catch (error) {
-      toast.error('Failed to save recipe');
+    } catch {
+      toast.error(t('toast.failed'));
     }
   };
 
@@ -227,7 +233,7 @@ export function RecipeForm({
           onClick={() => setIsOpen(true)}
           className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
         >
-          + Add Recipe
+          {t('page.addButton')}
         </button>
       )}
 
@@ -239,7 +245,7 @@ export function RecipeForm({
             <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Name</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.name')}</label>
                   <input
                     {...register('name')}
                     ref={(e) => {
@@ -248,17 +254,17 @@ export function RecipeForm({
                       nameInputRef.current = e;
                     }}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                    placeholder="308 Win 168gr Match"
+                    placeholder={t('form.namePlaceholder')}
                   />
                   {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Caliber</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                   <input
                     {...register('caliber')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                    placeholder=".308 Win"
+                    placeholder={t('form.caliberPlaceholder')}
                   />
                   {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
                 </div>
@@ -266,12 +272,12 @@ export function RecipeForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Projectile</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.projectile')}</label>
                   <select
                     {...register('projectileId')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   >
-                    <option value="">Select Projectile</option>
+                    <option value="">{t('form.projectilePlaceholder')}</option>
                     {projectiles.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.brand} {p.type ? `– ${p.type}` : ''} ({p.weightGr} gr)
@@ -282,12 +288,12 @@ export function RecipeForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Propellant</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.propellant')}</label>
                   <select
                     {...register('propellantId')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   >
-                    <option value="">Select Propellant</option>
+                    <option value="">{t('form.propellantPlaceholder')}</option>
                     {propellants.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.brand} – {p.type}
@@ -299,12 +305,12 @@ export function RecipeForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Primer (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.primer')}</label>
                 <select
                   {...register('primerId')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 >
-                  <option value="">Select Primer (optional)</option>
+                  <option value="">{t('form.primerPlaceholder')}</option>
                   {primers.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.brand} {p.type.replace('_', ' ')} {p.magnum ? '(Magnum)' : ''}
@@ -314,12 +320,12 @@ export function RecipeForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Cartridge / Case (optional)</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.cartridge')}</label>
                 <select
                   {...register('cartridgeId')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 >
-                  <option value="">Select Cartridge (optional)</option>
+                  <option value="">{t('form.cartridgePlaceholder')}</option>
                   {cartridges.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.brand} – {c.caliber}
@@ -330,7 +336,7 @@ export function RecipeForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Charge (grains)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.charge')}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -340,7 +346,7 @@ export function RecipeForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">COAL (inches)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.coal')}</label>
                   <input
                     type="number"
                     step="0.001"
@@ -352,7 +358,7 @@ export function RecipeForm({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Calculated V0 (m/s)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.calcV0')}</label>
                   <input
                     type="number"
                     step="1"
@@ -362,7 +368,7 @@ export function RecipeForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Measured V0 (m/s)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.measV0')}</label>
                   <input
                     type="number"
                     step="1"
@@ -372,7 +378,7 @@ export function RecipeForm({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Fill rate (%)</label>
+                  <label className="block text-sm font-medium mb-1.5">{t('form.fillRate')}</label>
                   <input
                     type="number"
                     step="0.1"
@@ -383,26 +389,26 @@ export function RecipeForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">Notes</label>
+                <label className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
                 <textarea
                   {...register('notes')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder="Velocity, group size, seating depth, etc."
+                  placeholder={t('form.notesPlaceholder')}
                 />
               </div>
 
               {/* AI Safety Check — assesses the values currently in the form */}
               <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">AI Safety Check</span>
+                  <span className="text-sm font-medium">{t('form.aiCheck')}</span>
                   <button
                     type="button"
                     onClick={handleAiCheck}
                     disabled={aiChecking}
                     className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
                   >
-                    {aiChecking ? 'Checking…' : 'Run check'}
+                    {aiChecking ? t('form.aiChecking') : t('aiCheck.run')}
                   </button>
                 </div>
 
@@ -418,14 +424,13 @@ export function RecipeForm({
                     />
                     {!aiResult.persisted && (
                       <p className="text-xs text-zinc-500">
-                        This assessment reflects the current (unsaved) values and was not saved. Save the
-                        recipe, then run the check from its detail page to store it.
+                        {t('aiCheck.unsavedResult')}
                       </p>
                     )}
                   </>
                 ) : (
                   <p className="text-xs text-zinc-500">
-                    Checks the values currently entered above — including unsaved changes.
+                    {t('aiCheck.unsavedHint')}
                   </p>
                 )}
               </div>
@@ -439,14 +444,14 @@ export function RecipeForm({
                   }}
                   className="flex-1 py-2.5 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm"
                 >
-                  Cancel
+                  {t('form.cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="flex-1 py-2.5 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Saving...' : displaySubmitLabel}
+                  {isSubmitting ? t('form.saving') : displaySubmitLabel}
                 </button>
               </div>
             </form>

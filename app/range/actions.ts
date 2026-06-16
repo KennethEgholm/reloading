@@ -2,11 +2,12 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { rangeLogInputSchema, rangeLogUpdateInputSchema } from '@/lib/schemas'
+import { createRangeLogInputSchema, createRangeLogUpdateInputSchema } from '@/lib/schemas'
 import type { DeleteResult } from '@/lib/types'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/range-logs')
@@ -72,17 +73,17 @@ function getImageMimeType(buffer: Buffer): string | null {
  * Validates an uploaded image and returns a pending upload descriptor.
  * Throws if the file is empty, too large, or not a recognized image.
  */
-async function prepareImageUpload(file: File, description: string | null): Promise<PendingUpload> {
+async function prepareImageUpload(file: File, description: string | null, t: Awaited<ReturnType<typeof getTranslations>>): Promise<PendingUpload> {
   if (!file || file.size === 0) {
-    throw new Error('Uploaded file is empty')
+    throw new Error(t('toast.photoInvalid', { name: file?.name || '' }))
   }
   if (file.size > MAX_IMAGE_SIZE) {
-    throw new Error(`Photo "${file.name}" exceeds the 10 MB size limit.`)
+    throw new Error(t('toast.photoTooLarge', { name: file.name }))
   }
   const buffer = Buffer.from(await file.arrayBuffer())
   const detected = getImageMimeType(buffer)
   if (!detected) {
-    throw new Error(`File "${file.name}" is not a recognized image.`)
+    throw new Error(t('toast.photoInvalid', { name: file.name }))
   }
   const filename = safeImageFilename(file.name)
   return { buffer, filename, description }
@@ -141,7 +142,8 @@ export async function getRecipesForRangeLog() {
 }
 
 export async function createRangeLog(formData: FormData) {
-  const validated = rangeLogInputSchema.safeParse({
+  const t = await getTranslations('range')
+  const validated = createRangeLogInputSchema(t).safeParse({
     date: formData.get('date'),
     location: formData.get('location'),
     conditions: formData.get('conditions'),
@@ -182,7 +184,7 @@ export async function createRangeLog(formData: FormData) {
   for (let i = 0; i < imageFiles.length; i++) {
     const file = imageFiles[i]
     if (!file || file.size === 0) continue
-    pendingUploads.push(await prepareImageUpload(file, descriptions[i] || null))
+    pendingUploads.push(await prepareImageUpload(file, descriptions[i] || null, t))
   }
 
   await mkdir(UPLOAD_DIR, { recursive: true })
@@ -245,13 +247,14 @@ export async function createRangeLog(formData: FormData) {
 }
 
 export async function deleteRangeLogImage(imageId: string) {
+  const t = await getTranslations('range')
   const image = await prisma.rangeLogImage.findUnique({
     where: { id: imageId },
     include: { rangeLog: true },
   })
 
   if (!image) {
-    throw new Error('Image not found')
+    throw new Error(t('errors.imageNotFound'))
   }
 
   // Delete the file from disk (best effort)
@@ -281,13 +284,14 @@ export async function deleteRangeLogImage(imageId: string) {
 // The RangeLogImage rows are removed by the DB cascade; this also unlinks
 // the files from disk so they do not become orphaned.
 export async function deleteRangeLog(id: string): Promise<DeleteResult> {
+  const t = await getTranslations('range')
   const log = await prisma.rangeLog.findUnique({
     where: { id },
     include: { images: true },
   })
 
   if (!log) {
-    return { ok: false, error: 'Range session not found' }
+    return { ok: false, error: t('errors.notFound') }
   }
 
   // Clear mainImageId before deleting the log so the cascading delete
@@ -324,7 +328,8 @@ export async function deleteRangeLogAndRedirect(id: string): Promise<void> {
 }
 
 export async function updateRangeLog(id: string, formData: FormData) {
-  const validated = rangeLogUpdateInputSchema.safeParse({
+  const t = await getTranslations('range')
+  const validated = createRangeLogUpdateInputSchema(t).safeParse({
     date: formData.get('date'),
     location: formData.get('location'),
     conditions: formData.get('conditions'),
@@ -367,7 +372,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
   for (let i = 0; i < newImageFiles.length; i++) {
     const file = newImageFiles[i]
     if (!file || file.size === 0) continue
-    pendingUploads.push(await prepareImageUpload(file, newDescriptions[i] || null))
+    pendingUploads.push(await prepareImageUpload(file, newDescriptions[i] || null, t))
   }
 
   await mkdir(UPLOAD_DIR, { recursive: true })
