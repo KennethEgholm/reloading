@@ -3,21 +3,24 @@
 import { revalidatePath } from 'next/cache'
 import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
+import { createLoadLogSchema, formatZodError } from '@/lib/schemas'
 
 const GRAIN_TO_GRAM = 0.06479891
 
 export async function createLoadLog(formData: FormData) {
   const t = await getTranslations('logs')
-  const recipeId = formData.get('recipeId') as string
-  const quantityStr = formData.get('quantity') as string
-  const dateStr = formData.get('date') as string
-  const notes = (formData.get('notes') as string) || null
+  const parsed = createLoadLogSchema(t).safeParse({
+    recipeId: formData.get('recipeId'),
+    quantity: formData.get('quantity'),
+    date: formData.get('date'),
+    notes: formData.get('notes'),
+  })
 
-  const quantity = parseInt(quantityStr, 10)
-
-  if (!recipeId || isNaN(quantity) || quantity <= 0) {
-    throw new Error(t('errors.recipeRequired'))
+  if (!parsed.success) {
+    throw new Error(formatZodError(parsed.error))
   }
+
+  const { recipeId, quantity, date: dateStr, notes } = parsed.data
 
   // Fetch the recipe with its components
   const recipe = await prisma.recipe.findUnique({
@@ -173,7 +176,6 @@ export async function deleteLoadLog(id: string) {
     throw new Error(t('errors.notFound'))
   }
 
-  const GRAIN_TO_GRAM = 0.06479891
   const propellantRestorationGr = log.chargeGr
     ? log.quantity * log.chargeGr * GRAIN_TO_GRAM
     : 0

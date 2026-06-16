@@ -1,4 +1,24 @@
 import { z } from 'zod'
+import { PrimerType } from '@prisma/client'
+
+type Translator = (key: string) => string
+
+/**
+ * Formats a Zod safeParse error into a newline-joined message for surfacing as
+ * a thrown Server Action error (rendered as a toast). Mirrors the inline format
+ * already used by the range actions.
+ */
+export function formatZodError(error: z.ZodError): string {
+  return error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join('\n')
+}
+
+/**
+ * Coerces an empty/whitespace-only FormData value to undefined so optional
+ * numeric fields validate as "absent" rather than failing z.coerce.number()
+ * (which would turn '' into 0). Use as a preprocess step on optional numbers.
+ */
+const emptyToUndefined = (v: unknown) =>
+  typeof v === 'string' && v.trim() === '' ? undefined : v
 
 /**
  * Shared Zod schemas for the trust boundary in Server Actions.
@@ -38,3 +58,69 @@ export function createRangeLogUpdateInputSchema(t: (key: string) => string) {
 }
 
 export type RangeLogUpdateInput = z.infer<ReturnType<typeof createRangeLogUpdateInputSchema>>
+
+// --- Inventory + load-log schemas (the Server Action trust boundary) ---------
+//
+// These re-use the granular `<entity>.form.validation.*` message keys that the
+// client RHF forms already reference, so server-side errors are worded
+// identically and localized. Numeric coercion replaces the previous hand-rolled
+// parseFloat/parseInt + isNaN handling, which silently accepted "12abc" as 12
+// and left negative amounts unguarded.
+
+export function createCartridgeSchema(t: Translator) {
+  return z.object({
+    brand: z.string().trim().min(1, t('form.validation.brandRequired')),
+    caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
+    waterCapacityGr: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(0, t('form.validation.capacityNegative')).optional(),
+    ).transform((v) => v ?? null),
+    amount: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(0, t('form.validation.amountNegative')).default(0),
+    ),
+    description: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export function createProjectileSchema(t: Translator) {
+  return z.object({
+    brand: z.string().trim().min(1, t('form.validation.brandRequired')),
+    type: z.string().trim().min(1, t('form.validation.typeRequired')),
+    weightGr: z.coerce.number().positive(t('form.validation.weightPositive')),
+    caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
+    amount: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(0, t('form.validation.amountNegative')).default(0),
+    ),
+    description: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export function createPrimerSchema(t: Translator) {
+  return z.object({
+    brand: z.string().trim().min(1, t('form.validation.brandRequired')),
+    type: z.nativeEnum(PrimerType, { message: t('form.validation.typeRequired') }),
+    magnum: z.preprocess((v) => v === 'on' || v === true, z.boolean()),
+    amount: z.coerce.number().int().min(0, t('form.validation.amountNegative')),
+    description: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export function createPropellantSchema(t: Translator) {
+  return z.object({
+    brand: z.string().trim().min(1, t('form.validation.brandRequired')),
+    type: z.string().trim().min(1, t('form.validation.typeRequired')),
+    amountGr: z.coerce.number().min(0, t('form.validation.amountNegative')),
+    description: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export function createLoadLogSchema(t: Translator) {
+  return z.object({
+    recipeId: z.string().min(1, t('errors.recipeRequired')),
+    quantity: z.coerce.number().int().min(1, t('errors.recipeRequired')),
+    date: z.string().nullish(),
+    notes: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}

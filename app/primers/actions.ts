@@ -3,55 +3,39 @@
 import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
-import { PrimerType } from '@prisma/client';
+import { createPrimerSchema, formatZodError } from '@/lib/schemas';
 import type { DeleteResult } from '@/lib/types';
+
+function parsePrimerForm(formData: FormData, t: (key: string) => string) {
+  const parsed = createPrimerSchema(t).safeParse({
+    brand: formData.get('brand'),
+    type: formData.get('type'),
+    magnum: formData.get('magnum'),
+    amount: formData.get('amount'),
+    description: formData.get('description'),
+  });
+  if (!parsed.success) {
+    throw new Error(formatZodError(parsed.error));
+  }
+  return parsed.data;
+}
 
 export async function createPrimer(formData: FormData) {
   const t = await getTranslations('primers');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as PrimerType;
-  const magnum = formData.get('magnum') === 'on';
-  const amount = parseInt(formData.get('amount') as string, 10);
-  const description = (formData.get('description') as string) || null;
+  const data = parsePrimerForm(formData, t);
 
-  if (!brand || !type || isNaN(amount)) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
-
-  await prisma.primer.create({
-    data: {
-      brand,
-      type,
-      magnum,
-      amount,
-      description,
-    },
-  });
+  await prisma.primer.create({ data });
 
   revalidatePath('/primers');
 }
 
 export async function updatePrimer(id: string, formData: FormData) {
   const t = await getTranslations('primers');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as PrimerType;
-  const magnum = formData.get('magnum') === 'on';
-  const amount = parseInt(formData.get('amount') as string, 10);
-  const description = (formData.get('description') as string) || null;
-
-  if (!brand || !type || isNaN(amount)) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
+  const data = parsePrimerForm(formData, t);
 
   await prisma.primer.update({
     where: { id },
-    data: {
-      brand,
-      type,
-      magnum,
-      amount,
-      description,
-    },
+    data,
   });
 
   revalidatePath('/primers');

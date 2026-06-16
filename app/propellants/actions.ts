@@ -3,50 +3,38 @@
 import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
+import { createPropellantSchema, formatZodError } from '@/lib/schemas';
 import type { DeleteResult } from '@/lib/types';
+
+function parsePropellantForm(formData: FormData, t: (key: string) => string) {
+  const parsed = createPropellantSchema(t).safeParse({
+    brand: formData.get('brand'),
+    type: formData.get('type'),
+    amountGr: formData.get('amountGr'),
+    description: formData.get('description'),
+  });
+  if (!parsed.success) {
+    throw new Error(formatZodError(parsed.error));
+  }
+  return parsed.data;
+}
 
 export async function createPropellant(formData: FormData) {
   const t = await getTranslations('propellants');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as string;
-  const amountGr = parseFloat(formData.get('amountGr') as string);
-  const description = (formData.get('description') as string) || null;
+  const data = parsePropellantForm(formData, t);
 
-  if (!brand || !type || isNaN(amountGr)) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
-
-  await prisma.propellant.create({
-    data: {
-      brand,
-      type,
-      amountGr,
-      description,
-    },
-  });
+  await prisma.propellant.create({ data });
 
   revalidatePath('/propellants');
 }
 
 export async function updatePropellant(id: string, formData: FormData) {
   const t = await getTranslations('propellants');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as string;
-  const amountGr = parseFloat(formData.get('amountGr') as string);
-  const description = (formData.get('description') as string) || null;
-
-  if (!brand || !type || isNaN(amountGr)) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
+  const data = parsePropellantForm(formData, t);
 
   await prisma.propellant.update({
     where: { id },
-    data: {
-      brand,
-      type,
-      amountGr,
-      description,
-    },
+    data,
   });
 
   revalidatePath('/propellants');

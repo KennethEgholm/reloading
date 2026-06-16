@@ -3,31 +3,28 @@
 import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
+import { createCartridgeSchema, formatZodError } from '@/lib/schemas';
 import type { DeleteResult } from '@/lib/types';
+
+function parseCartridgeForm(formData: FormData, t: (key: string) => string) {
+  const parsed = createCartridgeSchema(t).safeParse({
+    brand: formData.get('brand'),
+    caliber: formData.get('caliber'),
+    waterCapacityGr: formData.get('waterCapacityGr'),
+    amount: formData.get('amount'),
+    description: formData.get('description'),
+  });
+  if (!parsed.success) {
+    throw new Error(formatZodError(parsed.error));
+  }
+  return parsed.data;
+}
 
 export async function createCartridge(formData: FormData) {
   const t = await getTranslations('cartridges');
-  const brand = formData.get('brand') as string;
-  const caliber = formData.get('caliber') as string;
-  const waterCapacityGr = formData.get('waterCapacityGr')
-    ? parseFloat(formData.get('waterCapacityGr') as string)
-    : null;
-  const amount = formData.get('amount') ? parseInt(formData.get('amount') as string, 10) : 0;
-  const description = (formData.get('description') as string) || null;
+  const data = parseCartridgeForm(formData, t);
 
-  if (!brand || !caliber) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
-
-  await prisma.cartridge.create({
-    data: {
-      brand,
-      caliber,
-      waterCapacityGr,
-      amount: isNaN(amount) ? 0 : amount,
-      description,
-    },
-  });
+  await prisma.cartridge.create({ data });
 
   revalidatePath('/cartridges');
   revalidatePath('/');
@@ -35,27 +32,11 @@ export async function createCartridge(formData: FormData) {
 
 export async function updateCartridge(id: string, formData: FormData) {
   const t = await getTranslations('cartridges');
-  const brand = formData.get('brand') as string;
-  const caliber = formData.get('caliber') as string;
-  const waterCapacityGr = formData.get('waterCapacityGr')
-    ? parseFloat(formData.get('waterCapacityGr') as string)
-    : null;
-  const amount = formData.get('amount') ? parseInt(formData.get('amount') as string, 10) : 0;
-  const description = (formData.get('description') as string) || null;
-
-  if (!brand || !caliber) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
+  const data = parseCartridgeForm(formData, t);
 
   await prisma.cartridge.update({
     where: { id },
-    data: {
-      brand,
-      caliber,
-      waterCapacityGr,
-      amount: isNaN(amount) ? 0 : amount,
-      description,
-    },
+    data,
   });
 
   revalidatePath('/cartridges');

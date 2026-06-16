@@ -448,7 +448,9 @@
       "saving": "Gemmer...",
       "cancel": "Annuller",
       "validation": {
-        "brandRequired": "Mærke er påkrævet"
+        "brandRequired": "Mærke er påkrævet",
+        "typeRequired": "Type er påkrævet",
+        "amountNegative": "Antal må ikke være negativt"
       }
     },
     "toast": {
@@ -501,7 +503,8 @@
         "brandRequired": "Mærke er påkrævet",
         "typeRequired": "Type er påkrævet",
         "weightPositive": "Vægt skal være positiv",
-        "caliberRequired": "Kaliber er påkrævet"
+        "caliberRequired": "Kaliber er påkrævet",
+        "amountNegative": "Antal må ikke være negativt"
       }
     },
     "toast": {

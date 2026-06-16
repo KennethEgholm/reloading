@@ -448,7 +448,9 @@
       "saving": "Saving...",
       "cancel": "Cancel",
       "validation": {
-        "brandRequired": "Brand is required"
+        "brandRequired": "Brand is required",
+        "typeRequired": "Type is required",
+        "amountNegative": "Amount cannot be negative"
       }
     },
     "toast": {
@@ -501,7 +503,8 @@
         "brandRequired": "Brand is required",
         "typeRequired": "Type is required",
         "weightPositive": "Weight must be positive",
-        "caliberRequired": "Caliber is required"
+        "caliberRequired": "Caliber is required",
+        "amountNegative": "Amount cannot be negative"
       }
     },
     "toast": {

@@ -3,58 +3,40 @@
 import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
+import { createProjectileSchema, formatZodError } from '@/lib/schemas';
 import type { DeleteResult } from '@/lib/types';
+
+function parseProjectileForm(formData: FormData, t: (key: string) => string) {
+  const parsed = createProjectileSchema(t).safeParse({
+    brand: formData.get('brand'),
+    type: formData.get('type'),
+    weightGr: formData.get('weightGr'),
+    caliber: formData.get('caliber'),
+    amount: formData.get('amount'),
+    description: formData.get('description'),
+  });
+  if (!parsed.success) {
+    throw new Error(formatZodError(parsed.error));
+  }
+  return parsed.data;
+}
 
 export async function createProjectile(formData: FormData) {
   const t = await getTranslations('projectiles');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as string;
-  const weightGr = parseFloat(formData.get('weightGr') as string);
-  const caliber = formData.get('caliber') as string;
-  const amount = parseInt(formData.get('amount') as string) || 0;
-  const description = (formData.get('description') as string) || null;
+  const data = parseProjectileForm(formData, t);
 
-  if (!brand || !type || isNaN(weightGr) || !caliber) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
-
-  await prisma.projectile.create({
-    data: {
-      brand,
-      type,
-      weightGr,
-      caliber,
-      amount,
-      description,
-    },
-  });
+  await prisma.projectile.create({ data });
 
   revalidatePath('/projectiles');
 }
 
 export async function updateProjectile(id: string, formData: FormData) {
   const t = await getTranslations('projectiles');
-  const brand = formData.get('brand') as string;
-  const type = formData.get('type') as string;
-  const weightGr = parseFloat(formData.get('weightGr') as string);
-  const caliber = formData.get('caliber') as string;
-  const amount = parseInt(formData.get('amount') as string) || 0;
-  const description = (formData.get('description') as string) || null;
-
-  if (!brand || !type || isNaN(weightGr) || !caliber) {
-    throw new Error(t('form.validation.brandRequired'));
-  }
+  const data = parseProjectileForm(formData, t);
 
   await prisma.projectile.update({
     where: { id },
-    data: {
-      brand,
-      type,
-      weightGr,
-      caliber,
-      amount,
-      description,
-    },
+    data,
   });
 
   revalidatePath('/projectiles');
