@@ -119,9 +119,15 @@ pnpm dev
 
 - All mutations go through Server Actions that receive `FormData`.
 - Range photos use a combination of client state (`existingImages` with `markedForDelete`, `images` for new File objects) + explicit `formData.append` for new files + metadata for existing ones. Never give the dynamic photo inputs a `name` attribute (prevents double submission).
+- Server Actions are the trust boundary: they re-validate every `FormData` payload with shared Zod schemas in `lib/schemas.ts` (forms validating client-side is not enough). Add new entity validation there rather than hand-parsing in the action.
 - After any schema change, run the migration inside the container and restart the app service.
 - Always run `pnpm exec tsc --noEmit` (or the equivalent inside Docker) before declaring something "done".
-- The detailed conversation history, architectural decisions, and bug fixes are also captured in the project's Grok memory (`~/.grok/memory/reloading-bc8d498c/MEMORY.md`) so context survives across sessions.
+
+### Testing
+
+- Unit tests run with [Vitest](https://vitest.dev): `pnpm test` (single run) or `pnpm test:watch`.
+- Test files live next to the code they cover as `*.test.ts` (config: `vitest.config.ts`, node environment, `@/` path alias).
+- Current coverage focuses on pure domain logic: `lib/inventory.ts` (the "Possible loads" calculation) and `lib/schemas.ts` (the Server Action validation schemas). Add tests here when changing inventory math or validation rules.
 
 ## License
 
