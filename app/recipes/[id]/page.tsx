@@ -21,14 +21,14 @@ export default async function RecipeDetailPage({
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       <div className="mb-6">
-        <Link href="/recipes" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/recipes" className="text-sm text-accent hover:text-accent-hover hover:underline">
           {t('detail.back')}
         </Link>
       </div>
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tight">{recipe.name}</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tight">{recipe.name}</h1>
           <p className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{recipe.caliber}</p>
         </div>
 
@@ -125,7 +125,7 @@ export default async function RecipeDetailPage({
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{t('detail.recentRangeSessions')}</h2>
-          <Link href={`/range/new?recipeId=${recipe.id}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href={`/range/new?recipeId=${recipe.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
             {t('detail.logNewSession')}
           </Link>
         </div>
@@ -172,7 +172,7 @@ export default async function RecipeDetailPage({
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{t('detail.recentLoadLogs')}</h2>
-          <Link href={`/logs?recipeId=${recipe.id}`} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+          <Link href={`/logs?recipeId=${recipe.id}`} className="text-sm text-accent hover:text-accent-hover hover:underline">
             {t('detail.logNewLoad')}
           </Link>
         </div>

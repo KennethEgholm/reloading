@@ -626,10 +626,17 @@
       "languageHint": "Vælg dit foretrukne sprog.",
       "appearanceTitle": "Udseende",
       "appearanceHint": "Vælg et tema. \"System\" følger din enheds indstilling.",
+      "accentTitle": "Accentfarve",
+      "accentHint": "Vælg accentfarven til links, fremhævninger og vigtige tal.",
       "theme": {
         "light": "Lyst",
         "dark": "Mørkt",
-        "system": "System"
+        "system": "System",
+        "accents": {
+          "copper": "Kobber",
+          "brass": "Messing",
+          "field": "Felt"
+        }
       }
     },
     "form": {

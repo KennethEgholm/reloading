@@ -626,10 +626,17 @@
       "languageHint": "Choose your preferred language.",
       "appearanceTitle": "Appearance",
       "appearanceHint": "Choose a theme. \"System\" follows your device setting.",
+      "accentTitle": "Accent",
+      "accentHint": "Pick the accent color used for links, highlights and key numbers.",
       "theme": {
         "light": "Light",
         "dark": "Dark",
-        "system": "System"
+        "system": "System",
+        "accents": {
+          "copper": "Copper",
+          "brass": "Brass",
+          "field": "Field"
+        }
       }
     },
     "form": {

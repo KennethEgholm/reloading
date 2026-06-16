@@ -121,7 +121,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                 <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setEditingRecipe(recipe)}
-                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline mr-3"
+                    className="text-sm text-accent hover:text-accent-hover hover:underline mr-3"
                   >
                     {t('form.titleEdit')}
                   </button>

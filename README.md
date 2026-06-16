@@ -46,7 +46,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 
 - **Settings** (`/settings` – gear icon)
-  - **Appearance**: Light / Dark / System theme switch. The choice is saved per-device in `localStorage` and applied before first paint (no flash); "System" follows the OS preference and updates live when it changes.
+  - **Appearance**: Light / Dark / System theme switch, plus an **Accent** picker (Copper / Brass / Field) for the highlight color used by links and key numbers. Both choices are saved per-device in `localStorage` and applied before first paint (no flash); "System" follows the OS preference and updates live when it changes. The two axes are independent — any accent works in both light and dark mode.
   - **AI configuration**
   - Configure the AI model the app uses. Single switchable config (provider dropdown + fields), designed to alternate between providers; **Grok (xAI)** is the first supported provider.
   - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.

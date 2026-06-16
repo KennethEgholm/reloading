@@ -10,24 +10,81 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
+  --background: #fafafa;
   --foreground: #171717;
+  /* Strength (in %) of the ambient accent glow on the body background. Light
+     mode keeps it off; dark mode dials it up below. Tune in one place. */
+  --glow: 0;
+  /* Accent defaults to copper (light). Per-theme overrides below key off the
+     `data-theme` attribute set on <html>; when absent, copper is the default. */
+  --accent: #c2410c;
+  --accent-hover: #9a3412;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-space-grotesk);
 }
 
 .dark {
-  --background: #0a0a0a;
+  /* Warm near-black (stone-950) instead of cold zinc, so the neutrals harmonize
+     with the warm accent. */
+  --background: #0c0a09;
   --foreground: #ededed;
+  /* Ambient accent glow, dark mode only. Felt more than seen.
+     Raise for more presence, drop to 0 to disable. */
+  --glow: 14;
+  /* copper (dark) */
+  --accent: #fb923c;
+  --accent-hover: #fdba74;
+}
+
+/*
+ * Accent themes. The accent axis is orthogonal to light/dark: each theme defines
+ * a light value (plain attribute selector) and a dark value (combined with the
+ * `.dark` class, which has higher specificity so it wins in dark mode). copper
+ * lives in :root/.dark above as the default when no data-theme is set.
+ */
+[data-theme='brass'] {
+  --accent: #b45309;
+  --accent-hover: #92400e;
+}
+.dark[data-theme='brass'] {
+  --accent: #f59e0b;
+  --accent-hover: #fbbf24;
+}
+
+[data-theme='field'] {
+  --accent: #4d7c0f;
+  --accent-hover: #3f6212;
+}
+.dark[data-theme='field'] {
+  --accent: #a3e635;
+  --accent-hover: #bef264;
+}
+
+/* Make numeric/ballistics columns align digit-for-digit, like instrument readouts. */
+.font-mono {
+  font-variant-numeric: tabular-nums;
 }
 
 body {
-  background: var(--background);
+  /* A faint radial wash pulled from the active accent gives the page depth and,
+     because it reads --accent, each theme (copper/brass/field) gets its own
+     ambient tint for free. --glow controls strength (0 = off, in light mode). */
+  background:
+    radial-gradient(
+      120% 85% at 50% -10%,
+      color-mix(in oklab, var(--accent) calc(var(--glow) * 1%), transparent),
+      transparent 65%
+    ),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

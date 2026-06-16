@@ -77,7 +77,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center gap-4 mb-2">
           <img src="/images/logo.svg" alt={t('title')} className="w-12 h-12" />
-          <h1 className="text-4xl font-semibold tracking-tighter">{t('title')}</h1>
+          <h1 className="font-display text-4xl font-semibold tracking-tighter">{t('title')}</h1>
         </div>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
           {t('subtitle')}
@@ -88,38 +88,38 @@ export default async function Overview() {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-10">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsFired', { count: totalRounds })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.loadLogs')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.loads', { count: loadCount })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.loads', { count: loadCount })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsLoaded', { count: totalLoaded })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.recipes')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.saved', { count: recipes.length })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.saved', { count: recipes.length })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.primers')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: primers.length })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: primers.length })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.pieces', { count: totalPrimers })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.projectiles')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: projectiles.length })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: projectiles.length })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: totalPropellantGrams.toFixed(1) })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
-          <div className="text-3xl font-semibold mt-1">{t('summary.types', { count: cartridges.length })}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: cartridges.length })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.cases', { count: totalCases })}</div>
         </div>
       </div>
@@ -129,12 +129,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/range.svg" alt={t('sections.rangeSessions')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.rangeSessions')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.rangeSessions')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.rangeSummary', { count: rangeCount, rounds: totalRounds })}</span>
           </div>
           <Link
             href="/range"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -149,7 +149,7 @@ export default async function Overview() {
         ) : (
           <p className="text-zinc-500">
             {t('sections.noRangeSessions')}{' '}
-            <Link href="/range/new" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/range/new" className="text-accent hover:text-accent-hover hover:underline">
               {t('sections.logFirstSession')}
             </Link>
             .
@@ -162,12 +162,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/log.svg" alt={t('sections.loadLogs')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.loadLogs')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.loadLogs')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.loadSummary', { count: loadCount, rounds: totalLoaded })}</span>
           </div>
           <Link
             href="/logs"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -189,12 +189,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/recipe.svg" alt={t('sections.recipes')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.recipes')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.recipes')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.recipeSummary', { count: recipes.length })}</span>
           </div>
           <Link
             href="/recipes"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -287,7 +287,7 @@ export default async function Overview() {
               clipRule="evenodd"
             />
           </svg>
-          <h2 className="text-2xl font-semibold">{t('sections.materials')}</h2>
+          <h2 className="font-display text-2xl font-semibold">{t('sections.materials')}</h2>
           <span className="text-sm text-zinc-500">
             {t('sections.materialsSummary', {
               primers: primers.length,
@@ -304,12 +304,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/primer.svg" alt={t('sections.primers')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.primers')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.primers')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.primerSummary', { count: primers.length, pieces: totalPrimers })}</span>
           </div>
           <Link
             href="/primers"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -356,12 +356,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/projectile.svg" alt={t('sections.projectiles')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.projectiles')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.projectiles')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.projectileSummary', { count: projectiles.length })}</span>
           </div>
           <Link
             href="/projectiles"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -404,12 +404,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/propellant.svg" alt={t('sections.propellants')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.propellants')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.propellants')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.propellantSummary', { count: propellants.length })}</span>
           </div>
           <Link
             href="/propellants"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>
@@ -450,12 +450,12 @@ export default async function Overview() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <img src="/images/cartridge.svg" alt={t('sections.cartridges')} className="w-7 h-7" />
-            <h2 className="text-2xl font-semibold">{t('sections.cartridges')}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t('sections.cartridges')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.cartridgeSummary', { count: cartridges.length, cases: totalCases })}</span>
           </div>
           <Link
             href="/cartridges"
-            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
           >
             {t('sections.viewFullList')}
           </Link>

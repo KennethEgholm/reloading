@@ -21,6 +21,10 @@ export function ThemeApplier() {
           t === 'dark' ||
           (t !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
         document.documentElement.classList.toggle('dark', dark)
+        // Accent theme is orthogonal to light/dark; re-apply it here too so it
+        // survives React reconciliation of the <html> attributes after hydration.
+        const accent = localStorage.getItem('accent') || 'copper'
+        document.documentElement.setAttribute('data-theme', accent)
       } catch {
         // ignore (e.g. storage blocked)
       }
@@ -28,10 +32,15 @@ export function ThemeApplier() {
 
     apply()
 
-    // Keep in sync with the OS while in "system" mode.
+    // Keep in sync with the OS while in "system" mode, and with the accent
+    // chosen in another tab (the storage event fires only in other tabs).
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
+    window.addEventListener('storage', apply)
+    return () => {
+      mq.removeEventListener('change', apply)
+      window.removeEventListener('storage', apply)
+    }
   }, [])
 
   return null

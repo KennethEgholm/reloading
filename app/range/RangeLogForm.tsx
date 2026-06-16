@@ -376,7 +376,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             <button
               type="button"
               onClick={addImageField}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-accent hover:text-accent-hover hover:underline"
             >
               {t('form.addPhoto')}
             </button>

@@ -17,7 +17,7 @@ export default async function RangeLogPage({
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">{t('page.title')}</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{t('page.title')}</h1>
           <p className="text-zinc-600 dark:text-zinc-400 mt-1">
             {t('page.subtitle')}
           </p>
@@ -38,7 +38,7 @@ export default async function RangeLogPage({
         {logs.length === 0 ? (
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-500">
             {t('page.empty')}{' '}
-            <Link href="/range/new" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/range/new" className="text-accent hover:text-accent-hover hover:underline">
               {t('page.logFirstSession')}
             </Link>
             {t('page.logFirstSuffix')}

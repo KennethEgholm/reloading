@@ -74,7 +74,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                 )}
                 <a
                   href={`/range/${log.id}/edit`}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-sm text-accent hover:text-accent-hover hover:underline"
                   onClick={goToEdit}
                 >
                   {t('row.edit')}
@@ -137,7 +137,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
               )}
               <a
                 href={`/range/${log.id}`}
-                className="inline-block mt-3 text-blue-400 hover:underline text-sm"
+                className="inline-block mt-3 text-accent hover:text-accent-hover hover:underline text-sm"
                 onClick={() => setShowPhotoOverlay(false)}
               >
                 {t('row.viewFullSession')}

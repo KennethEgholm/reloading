@@ -26,7 +26,7 @@ export default async function LoadLogDetailPage({
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
       <div className="mb-8">
-        <Link href="/logs" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+        <Link href="/logs" className="text-sm text-accent hover:text-accent-hover hover:underline">
           {t('detail.back')}
         </Link>
       </div>
@@ -34,7 +34,7 @@ export default async function LoadLogDetailPage({
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold tracking-tight">{log.recipeName}</h1>
+          <h1 className="font-display text-3xl font-semibold tracking-tight">{log.recipeName}</h1>
           <div className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{log.caliber}</div>
           <div className="mt-4 flex items-center gap-4 text-sm">
             <span className="px-3 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full">

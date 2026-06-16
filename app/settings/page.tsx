@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { getAiSettings } from './actions'
 import { SettingsForm } from './SettingsForm'
 import { ThemeToggle } from './ThemeToggle'
+import { ThemePicker } from './ThemePicker'
 import { LocaleSwitcher } from './LocaleSwitcher'
 
 export default async function SettingsPage() {
@@ -15,7 +16,7 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">{t('page.title')}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{t('page.title')}</h1>
         <p className="text-zinc-600 dark:text-zinc-400 mt-1">
           {t('page.subtitle')}
         </p>
@@ -37,6 +38,12 @@ export default async function SettingsPage() {
           {t('page.appearanceHint')}
         </p>
         <ThemeToggle />
+
+        <h3 className="text-sm font-medium mt-6 mb-1">{t('page.accentTitle')}</h3>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+          {t('page.accentHint')}
+        </p>
+        <ThemePicker />
       </div>
 
       <SettingsForm
