@@ -10,48 +10,60 @@
     "range": "Range Sessions",
     "settings": "Settings",
     "personalInventory": "Personal Inventory",
-    "materials": "Materials"
+    "materials": "Materials",
+    "primers": "Primers",
+    "projectiles": "Projectiles",
+    "propellants": "Propellants",
+    "cartridges": "Cartridges"
   },
   "overview": {
     "title": "Overview",
     "subtitle": "Your range sessions, load logs, recipes, and components",
     "summary": {
       "rangeSessions": "Range Sessions",
-      "logged_one": "{{count}} logged",
-      "logged_other": "{{count}} logged",
-      "roundsFired_one": "{{count}} round fired",
-      "roundsFired_other": "{{count}} rounds fired",
+      "logged_one": "{count} logged",
+      "logged_other": "{count} logged",
+      "logged": "logged",
+      "roundsFired_one": "{count} round fired",
+      "roundsFired_other": "{count} rounds fired",
+      "roundsFired": "round fired",
       "loadLogs": "Load Logs",
-      "loads_one": "{{count}} load",
-      "loads_other": "{{count}} loads",
-      "roundsLoaded_one": "{{count}} round loaded",
-      "roundsLoaded_other": "{{count}} rounds loaded",
+      "loads_one": "{count} load",
+      "loads_other": "{count} loads",
+      "loads": "load",
+      "roundsLoaded_one": "{count} round loaded",
+      "roundsLoaded_other": "{count} rounds loaded",
+      "roundsLoaded": "round loaded",
       "recipes": "Recipes",
-      "saved_one": "{{count}} saved",
-      "saved_other": "{{count}} saved",
+      "saved_one": "{count} saved",
+      "saved_other": "{count} saved",
+      "saved": "saved",
       "primers": "Primers",
-      "types_one": "{{count}} type",
-      "types_other": "{{count}} types",
-      "pieces_one": "{{count}} piece",
-      "pieces_other": "{{count}} pieces",
+      "types_one": "{count} type",
+      "types_other": "{count} types",
+      "types": "type",
+      "pieces_one": "{count} piece",
+      "pieces_other": "{count} pieces",
+      "pieces": "piece",
       "projectiles": "Projectiles",
       "propellants": "Propellants",
-      "amountGrams": "{{count}} g",
+      "amountGrams": "{count} g",
       "cartridges": "Cartridges",
-      "cases_one": "{{count}} case",
-      "cases_other": "{{count}} cases"
+      "cases_one": "{count} case",
+      "cases_other": "{count} cases",
+      "cases": "case"
     },
     "sections": {
       "rangeSessions": "Range Sessions",
-      "rangeSummary": "({{count}} logged • {{rounds}} rounds)",
+      "rangeSummary": "({count} logged • {rounds} rounds)",
       "viewFullList": "View full list →",
       "noRangeSessions": "No range sessions logged yet.",
       "logFirstSession": "Log your first session",
       "loadLogs": "Load Logs",
-      "loadSummary": "({{count}} loads • {{rounds}} rounds)",
+      "loadSummary": "({count} loads • {rounds} rounds)",
       "noLoadLogs": "No loads logged yet.",
       "recipes": "Recipes",
-      "recipeSummary": "({{count}} saved)",
+      "recipeSummary": "({count} saved)",
       "recipeTable": {
         "name": "Name",
         "caliber": "Caliber",
@@ -66,9 +78,9 @@
       },
       "noRecipes": "No recipes saved yet.",
       "materials": "Materials",
-      "materialsSummary": "({{primers}} primers • {{projectiles}} projectiles • {{propellants}} propellants • {{cartridges}} cartridges)",
+      "materialsSummary": "({primers} primers • {projectiles} projectiles • {propellants} propellants • {cartridges} cartridges)",
       "primers": "Primers",
-      "primerSummary": "({{count}} types • {{pieces}} pieces)",
+      "primerSummary": "({count} types • {pieces} pieces)",
       "primerTable": {
         "brand": "Brand",
         "type": "Type",
@@ -79,7 +91,7 @@
       },
       "noPrimers": "No primers added yet.",
       "projectiles": "Projectiles",
-      "projectileSummary": "({{count}} types)",
+      "projectileSummary": "({count} types)",
       "projectileTable": {
         "brand": "Brand",
         "type": "Type",
@@ -89,7 +101,7 @@
       },
       "noProjectiles": "No projectiles added yet.",
       "propellants": "Propellants",
-      "propellantSummary": "({{count}} types)",
+      "propellantSummary": "({count} types)",
       "propellantTable": {
         "brand": "Brand",
         "type": "Type",
@@ -98,7 +110,7 @@
       },
       "noPropellants": "No propellants added yet.",
       "cartridges": "Cartridges",
-      "cartridgeSummary": "({{count}} types • {{cases}} cases)",
+      "cartridgeSummary": "({count} types • {cases} cases)",
       "cartridgeTable": {
         "brand": "Brand",
         "caliber": "Caliber",
@@ -123,5 +135,545 @@
     "label": "Language",
     "en": "English",
     "da": "Danish"
+  },
+  "range": {
+    "page": {
+      "title": "Range Sessions",
+      "subtitle": "Record your range sessions and target results",
+      "addButton": "+ Add session",
+      "listTitle": "Range Sessions",
+      "empty": "No range sessions logged yet.",
+      "logFirstSession": "Log your first session",
+      "logFirstSuffix": "."
+    },
+    "detail": {
+      "back": "← Back to Range Sessions",
+      "logAnother": "+ Log another session",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "edit": {
+      "title": "Edit Range Session",
+      "subtitle": "Update the details for this range session.",
+      "back": "← Back to Session"
+    },
+    "new": {
+      "title": "Log New Range Session",
+      "subtitle": "Record details from your range session, including photos of targets and notes.",
+      "back": "← Back to Range Sessions"
+    },
+    "form": {
+      "date": "Date",
+      "location": "Location",
+      "locationPlaceholder": "Local range, 100m bay...",
+      "recipe": "Recipe Used",
+      "recipePlaceholder": "Select recipe...",
+      "roundsFired": "Rounds Fired",
+      "conditions": "Conditions / Weather",
+      "conditionsPlaceholder": "Sunny, 18°C, light crosswind...",
+      "velocityMin": "Min (m/s)",
+      "velocityMax": "Max (m/s)",
+      "velocityAvg": "Avg (m/s)",
+      "velocityES": "ES",
+      "velocitySD": "SD",
+      "notes": "Notes",
+      "notesPlaceholder": "Groups, feeding, extraction, observations...",
+      "photos": "Photos",
+      "photosOptional": "Photos (optional)",
+      "addPhoto": "+ Add another photo",
+      "photoDescription": "Photo description",
+      "removePhoto": "×",
+      "photoMaxSize": "You can add as many photos as you want. Each can have its own description. Max 10 MB per photo.",
+      "deletePhoto": "Delete this photo",
+      "mainThumbnail": "Main thumbnail",
+      "setAsMain": "Set as main",
+      "isMain": "★ Main thumbnail",
+      "save": "Save Range Session",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "editSession": "Edit this session"
+    },
+    "row": {
+      "rounds_one": "{count} round",
+      "rounds_other": "{count} rounds",
+      "avg": "Avg: {value} m/s",
+      "es": "ES: {value}",
+      "edit": "Edit",
+      "photoCount": "📷 {count}",
+      "viewFullSession": "View full session →",
+      "closeOverlay": "Close"
+    },
+    "overlay": {
+      "close": "Close",
+      "previous": "← Previous",
+      "next": "Next →",
+      "counter": "{current} / {total}"
+    },
+    "toast": {
+      "saved": "Range session logged!",
+      "updated": "Range session updated!",
+      "deleted": "Range session deleted",
+      "deleteFailed": "Failed to delete range session",
+      "saveFailed": "Failed to save session",
+      "photoTooLarge": "Photo \"{name}\" is too large. Maximum size is 10 MB.",
+      "photoInvalid": "File \"{name}\" is not a recognized image."
+    },
+    "delete": {
+      "confirm": "Delete this range session and all its photos?",
+      "button": "Delete"
+    },
+    "errors": {
+      "imageNotFound": "Image not found",
+      "notFound": "Range session not found",
+      "validation": {
+        "dateRequired": "Date is required",
+        "recipeRequired": "Recipe is required",
+        "roundsFiredMin": "Rounds fired must be at least 1",
+        "velocityMinPositive": "Minimum velocity cannot be negative",
+        "velocityMaxPositive": "Maximum velocity cannot be negative",
+        "velocityAvgPositive": "Average velocity cannot be negative",
+        "extremeSpreadPositive": "Extreme spread cannot be negative",
+        "stdDevPositive": "Standard deviation cannot be negative"
+      }
+    }
+  },
+  "logs": {
+    "page": {
+      "title": "Reloading Log",
+      "subtitle": "Record every time you use a recipe to load ammunition",
+      "newFormTitle": "Log New Load",
+      "historyTitle": "Load History",
+      "empty": "No loads logged yet. Use the form on the left to record your first batch."
+    },
+    "detail": {
+      "back": "← Back to Reloading Log",
+      "rounds": "{count} rounds",
+      "recipeSnapshot": "Recipe Snapshot (at time of loading)",
+      "charge": "Charge",
+      "coal": "COAL",
+      "calcV0": "Calculated V0",
+      "measV0": "Measured V0",
+      "fillRate": "Fill Rate",
+      "componentsTitle": "Components Consumed in This Load",
+      "projectile": "Projectile",
+      "propellant": "Propellant",
+      "primer": "Primer",
+      "total": "{quantity} × {chargeGr} gr = ~{total} g total",
+      "notes": "Notes"
+    },
+    "form": {
+      "recipe": "Recipe",
+      "recipePlaceholder": "Select a recipe...",
+      "date": "Date",
+      "quantity": "Quantity Loaded",
+      "notes": "Notes (optional)",
+      "notesPlaceholder": "Lot numbers, velocity data, conditions, etc.",
+      "submit": "Log Load & Update Inventory",
+      "saving": "Logging load..."
+    },
+    "row": {
+      "loaded": "{count}× loaded",
+      "rounds": "{count} rounds"
+    },
+    "toast": {
+      "saved": "Load logged successfully. Inventory updated.",
+      "saveFailed": "Failed to log load",
+      "deleted": "Load log deleted and inventory restored",
+      "deleteFailed": "Failed to delete load log"
+    },
+    "delete": {
+      "confirm": "Delete this load log?\n\nThis will add the components back into your inventory.\nThis action cannot be undone.",
+      "button": "Delete Load Log"
+    },
+    "errors": {
+      "recipeRequired": "Recipe and a positive quantity are required",
+      "recipeNotFound": "Recipe not found",
+      "noCharge": "This recipe has no charge weight defined. Cannot calculate propellant usage.",
+      "notFound": "Load log not found",
+      "insufficientProjectiles": "Not enough {brand} {type} projectiles (need {need}, have {have})",
+      "insufficientPrimers": "Not enough {brand} primers (need {need}, have {have})",
+      "insufficientPropellant": "Not enough {brand} {type} (need ~{need}g, have {have}g)"
+    }
+  },
+  "recipes": {
+    "page": {
+      "title": "Load Recipes",
+      "subtitle": "Saved combinations of components",
+      "addButton": "+ Add Recipe",
+      "empty": "No recipes yet. Click \"+ Add Recipe\" above to create your first one."
+    },
+    "detail": {
+      "back": "← Back to Recipes",
+      "logLoad": "Log a load",
+      "logRange": "Log range session",
+      "recipeDetails": "Recipe Details",
+      "projectile": "Projectile",
+      "propellant": "Propellant",
+      "primer": "Primer",
+      "none": "—",
+      "cartridge": "Cartridge / Case",
+      "charge": "Charge",
+      "coal": "COAL",
+      "fillRate": "Fill Rate",
+      "calcV0": "Calculated V0",
+      "measV0": "Measured V0",
+      "notes": "Notes",
+      "recentRangeSessions": "Recent Range Sessions",
+      "noRangeSessions": "No range sessions logged for this recipe yet.",
+      "logNewSession": "Log new session →",
+      "recentLoadLogs": "Recent Loading Logs",
+      "noLoadLogs": "No loads logged for this recipe yet.",
+      "logNewLoad": "Log new load →",
+      "rounds": "{count} rounds",
+      "notFound": "Recipe not found."
+    },
+    "aiCheck": {
+      "title": "AI Safety Check",
+      "run": "Run check",
+      "reRun": "Re-run check",
+      "checking": "Checking…",
+      "noAssessment": "No assessment yet. Click <0>Run check</0> to ask the configured AI model to review this recipe for obvious errors or dangers.",
+      "unsavedHint": "Checks the values currently entered above — including unsaved changes.",
+      "unsavedResult": "This assessment reflects the current (unsaved) values and was not saved. Save the recipe, then run the check from its detail page to store it.",
+      "lastChecked": "Last checked {date}"
+    },
+    "aiDisclaimer": "⚠️ AI guidance only. This is not verified load data. Always cross-check charge weights and COAL against current published data from the powder and bullet manufacturer before loading. Never rely on this for safety.",
+    "aiVerdict": {
+      "OK": "Nothing obvious looks wrong",
+      "CAUTION": "Caution — verify before loading",
+      "STOP": "Stop — possible danger detected",
+      "UNKNOWN": "Inconclusive",
+      "concerns": "Specific concerns"
+    },
+    "form": {
+      "titleAdd": "Add New Recipe",
+      "titleEdit": "Edit Recipe",
+      "name": "Name",
+      "namePlaceholder": "308 Win 168gr Match",
+      "caliber": "Caliber",
+      "caliberPlaceholder": ".308 Win",
+      "projectile": "Projectile",
+      "projectilePlaceholder": "Select Projectile",
+      "propellant": "Propellant",
+      "propellantPlaceholder": "Select Propellant",
+      "primer": "Primer (optional)",
+      "primerPlaceholder": "Select Primer (optional)",
+      "cartridge": "Cartridge / Case (optional)",
+      "cartridgePlaceholder": "Select Cartridge (optional)",
+      "charge": "Charge (grains)",
+      "coal": "COAL (inches)",
+      "calcV0": "Calculated V0 (m/s)",
+      "measV0": "Measured V0 (m/s)",
+      "fillRate": "Fill rate (%)",
+      "notes": "Notes",
+      "notesPlaceholder": "Velocity, group size, seating depth, etc.",
+      "aiCheck": "AI Safety Check",
+      "aiChecking": "Checking…",
+      "cancel": "Cancel",
+      "save": "Save Recipe",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "validation": {
+        "nameRequired": "Name is required",
+        "caliberRequired": "Caliber is required",
+        "projectileRequired": "Projectile is required",
+        "propellantRequired": "Propellant is required"
+      }
+    },
+    "table": {
+      "name": "Name",
+      "caliber": "Caliber",
+      "projectile": "Projectile",
+      "powder": "Powder",
+      "charge": "Charge",
+      "coal": "COAL",
+      "calcV0": "Calc V0",
+      "measV0": "Meas V0",
+      "fill": "Fill %",
+      "check": "Check",
+      "possible": "Possible"
+    },
+    "toast": {
+      "saved": "Recipe saved",
+      "updated": "Recipe updated",
+      "failed": "Failed to save recipe",
+      "aiCheckComplete": "AI safety check complete",
+      "aiCheckSaved": "AI safety check complete (saved)",
+      "aiCheckFailed": "AI check failed",
+      "aiCheckRequiredFields": "Fill in name, caliber, projectile, and propellant before running the check.",
+      "deleted": "Recipe deleted",
+      "deleteFailed": "Failed to delete recipe"
+    },
+    "delete": {
+      "confirm": "Delete this recipe?",
+      "button": "Delete",
+      "inUse": "Can't delete: this recipe is used by {count} range session. Remove it from that session first.",
+      "inUse_plural": "Can't delete: this recipe is used by {count} range sessions. Remove it from those sessions first."
+    },
+    "errors": {
+      "configureAi": "Configure an AI model in Settings first.",
+      "recipeNotFound": "Recipe not found",
+      "projectileNotFound": "Selected projectile not found.",
+      "propellantNotFound": "Selected propellant not found.",
+      "requiredForCheck": "Name, caliber, projectile, and propellant are required to run a check."
+    }
+  },
+  "primers": {
+    "page": {
+      "title": "Primers",
+      "subtitle": "Manage your primer inventory",
+      "addButton": "+ Add Primer"
+    },
+    "table": {
+      "brand": "Brand",
+      "type": "Type",
+      "magnum": "Magnum",
+      "amount": "Amount",
+      "description": "Description",
+      "actions": "",
+      "empty": "No primers yet."
+    },
+    "form": {
+      "titleAdd": "Add New Primer",
+      "titleEdit": "Edit Primer",
+      "brand": "Brand",
+      "brandPlaceholder": "CCI, Federal, Winchester...",
+      "type": "Type",
+      "magnum": "Magnum",
+      "amount": "Amount",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Lot number, notes...",
+      "submit": "Create Primer",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "validation": {
+        "brandRequired": "Brand is required"
+      }
+    },
+    "toast": {
+      "created": "Primer created",
+      "updated": "Primer updated",
+      "deleted": "Primer deleted",
+      "failed": "Something went wrong"
+    },
+    "delete": {
+      "confirm": "Delete this primer?",
+      "button": "Delete",
+      "inUse": "Can't delete: this primer is used by {count} recipe. Remove it from that recipe first.",
+      "inUse_plural": "Can't delete: this primer is used by {count} recipes. Remove it from those recipes first."
+    }
+  },
+  "projectiles": {
+    "page": {
+      "title": "Projectiles",
+      "subtitle": "Manage your bullet / projectile inventory",
+      "addButton": "+ Add Projectile"
+    },
+    "table": {
+      "brand": "Brand",
+      "type": "Type",
+      "weight": "Weight (gr)",
+      "caliber": "Caliber",
+      "amount": "Amount",
+      "description": "Description",
+      "actions": "",
+      "empty": "No projectiles yet."
+    },
+    "form": {
+      "titleAdd": "Add New Projectile",
+      "titleEdit": "Edit Projectile",
+      "brand": "Brand",
+      "brandPlaceholder": "Sierra, Hornady, Berger...",
+      "type": "Type",
+      "typePlaceholder": "Game King, MatchKing, Tipped...",
+      "weight": "Weight (grains)",
+      "caliber": "Caliber",
+      "caliberPlaceholder": "9mm, .308, 5.56...",
+      "amount": "Amount in stock",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Notes, BC, etc.",
+      "submit": "Create Projectile",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "validation": {
+        "brandRequired": "Brand is required",
+        "typeRequired": "Type is required",
+        "weightPositive": "Weight must be positive",
+        "caliberRequired": "Caliber is required"
+      }
+    },
+    "toast": {
+      "created": "Projectile created",
+      "updated": "Projectile updated",
+      "deleted": "Projectile deleted",
+      "failed": "Something went wrong"
+    },
+    "delete": {
+      "confirm": "Delete this projectile?",
+      "button": "Delete",
+      "inUse": "Can't delete: this projectile is used by {count} recipe. Remove it from that recipe first.",
+      "inUse_plural": "Can't delete: this projectile is used by {count} recipes. Remove it from those recipes first."
+    }
+  },
+  "propellants": {
+    "page": {
+      "title": "Propellants",
+      "subtitle": "Manage your powder inventory (amount in grams)",
+      "addButton": "+ Add Propellant"
+    },
+    "table": {
+      "brand": "Brand",
+      "type": "Type",
+      "amount": "Amount (g)",
+      "description": "Description",
+      "actions": "",
+      "empty": "No propellants yet."
+    },
+    "form": {
+      "titleAdd": "Add New Propellant",
+      "titleEdit": "Edit Propellant",
+      "brand": "Brand",
+      "brandPlaceholder": "Hodgdon, Vihtavuori, Alliant...",
+      "type": "Type",
+      "typePlaceholder": "H4350, Titegroup, CFE 223...",
+      "amount": "Amount (grams)",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Lot number, notes...",
+      "submit": "Create Propellant",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "validation": {
+        "brandRequired": "Brand is required",
+        "typeRequired": "Type is required",
+        "amountNegative": "Amount cannot be negative"
+      }
+    },
+    "toast": {
+      "created": "Propellant created",
+      "updated": "Propellant updated",
+      "deleted": "Propellant deleted",
+      "failed": "Something went wrong"
+    },
+    "delete": {
+      "confirm": "Delete this propellant?",
+      "button": "Delete",
+      "inUse": "Can't delete: this propellant is used by {count} recipe. Remove it from that recipe first.",
+      "inUse_plural": "Can't delete: this propellant is used by {count} recipes. Remove it from those recipes first."
+    }
+  },
+  "cartridges": {
+    "page": {
+      "title": "Cartridges",
+      "subtitle": "Brass / case inventory (water capacity in grains)",
+      "addButton": "+ Add Cartridge"
+    },
+    "table": {
+      "brand": "Brand",
+      "caliber": "Caliber",
+      "waterCapacity": "Water cap. (gr)",
+      "amount": "Amount",
+      "description": "Description",
+      "actions": "",
+      "empty": "No cartridges yet."
+    },
+    "form": {
+      "titleAdd": "Add New Cartridge",
+      "titleEdit": "Edit Cartridge",
+      "brand": "Brand / Name",
+      "brandPlaceholder": "Lapua, Starline, Hornady...",
+      "caliber": "Caliber",
+      "caliberPlaceholder": ".308 Win, 6.5 Creedmoor...",
+      "waterCapacity": "Water capacity (gr H₂O)",
+      "waterCapacityPlaceholder": "Optional",
+      "amount": "Amount (cases)",
+      "description": "Description (optional)",
+      "descriptionPlaceholder": "Lot number, times fired, notes...",
+      "submit": "Create Cartridge",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "validation": {
+        "brandRequired": "Brand is required",
+        "caliberRequired": "Caliber is required",
+        "capacityNegative": "Capacity cannot be negative",
+        "amountNegative": "Amount cannot be negative"
+      }
+    },
+    "toast": {
+      "created": "Cartridge created",
+      "updated": "Cartridge updated",
+      "deleted": "Cartridge deleted",
+      "failed": "Something went wrong"
+    },
+    "delete": {
+      "confirm": "Delete this cartridge?",
+      "button": "Delete",
+      "inUse": "Can't delete: this cartridge is used by {count} recipe. Remove it from that recipe first.",
+      "inUse_plural": "Can't delete: this cartridge is used by {count} recipes. Remove it from those recipes first."
+    }
+  },
+  "settings": {
+    "page": {
+      "title": "Settings",
+      "subtitle": "Configure the AI model used by the app. The active provider can be switched here.",
+      "languageTitle": "Language",
+      "languageHint": "Choose your preferred language.",
+      "appearanceTitle": "Appearance",
+      "appearanceHint": "Choose a theme. \"System\" follows your device setting.",
+      "theme": {
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+      }
+    },
+    "form": {
+      "provider": "Provider",
+      "model": "Model",
+      "modelHint": "Free text, so new model names work without an app update.",
+      "apiKey": "API Key",
+      "apiKeyStored": "Leave blank to keep the existing key. Stored in the database.",
+      "apiKeyNew": "Stored in the database.",
+      "apiKeyPlaceholder": "Paste your API key",
+      "apiKeyMaskedPlaceholder": "••••••••{last4} (unchanged)",
+      "baseUrl": "Base URL",
+      "temperature": "Temperature (optional)",
+      "temperaturePlaceholder": "0.7",
+      "maxTokens": "Max tokens (optional)",
+      "maxTokensPlaceholder": "1024",
+      "test": "Test connection",
+      "testing": "Testing...",
+      "save": "Save settings",
+      "saving": "Saving..."
+    },
+    "toast": {
+      "saved": "Settings saved",
+      "saveFailed": "Failed to save settings",
+      "testSuccess": "Connected. {count} models available.",
+      "testSuccessNoCount": "Connected.",
+      "testError": "Connection test failed"
+    },
+    "errors": {
+      "noApiKey": "No API key provided. Enter a key and try again.",
+      "noBaseUrl": "No base URL configured for this provider.",
+      "providerNotSupported": "Provider \"{provider}\" is not supported yet.",
+      "invalidApiKey": "Invalid API key.",
+      "requestFailed": "Request failed (HTTP {status}): {message}",
+      "requestFailedNoMessage": "Request failed (HTTP {status}).",
+      "couldNotReach": "Could not reach {url}: {detail}",
+      "providerRequired": "Provider is required",
+      "baseUrlInvalid": "Base URL must be a valid URL",
+      "temperatureRange": "Temperature must be between 0 and 2",
+      "maxTokensPositive": "Max tokens must be a positive integer"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong",
+    "saveFailed": "Failed to save",
+    "deleteFailed": "Failed to delete",
+    "required": "Required",
+    "validationFailed": "Validation failed"
   }
 }

@@ -1,57 +1,69 @@
 {
   "metadata": {
-    "title": "Håndlæsningsværktøj",
-    "description": "Lagerstyring af håndlæsningskomponenter"
+    "title": "Genladningsværktøj",
+    "description": "Lagerstyring af genladningskomponenter"
   },
   "nav": {
-    "home": "Håndlæsningsværktøj",
-    "recipes": "Recepturer",
+    "home": "Genladningsværktøj",
+    "recipes": "Ladninger",
     "logs": "Ladejournal",
     "range": "Skydning",
     "settings": "Indstillinger",
     "personalInventory": "Personligt Lager",
-    "materials": "Materialer"
+    "materials": "Materialer",
+    "primers": "Fænghætter",
+    "projectiles": "Projektiler",
+    "propellants": "Krudt",
+    "cartridges": "Hylstre"
   },
   "overview": {
     "title": "Oversigt",
-    "subtitle": "Dine skydninger, ladejournaler, recepturer og komponenter",
+    "subtitle": "Dine skydninger, ladejournaler, ladninger og komponenter",
     "summary": {
       "rangeSessions": "Skydning",
-      "logged_one": "{{count}} logget",
-      "logged_other": "{{count}} logget",
-      "roundsFired_one": "{{count}} skud affyret",
-      "roundsFired_other": "{{count}} skud affyret",
+      "logged_one": "{count} logget",
+      "logged_other": "{count} logget",
+      "logged": "logget",
+      "roundsFired_one": "{count} skud affyret",
+      "roundsFired_other": "{count} skud affyret",
+      "roundsFired": "skud affyret",
       "loadLogs": "Ladejournaler",
-      "loads_one": "{{count}} ladning",
-      "loads_other": "{{count}} ladninger",
-      "roundsLoaded_one": "{{count}} skud ladet",
-      "roundsLoaded_other": "{{count}} skud ladet",
-      "recipes": "Recepturer",
-      "saved_one": "{{count}} gemt",
-      "saved_other": "{{count}} gemt",
-      "primers": "Tændhætter",
-      "types_one": "{{count}} type",
-      "types_other": "{{count}} typer",
-      "pieces_one": "{{count}} stk.",
-      "pieces_other": "{{count}} stk.",
+      "loads_one": "{count} ladning",
+      "loads_other": "{count} ladninger",
+      "loads": "ladning",
+      "roundsLoaded_one": "{count} patroner ladet",
+      "roundsLoaded_other": "{count} patroner ladet",
+      "roundsLoaded": "patroner ladet",
+      "recipes": "Ladninger",
+      "saved_one": "{count} gemt",
+      "saved_other": "{count} gemt",
+      "saved": "gemt",
+      "primers": "Fænghætter",
+      "types_one": "{count} type",
+      "types_other": "{count} typer",
+      "types": "type",
+      "pieces_one": "{count} stk.",
+      "pieces_other": "{count} stk.",
+      "pieces": "stk.",
       "projectiles": "Projektiler",
       "propellants": "Krudt",
-      "amountGrams": "{{count}} g",
+      "amountGrams": "{count} g",
       "cartridges": "Hylstre",
-      "cases_one": "{{count}} hylster",
-      "cases_other": "{{count}} hylstre"
+      "cases_one": "{count} hylster",
+      "cases_other": "{count} hylstre",
+      "cases": "hylstre"
     },
     "sections": {
       "rangeSessions": "Skydning",
-      "rangeSummary": "({{count}} logget • {{rounds}} skud)",
+      "rangeSummary": "({count} logget • {rounds} skud)",
       "viewFullList": "Se fuld liste →",
       "noRangeSessions": "Ingen skydninger logget endnu.",
       "logFirstSession": "Log din første skydning",
       "loadLogs": "Ladejournaler",
-      "loadSummary": "({{count}} ladninger • {{rounds}} skud)",
+      "loadSummary": "({count} ladninger • {rounds} skud)",
       "noLoadLogs": "Ingen ladninger logget endnu.",
-      "recipes": "Recepturer",
-      "recipeSummary": "({{count}} gemt)",
+      "recipes": "Ladninger",
+      "recipeSummary": "({count} gemt)",
       "recipeTable": {
         "name": "Navn",
         "caliber": "Kaliber",
@@ -64,11 +76,11 @@
         "fill": "Fyldning %",
         "possible": "Mulige"
       },
-      "noRecipes": "Ingen recepturer gemt endnu.",
+      "noRecipes": "Ingen ladninger gemt endnu.",
       "materials": "Materialer",
-      "materialsSummary": "({{primers}} tændhætter • {{projectiles}} projektiler • {{propellants}} krudttyper • {{cartridges}} hylstre)",
-      "primers": "Tændhætter",
-      "primerSummary": "({{count}} typer • {{pieces}} stk.)",
+      "materialsSummary": "({primers} fænghætter • {projectiles} projektiler • {propellants} krudttyper • {cartridges} hylstre)",
+      "primers": "Fænghætter",
+      "primerSummary": "({count} typer • {pieces} stk.)",
       "primerTable": {
         "brand": "Mærke",
         "type": "Type",
@@ -77,9 +89,9 @@
         "description": "Beskrivelse",
         "yes": "Ja"
       },
-      "noPrimers": "Ingen tændhætter tilføjet endnu.",
+      "noPrimers": "Ingen fænghætter tilføjet endnu.",
       "projectiles": "Projektiler",
-      "projectileSummary": "({{count}} typer)",
+      "projectileSummary": "({count} typer)",
       "projectileTable": {
         "brand": "Mærke",
         "type": "Type",
@@ -89,7 +101,7 @@
       },
       "noProjectiles": "Ingen projektiler tilføjet endnu.",
       "propellants": "Krudt",
-      "propellantSummary": "({{count}} typer)",
+      "propellantSummary": "({count} typer)",
       "propellantTable": {
         "brand": "Mærke",
         "type": "Type",
@@ -98,7 +110,7 @@
       },
       "noPropellants": "Ingen krudttyper tilføjet endnu.",
       "cartridges": "Hylstre",
-      "cartridgeSummary": "({{count}} typer • {{cases}} hylstre)",
+      "cartridgeSummary": "({count} typer • {cases} hylstre)",
       "cartridgeTable": {
         "brand": "Mærke",
         "caliber": "Kaliber",
@@ -123,5 +135,545 @@
     "label": "Sprog",
     "en": "Engelsk",
     "da": "Dansk"
+  },
+  "range": {
+    "page": {
+      "title": "Skydning",
+      "subtitle": "Log dine skydninger og resultater på banen",
+      "addButton": "+ Tilføj skydning",
+      "listTitle": "Skydning",
+      "empty": "Ingen skydninger logget endnu.",
+      "logFirstSession": "Log din første skydning",
+      "logFirstSuffix": "."
+    },
+    "detail": {
+      "back": "← Tilbage til skydning",
+      "logAnother": "+ Log endnu en skydning",
+      "edit": "Rediger",
+      "delete": "Slet"
+    },
+    "edit": {
+      "title": "Rediger skydning",
+      "subtitle": "Opdater detaljerne for denne skydning.",
+      "back": "← Tilbage til skydning"
+    },
+    "new": {
+      "title": "Log ny skydning",
+      "subtitle": "Registrer detaljer fra din skydning, inklusive billeder af skiver og noter.",
+      "back": "← Tilbage til skydning"
+    },
+    "form": {
+      "date": "Dato",
+      "location": "Sted",
+      "locationPlaceholder": "Lokal bane, 100m bane...",
+      "recipe": "Brugt recept",
+      "recipePlaceholder": "Vælg recept...",
+      "roundsFired": "Affyrede skud",
+      "conditions": "Forhold / Vejr",
+      "conditionsPlaceholder": "Solskin, 18°C, let sidevind...",
+      "velocityMin": "Min (m/s)",
+      "velocityMax": "Max (m/s)",
+      "velocityAvg": "Gns. (m/s)",
+      "velocityES": "ES",
+      "velocitySD": "SD",
+      "notes": "Noter",
+      "notesPlaceholder": "Grupper, fødning, udkast, observationer...",
+      "photos": "Billeder",
+      "photosOptional": "Billeder (valgfrit)",
+      "addPhoto": "+ Tilføj endnu et billede",
+      "photoDescription": "Billedbeskrivelse",
+      "removePhoto": "×",
+      "photoMaxSize": "Du kan tilføje så mange billeder, du vil. Hvert billede kan have sin egen beskrivelse. Maks. 10 MB pr. billede.",
+      "deletePhoto": "Slet dette billede",
+      "mainThumbnail": "Miniaturebillede",
+      "setAsMain": "Sæt som hovedbillede",
+      "isMain": "★ Hovedbillede",
+      "save": "Gem skydning",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "editSession": "Rediger denne skydning"
+    },
+    "row": {
+      "rounds_one": "{count} skud",
+      "rounds_other": "{count} skud",
+      "avg": "Gns.: {value} m/s",
+      "es": "ES: {value}",
+      "edit": "Rediger",
+      "photoCount": "📷 {count}",
+      "viewFullSession": "Se fuld skydning →",
+      "closeOverlay": "Luk"
+    },
+    "overlay": {
+      "close": "Luk",
+      "previous": "← Forrige",
+      "next": "Næste →",
+      "counter": "{current} / {total}"
+    },
+    "toast": {
+      "saved": "Skydning logget!",
+      "updated": "Skydning opdateret!",
+      "deleted": "Skydning slettet",
+      "deleteFailed": "Kunne ikke slette skydning",
+      "saveFailed": "Kunne ikke gemme skydning",
+      "photoTooLarge": "Billedet \"{name}\" er for stort. Maksimal størrelse er 10 MB.",
+      "photoInvalid": "Filen \"{name}\" er ikke et genkendt billede."
+    },
+    "delete": {
+      "confirm": "Slet denne skydning og alle dens billeder?",
+      "button": "Slet"
+    },
+    "errors": {
+      "imageNotFound": "Billede ikke fundet",
+      "notFound": "Skydning ikke fundet",
+      "validation": {
+        "dateRequired": "Dato er påkrævet",
+        "recipeRequired": "Recept er påkrævet",
+        "roundsFiredMin": "Affyrede skud skal være mindst 1",
+        "velocityMinPositive": "Minimumshastighed må ikke være negativ",
+        "velocityMaxPositive": "Maksimumshastighed må ikke være negativ",
+        "velocityAvgPositive": "Gennemsnitshastighed må ikke være negativ",
+        "extremeSpreadPositive": "Extreme spread må ikke være negativ",
+        "stdDevPositive": "Standardafvigelse må ikke være negativ"
+      }
+    }
+  },
+  "logs": {
+    "page": {
+      "title": "Ladejournal",
+      "subtitle": "Registrer hver gang du bruger en recept til at lade ammunition",
+      "newFormTitle": "Log ny ladning",
+      "historyTitle": "Ladehistorik",
+      "empty": "Ingen ladninger logget endnu. Brug formularen til venstre for at registrere din første omgang."
+    },
+    "detail": {
+      "back": "← Tilbage til ladejournal",
+      "rounds": "{count} skud",
+      "recipeSnapshot": "Recept-snapshot (på ladetidspunktet)",
+      "charge": "Ladning",
+      "coal": "COAL",
+      "calcV0": "Beregnet V0",
+      "measV0": "Målt V0",
+      "fillRate": "Fyldningsgrad",
+      "componentsTitle": "Komponenter forbrugt ved denne ladning",
+      "projectile": "Projektil",
+      "propellant": "Krudt",
+      "primer": "Tændhætte",
+      "total": "{quantity} × {chargeGr} gr = ~{total} g i alt",
+      "notes": "Noter"
+    },
+    "form": {
+      "recipe": "Recept",
+      "recipePlaceholder": "Vælg en recept...",
+      "date": "Dato",
+      "quantity": "Antal ladte skud",
+      "notes": "Noter (valgfrit)",
+      "notesPlaceholder": "Lotnumre, hastighedsdata, forhold osv.",
+      "submit": "Log ladning & opdater lager",
+      "saving": "Logger ladning..."
+    },
+    "row": {
+      "loaded": "{count}× ladet",
+      "rounds": "{count} skud"
+    },
+    "toast": {
+      "saved": "Ladning logget. Lager opdateret.",
+      "saveFailed": "Kunne ikke logge ladning",
+      "deleted": "Ladning slettet og lager genskabt",
+      "deleteFailed": "Kunne ikke slette ladning"
+    },
+    "delete": {
+      "confirm": "Slet denne ladejournal?\n\nDette lægger komponenterne tilbage på dit lager.\nHandlingen kan ikke fortrydes.",
+      "button": "Slet ladejournal"
+    },
+    "errors": {
+      "recipeRequired": "Recept og et positivt antal er påkrævet",
+      "recipeNotFound": "Recept ikke fundet",
+      "noCharge": "Denne recept har ingen ladningsvægt. Kan ikke beregne krudtforbrug.",
+      "notFound": "Ladejournal ikke fundet",
+      "insufficientProjectiles": "Ikke nok {brand} {type} projektiler (behov {need}, har {have})",
+      "insufficientPrimers": "Ikke nok {brand} tændhætter (behov {need}, har {have})",
+      "insufficientPropellant": "Ikke nok {brand} {type} (behov ~{need}g, har {have}g)"
+    }
+  },
+  "recipes": {
+    "page": {
+      "title": "Laderecepturer",
+      "subtitle": "Gemte kombinationer af komponenter",
+      "addButton": "+ Tilføj recept",
+      "empty": "Ingen recepturer endnu. Klik på \"+ Tilføj recept\" ovenfor for at oprette din første."
+    },
+    "detail": {
+      "back": "← Tilbage til recepturer",
+      "logLoad": "Log en ladning",
+      "logRange": "Log skydning",
+      "recipeDetails": "Receptdetaljer",
+      "projectile": "Projektil",
+      "propellant": "Krudt",
+      "primer": "Tændhætte",
+      "none": "—",
+      "cartridge": "Hylster / Patron",
+      "charge": "Ladning",
+      "coal": "COAL",
+      "fillRate": "Fyldningsgrad",
+      "calcV0": "Beregnet V0",
+      "measV0": "Målt V0",
+      "notes": "Noter",
+      "recentRangeSessions": "Seneste skydninger",
+      "noRangeSessions": "Ingen skydninger logget for denne recept endnu.",
+      "logNewSession": "Log ny skydning →",
+      "recentLoadLogs": "Seneste ladejournaler",
+      "noLoadLogs": "Ingen ladninger logget for denne recept endnu.",
+      "logNewLoad": "Log ny ladning →",
+      "rounds": "{count} skud",
+      "notFound": "Recept ikke fundet."
+    },
+    "aiCheck": {
+      "title": "AI-sikkerhedstjek",
+      "run": "Kør tjek",
+      "reRun": "Kør tjek igen",
+      "checking": "Tjekker…",
+      "noAssessment": "Ingen vurdering endnu. Klik på <0>Kør tjek</0> for at bede den konfigurerede AI-model om at gennemgå denne recept for åbenlyse fejl eller farer.",
+      "unsavedHint": "Tjekker de værdier, der aktuelt er indtastet ovenfor — inklusive ikke-gemte ændringer.",
+      "unsavedResult": "Denne vurdering afspejler de aktuelle (ikke-gemte) værdier og blev ikke gemt. Gem recepten, og kør tjekket fra dens detaljeside for at gemme det.",
+      "lastChecked": "Sidst tjekket {date}"
+    },
+    "aiDisclaimer": "⚠️ AI-vejledning kun. Dette er ikke verificerede ladedata. Tjek altid ladningsvægte og COAL mod aktuelle udgivne data fra krudt- og kugleproducenten, før du lader. Stol aldrig på dette for sikkerhed.",
+    "aiVerdict": {
+      "OK": "Intet åbenlyst ser forkert ud",
+      "CAUTION": "Forsigtig — verificer før lading",
+      "STOP": "Stop — mulig fare registreret",
+      "UNKNOWN": "Inkonklusiv",
+      "concerns": "Specifikke bekymringer"
+    },
+    "form": {
+      "titleAdd": "Tilføj ny recept",
+      "titleEdit": "Rediger recept",
+      "name": "Navn",
+      "namePlaceholder": "308 Win 168gr Match",
+      "caliber": "Kaliber",
+      "caliberPlaceholder": ".308 Win",
+      "projectile": "Projektil",
+      "projectilePlaceholder": "Vælg projektil",
+      "propellant": "Krudt",
+      "propellantPlaceholder": "Vælg krudt",
+      "primer": "Tændhætte (valgfri)",
+      "primerPlaceholder": "Vælg tændhætte (valgfri)",
+      "cartridge": "Hylster / Patron (valgfri)",
+      "cartridgePlaceholder": "Vælg hylster (valgfri)",
+      "charge": "Ladning (grains)",
+      "coal": "COAL (tommer)",
+      "calcV0": "Beregnet V0 (m/s)",
+      "measV0": "Målt V0 (m/s)",
+      "fillRate": "Fyldningsgrad (%)",
+      "notes": "Noter",
+      "notesPlaceholder": "Hastighed, gruppestørrelse, sædedybde osv.",
+      "aiCheck": "AI-sikkerhedstjek",
+      "aiChecking": "Tjekker…",
+      "cancel": "Annuller",
+      "save": "Gem recept",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "validation": {
+        "nameRequired": "Navn er påkrævet",
+        "caliberRequired": "Kaliber er påkrævet",
+        "projectileRequired": "Projektil er påkrævet",
+        "propellantRequired": "Krudt er påkrævet"
+      }
+    },
+    "table": {
+      "name": "Navn",
+      "caliber": "Kaliber",
+      "projectile": "Projektil",
+      "powder": "Krudt",
+      "charge": "Ladning",
+      "coal": "COAL",
+      "calcV0": "Beregnet V0",
+      "measV0": "Målt V0",
+      "fill": "Fyldning %",
+      "check": "Tjek",
+      "possible": "Mulige"
+    },
+    "toast": {
+      "saved": "Recept gemt",
+      "updated": "Recept opdateret",
+      "failed": "Kunne ikke gemme recept",
+      "aiCheckComplete": "AI-sikkerhedstjek gennemført",
+      "aiCheckSaved": "AI-sikkerhedstjek gennemført (gemt)",
+      "aiCheckFailed": "AI-tjek mislykkedes",
+      "aiCheckRequiredFields": "Udfyld navn, kaliber, projektil og krudt, før du kører tjekket.",
+      "deleted": "Recept slettet",
+      "deleteFailed": "Kunne ikke slette recept"
+    },
+    "delete": {
+      "confirm": "Slet denne recept?",
+      "button": "Slet",
+      "inUse": "Kan ikke slette: denne recept bruges af {count} skydning. Fjern den fra den skydning først.",
+      "inUse_plural": "Kan ikke slette: denne recept bruges af {count} skydninger. Fjern den fra disse skydninger først."
+    },
+    "errors": {
+      "configureAi": "Konfigurer først en AI-model under Indstillinger.",
+      "recipeNotFound": "Recept ikke fundet",
+      "projectileNotFound": "Valgt projektil ikke fundet.",
+      "propellantNotFound": "Valgt krudt ikke fundet.",
+      "requiredForCheck": "Navn, kaliber, projektil og krudt er påkrævet for at køre et tjek."
+    }
+  },
+  "primers": {
+    "page": {
+      "title": "Tændhætter",
+      "subtitle": "Administrer dit lager af tændhætter",
+      "addButton": "+ Tilføj tændhætte"
+    },
+    "table": {
+      "brand": "Mærke",
+      "type": "Type",
+      "magnum": "Magnum",
+      "amount": "Antal",
+      "description": "Beskrivelse",
+      "actions": "",
+      "empty": "Ingen tændhætter endnu."
+    },
+    "form": {
+      "titleAdd": "Tilføj ny tændhætte",
+      "titleEdit": "Rediger tændhætte",
+      "brand": "Mærke",
+      "brandPlaceholder": "CCI, Federal, Winchester...",
+      "type": "Type",
+      "magnum": "Magnum",
+      "amount": "Antal",
+      "description": "Beskrivelse (valgfri)",
+      "descriptionPlaceholder": "Lotnummer, noter...",
+      "submit": "Opret tændhætte",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "validation": {
+        "brandRequired": "Mærke er påkrævet"
+      }
+    },
+    "toast": {
+      "created": "Tændhætte oprettet",
+      "updated": "Tændhætte opdateret",
+      "deleted": "Tændhætte slettet",
+      "failed": "Noget gik galt"
+    },
+    "delete": {
+      "confirm": "Slet denne tændhætte?",
+      "button": "Slet",
+      "inUse": "Kan ikke slette: denne tændhætte bruges af {count} recept. Fjern den fra den recept først.",
+      "inUse_plural": "Kan ikke slette: denne tændhætte bruges af {count} recepturer. Fjern den fra disse recepturer først."
+    }
+  },
+  "projectiles": {
+    "page": {
+      "title": "Projektiler",
+      "subtitle": "Administrer dit lager af projektiler",
+      "addButton": "+ Tilføj projektil"
+    },
+    "table": {
+      "brand": "Mærke",
+      "type": "Type",
+      "weight": "Vægt (gr)",
+      "caliber": "Kaliber",
+      "amount": "Antal",
+      "description": "Beskrivelse",
+      "actions": "",
+      "empty": "Ingen projektiler endnu."
+    },
+    "form": {
+      "titleAdd": "Tilføj nyt projektil",
+      "titleEdit": "Rediger projektil",
+      "brand": "Mærke",
+      "brandPlaceholder": "Sierra, Hornady, Berger...",
+      "type": "Type",
+      "typePlaceholder": "Game King, MatchKing, Tipped...",
+      "weight": "Vægt (grains)",
+      "caliber": "Kaliber",
+      "caliberPlaceholder": "9mm, .308, 5.56...",
+      "amount": "Antal på lager",
+      "description": "Beskrivelse (valgfri)",
+      "descriptionPlaceholder": "Noter, BC osv.",
+      "submit": "Opret projektil",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "validation": {
+        "brandRequired": "Mærke er påkrævet",
+        "typeRequired": "Type er påkrævet",
+        "weightPositive": "Vægt skal være positiv",
+        "caliberRequired": "Kaliber er påkrævet"
+      }
+    },
+    "toast": {
+      "created": "Projektil oprettet",
+      "updated": "Projektil opdateret",
+      "deleted": "Projektil slettet",
+      "failed": "Noget gik galt"
+    },
+    "delete": {
+      "confirm": "Slet dette projektil?",
+      "button": "Slet",
+      "inUse": "Kan ikke slette: dette projektil bruges af {count} recept. Fjern det fra den recept først.",
+      "inUse_plural": "Kan ikke slette: dette projektil bruges af {count} recepturer. Fjern det fra disse recepturer først."
+    }
+  },
+  "propellants": {
+    "page": {
+      "title": "Krudt",
+      "subtitle": "Administrer dit krudtlager (mængde i gram)",
+      "addButton": "+ Tilføj krudt"
+    },
+    "table": {
+      "brand": "Mærke",
+      "type": "Type",
+      "amount": "Mængde (g)",
+      "description": "Beskrivelse",
+      "actions": "",
+      "empty": "Ingen krudttyper endnu."
+    },
+    "form": {
+      "titleAdd": "Tilføj ny krudttype",
+      "titleEdit": "Rediger krudttype",
+      "brand": "Mærke",
+      "brandPlaceholder": "Hodgdon, Vihtavuori, Alliant...",
+      "type": "Type",
+      "typePlaceholder": "H4350, Titegroup, CFE 223...",
+      "amount": "Mængde (gram)",
+      "description": "Beskrivelse (valgfri)",
+      "descriptionPlaceholder": "Lotnummer, noter...",
+      "submit": "Opret krudttype",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "validation": {
+        "brandRequired": "Mærke er påkrævet",
+        "typeRequired": "Type er påkrævet",
+        "amountNegative": "Mængde må ikke være negativ"
+      }
+    },
+    "toast": {
+      "created": "Krudttype oprettet",
+      "updated": "Krudttype opdateret",
+      "deleted": "Krudttype slettet",
+      "failed": "Noget gik galt"
+    },
+    "delete": {
+      "confirm": "Slet denne krudttype?",
+      "button": "Slet",
+      "inUse": "Kan ikke slette: dette krudt bruges af {count} recept. Fjern det fra den recept først.",
+      "inUse_plural": "Kan ikke slette: dette krudt bruges af {count} recepturer. Fjern det fra disse recepturer først."
+    }
+  },
+  "cartridges": {
+    "page": {
+      "title": "Hylstre",
+      "subtitle": "Messing / hylsterlager (vandkapacitet i grains)",
+      "addButton": "+ Tilføj hylster"
+    },
+    "table": {
+      "brand": "Mærke",
+      "caliber": "Kaliber",
+      "waterCapacity": "Vandkap. (gr)",
+      "amount": "Antal",
+      "description": "Beskrivelse",
+      "actions": "",
+      "empty": "Ingen hylstre endnu."
+    },
+    "form": {
+      "titleAdd": "Tilføj nyt hylster",
+      "titleEdit": "Rediger hylster",
+      "brand": "Mærke / Navn",
+      "brandPlaceholder": "Lapua, Starline, Hornady...",
+      "caliber": "Kaliber",
+      "caliberPlaceholder": ".308 Win, 6.5 Creedmoor...",
+      "waterCapacity": "Vandkapacitet (gr H₂O)",
+      "waterCapacityPlaceholder": "Valgfri",
+      "amount": "Antal (hylstre)",
+      "description": "Beskrivelse (valgfri)",
+      "descriptionPlaceholder": "Lotnummer, antal gennemfyringer, noter...",
+      "submit": "Opret hylster",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "validation": {
+        "brandRequired": "Mærke er påkrævet",
+        "caliberRequired": "Kaliber er påkrævet",
+        "capacityNegative": "Kapacitet må ikke være negativ",
+        "amountNegative": "Antal må ikke være negativt"
+      }
+    },
+    "toast": {
+      "created": "Hylster oprettet",
+      "updated": "Hylster opdateret",
+      "deleted": "Hylster slettet",
+      "failed": "Noget gik galt"
+    },
+    "delete": {
+      "confirm": "Slet dette hylster?",
+      "button": "Slet",
+      "inUse": "Kan ikke slette: dette hylster bruges af {count} recept. Fjern det fra den recept først.",
+      "inUse_plural": "Kan ikke slette: dette hylster bruges af {count} recepturer. Fjern det fra disse recepturer først."
+    }
+  },
+  "settings": {
+    "page": {
+      "title": "Indstillinger",
+      "subtitle": "Konfigurer den AI-model, som appen bruger. Den aktive udbyder kan skiftes her.",
+      "languageTitle": "Sprog",
+      "languageHint": "Vælg dit foretrukne sprog.",
+      "appearanceTitle": "Udseende",
+      "appearanceHint": "Vælg et tema. \"System\" følger din enheds indstilling.",
+      "theme": {
+        "light": "Lyst",
+        "dark": "Mørkt",
+        "system": "System"
+      }
+    },
+    "form": {
+      "provider": "Udbyder",
+      "model": "Model",
+      "modelHint": "Fritekst, så nye modelnavne virker uden en app-opdatering.",
+      "apiKey": "API-nøgle",
+      "apiKeyStored": "Lad feltet stå tomt for at beholde den eksisterende nøgle. Gemt i databasen.",
+      "apiKeyNew": "Gemt i databasen.",
+      "apiKeyPlaceholder": "Indsæt din API-nøgle",
+      "apiKeyMaskedPlaceholder": "••••••••{last4} (uændret)",
+      "baseUrl": "Basis-URL",
+      "temperature": "Temperatur (valgfri)",
+      "temperaturePlaceholder": "0,7",
+      "maxTokens": "Max tokens (valgfri)",
+      "maxTokensPlaceholder": "1024",
+      "test": "Test forbindelse",
+      "testing": "Tester...",
+      "save": "Gem indstillinger",
+      "saving": "Gemmer..."
+    },
+    "toast": {
+      "saved": "Indstillinger gemt",
+      "saveFailed": "Kunne ikke gemme indstillinger",
+      "testSuccess": "Forbundet. {count} modeller tilgængelige.",
+      "testSuccessNoCount": "Forbundet.",
+      "testError": "Forbindelsestest mislykkedes"
+    },
+    "errors": {
+      "noApiKey": "Ingen API-nøgle angivet. Indtast en nøgle og prøv igen.",
+      "noBaseUrl": "Ingen basis-URL konfigureret for denne udbyder.",
+      "providerNotSupported": "Udbyderen \"{provider}\" understøttes endnu ikke.",
+      "invalidApiKey": "Ugyldig API-nøgle.",
+      "requestFailed": "Anmodning mislykkedes (HTTP {status}): {message}",
+      "requestFailedNoMessage": "Anmodning mislykkedes (HTTP {status}).",
+      "couldNotReach": "Kunne ikke nå {url}: {detail}",
+      "providerRequired": "Udbyder er påkrævet",
+      "baseUrlInvalid": "Basis-URL skal være en gyldig URL",
+      "temperatureRange": "Temperatur skal være mellem 0 og 2",
+      "maxTokensPositive": "Max tokens skal være et positivt heltal"
+    }
+  },
+  "errors": {
+    "generic": "Noget gik galt",
+    "saveFailed": "Kunne ikke gemme",
+    "deleteFailed": "Kunne ikke slette",
+    "required": "Påkrævet",
+    "validationFailed": "Validering mislykkedes"
   }
 }
