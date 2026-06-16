@@ -104,14 +104,15 @@ export async function chatCompletion(params: ChatCompletionParams): Promise<stri
     )
   }
 
-  let data: any
+  let data: unknown
   try {
     data = await res.json()
   } catch {
     throw new AiError('empty', 'AI returned an unreadable response.')
   }
 
-  const content: string | undefined = data?.choices?.[0]?.message?.content
+  const content = (data as { choices?: { message?: { content?: string } }[] })
+    ?.choices?.[0]?.message?.content
   if (!content || !content.trim()) {
     throw new AiError('empty', 'AI returned an empty response.')
   }

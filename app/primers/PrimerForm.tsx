@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { PrimerType } from '@prisma/client';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import type { Primer } from '@/lib/types';
 
 function createPrimerSchema(t: (key: string) => string) {
   return z.object({
@@ -18,11 +19,13 @@ function createPrimerSchema(t: (key: string) => string) {
   });
 }
 
-type PrimerFormData = z.infer<ReturnType<typeof createPrimerSchema>>;
+type PrimerSchema = ReturnType<typeof createPrimerSchema>;
+type PrimerFormInput = z.input<PrimerSchema>;
+type PrimerFormData = z.output<PrimerSchema>;
 
 interface PrimerFormProps {
   action: (formData: FormData) => Promise<void>;
-  defaultValues?: Partial<PrimerFormData & { id?: string }>;
+  defaultValues?: Partial<Primer> | null;
   title: string;
   submitLabel: string;
   open?: boolean;
@@ -48,8 +51,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<PrimerFormData>({
-    // @ts-expect-error - zod + RHF resolver typing (known friction, safe at runtime)
+  } = useForm<PrimerFormInput, unknown, PrimerFormData>({
     resolver: zodResolver(primerSchema),
     defaultValues: {
       brand: defaultValues?.brand || '',
@@ -103,7 +105,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
           return; // let textarea get newlines, let buttons do their thing
         }
         e.preventDefault();
-        handleSubmit(onSubmit as any)();
+        handleSubmit(onSubmit)();
       }
     };
 
@@ -142,7 +144,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6">{title}</h2>
 
-            <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input

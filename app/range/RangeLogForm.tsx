@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl'
 import { createRangeLog, updateRangeLog } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import type { RangeLogWithImages } from '@/lib/types'
 
 interface RecipeOption {
   id: string
@@ -17,7 +18,7 @@ interface RangeLogFormProps {
   recipes: RecipeOption[]
   defaultRecipeId?: string
   // Edit / View mode
-  initialData?: any
+  initialData?: RangeLogWithImages | null
   logId?: string
   readonly?: boolean
 }
@@ -25,6 +26,15 @@ interface RangeLogFormProps {
 interface ImageInput {
   file: File | null
   description: string
+}
+
+// Editable view-model for an already-saved image while the form is open.
+interface ExistingImage {
+  id: string
+  filename?: string
+  description: string
+  markedForDelete: boolean
+  isMain: boolean
 }
 
 export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, readonly = false }: RangeLogFormProps) {
@@ -37,17 +47,17 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const effectiveDefaultRecipeId = defaultRecipeId || initialData?.recipe?.id || initialData?.recipeId || ''
 
   // For edit mode - handle existing images
-  let initialExisting = initialData?.images?.map((img: any) => ({
+  const initialExisting: ExistingImage[] = initialData?.images?.map((img) => ({
     id: img.id,
     filename: img.filename,
     description: img.description || '',
     markedForDelete: false,
     isMain: initialData?.mainImageId === img.id,
   })) || []
-  if (initialExisting.length > 0 && !initialExisting.some((i: any) => i.isMain)) {
+  if (initialExisting.length > 0 && !initialExisting.some((i) => i.isMain)) {
     initialExisting[0].isMain = true
   }
-  const [existingImages, setExistingImages] = useState(initialExisting)
+  const [existingImages, setExistingImages] = useState<ExistingImage[]>(initialExisting)
 
   const [images, setImages] = useState<ImageInput[]>([{ file: null, description: '' }])
   const [overlayIndex, setOverlayIndex] = useState<number | null>(null)
@@ -66,7 +76,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
 
   const toggleDeleteExisting = (id: string) => {
     setExistingImages(
-      existingImages.map((img: any) =>
+      existingImages.map((img) =>
         img.id === id ? { ...img, markedForDelete: !img.markedForDelete } : img
       )
     )
@@ -74,13 +84,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
 
   const updateExistingDescription = (id: string, description: string) => {
     setExistingImages(
-      existingImages.map((img: any) => (img.id === id ? { ...img, description } : img))
+      existingImages.map((img) => (img.id === id ? { ...img, description } : img))
     )
   }
 
   const markAsMain = (id: string) => {
     setExistingImages(
-      existingImages.map((img: any) => ({
+      existingImages.map((img) => ({
         ...img,
         isMain: img.id === id,
       }))
@@ -111,14 +121,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     return () => document.removeEventListener('keydown', handleKey)
   }, [overlayIndex, existingImages.length])
 
-  // Clamp or close overlay if the images array changed (e.g. delete)
-  useEffect(() => {
-    if (overlayIndex !== null) {
-      if (existingImages.length === 0 || overlayIndex >= existingImages.length) {
-        setOverlayIndex(null)
-      }
-    }
-  }, [existingImages.length, overlayIndex])
+  // Clamp or close the overlay if the images array shrank out from under it
+  // (e.g. an image was deleted). Adjusting state during render is React's
+  // recommended alternative to a setState-in-effect for this case: it re-renders
+  // immediately with the corrected value before anything is painted.
+  if (overlayIndex !== null && (existingImages.length === 0 || overlayIndex >= existingImages.length)) {
+    setOverlayIndex(null)
+  }
 
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -142,7 +151,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     setIsSubmitting(true)
 
     // Append image files and descriptions for new images
-    images.forEach((img, index) => {
+    images.forEach((img) => {
       if (img.file) {
         formData.append('newImages', img.file)
         formData.append('newImageDescriptions', img.description)
@@ -160,7 +169,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       })
 
       // Send the currently marked main image (only if not also being deleted)
-      const main = existingImages.find((img: any) => img.isMain && !img.markedForDelete)
+      const main = existingImages.find((img) => img.isMain && !img.markedForDelete)
       if (main) {
         formData.append('mainImageId', main.id)
       } else {
@@ -312,7 +321,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                     className="w-16 h-16 object-cover rounded flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation()
-                      const idx = existingImages.findIndex((x: any) => x.id === img.id)
+                      const idx = existingImages.findIndex((x) => x.id === img.id)
                       if (idx >= 0) setOverlayIndex(idx)
                     }}
                   />

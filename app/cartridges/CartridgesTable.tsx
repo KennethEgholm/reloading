@@ -4,23 +4,17 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CartridgeForm } from './CartridgeForm';
 import { DeleteCartridgeButton } from './DeleteCartridgeButton';
+import type { Cartridge } from '@/lib/types';
 
 interface CartridgesTableProps {
-  cartridges: Array<{
-    id: string;
-    brand: string;
-    caliber: string;
-    waterCapacityGr: number | null;
-    amount: number;
-    description: string | null;
-  }>;
+  cartridges: Cartridge[];
 }
 
 export function CartridgesTable({ cartridges }: CartridgesTableProps) {
   const t = useTranslations('cartridges');
-  const [editingCartridge, setEditingCartridge] = useState<any | null>(null);
+  const [editingCartridge, setEditingCartridge] = useState<Cartridge | null>(null);
 
-  const handleRowClick = (cartridge: any) => {
+  const handleRowClick = (cartridge: Cartridge) => {
     setEditingCartridge(cartridge);
   };
 
@@ -74,6 +68,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
       {/* Single controlled edit modal */}
       <CartridgeForm
         action={async (formData) => {
+          if (!editingCartridge) return;
           const { updateCartridge } = await import('./actions');
           await updateCartridge(editingCartridge.id, formData);
         }}

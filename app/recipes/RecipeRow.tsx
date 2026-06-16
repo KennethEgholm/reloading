@@ -5,13 +5,20 @@ import { useTranslations } from 'next-intl';
 import { RecipeForm } from './RecipeForm';
 import { deleteRecipe } from './actions';
 import { toast } from 'sonner';
+import type {
+  RecipeWithRelations,
+  Projectile,
+  Propellant,
+  Primer,
+  Cartridge,
+} from '@/lib/types';
 
 interface RecipeRowProps {
-  recipe: any;
-  projectiles: any[];
-  propellants: any[];
-  primers: any[];
-  cartridges: any[];
+  recipe: RecipeWithRelations;
+  projectiles: Projectile[];
+  propellants: Propellant[];
+  primers: Primer[];
+  cartridges: Cartridge[];
 }
 
 export function RecipeRow({ recipe, projectiles, propellants, primers, cartridges }: RecipeRowProps) {

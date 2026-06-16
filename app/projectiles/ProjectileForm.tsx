@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import type { Projectile } from '@/lib/types';
 
 function createProjectileSchema(t: (key: string) => string) {
   return z.object({
@@ -18,11 +19,13 @@ function createProjectileSchema(t: (key: string) => string) {
   });
 }
 
-type ProjectileFormData = z.infer<ReturnType<typeof createProjectileSchema>>;
+type ProjectileSchema = ReturnType<typeof createProjectileSchema>;
+type ProjectileFormInput = z.input<ProjectileSchema>;
+type ProjectileFormData = z.output<ProjectileSchema>;
 
 interface ProjectileFormProps {
   action: (formData: FormData) => Promise<void>;
-  defaultValues?: Partial<ProjectileFormData & { id?: string }>;
+  defaultValues?: Partial<Projectile> | null;
   title: string;
   submitLabel: string;
   open?: boolean;
@@ -48,8 +51,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<ProjectileFormData>({
-    // @ts-expect-error - zod + RHF resolver typing (known friction, safe at runtime)
+  } = useForm<ProjectileFormInput, unknown, ProjectileFormData>({
     resolver: zodResolver(projectileSchema),
     defaultValues: {
       brand: defaultValues?.brand || '',
@@ -105,7 +107,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
           return; // let textarea get newlines, let buttons do their thing
         }
         e.preventDefault();
-        handleSubmit(onSubmit as any)();
+        handleSubmit(onSubmit)();
       }
     };
 
@@ -145,7 +147,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6">{title}</h2>
 
-            <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input

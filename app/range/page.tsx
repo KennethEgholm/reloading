@@ -8,7 +8,7 @@ export default async function RangeLogPage({
 }: {
   searchParams: Promise<{ recipeId?: string }>
 }) {
-  const { recipeId } = await searchParams
+  await searchParams
   const t = await getTranslations('range')
 
   const logs = await getRangeLogs()
@@ -45,7 +45,7 @@ export default async function RangeLogPage({
           </div>
         ) : (
           <div className="space-y-4">
-            {logs.map((log: any) => (
+            {logs.map((log) => (
               <RangeLogRow key={log.id} log={log} />
             ))}
           </div>

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import type { Cartridge } from '@/lib/types';
 
 function createCartridgeSchema(t: (key: string) => string) {
   return z.object({
@@ -17,11 +18,13 @@ function createCartridgeSchema(t: (key: string) => string) {
   });
 }
 
-type CartridgeFormData = z.infer<ReturnType<typeof createCartridgeSchema>>;
+type CartridgeSchema = ReturnType<typeof createCartridgeSchema>;
+type CartridgeFormInput = z.input<CartridgeSchema>;
+type CartridgeFormData = z.output<CartridgeSchema>;
 
 interface CartridgeFormProps {
   action: (formData: FormData) => Promise<void>;
-  defaultValues?: Partial<CartridgeFormData & { id?: string }>;
+  defaultValues?: Partial<Cartridge> | null;
   title: string;
   submitLabel: string;
   open?: boolean;
@@ -47,13 +50,12 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<CartridgeFormData>({
-    // @ts-expect-error - zod + RHF resolver typing (known friction, safe at runtime)
+  } = useForm<CartridgeFormInput, unknown, CartridgeFormData>({
     resolver: zodResolver(cartridgeSchema),
     defaultValues: {
       brand: defaultValues?.brand || '',
       caliber: defaultValues?.caliber || '',
-      waterCapacityGr: defaultValues?.waterCapacityGr,
+      waterCapacityGr: defaultValues?.waterCapacityGr ?? undefined,
       amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description || '',
     },
@@ -103,7 +105,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
           return;
         }
         e.preventDefault();
-        handleSubmit(onSubmit as any)();
+        handleSubmit(onSubmit)();
       }
     };
 
@@ -119,7 +121,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
       reset({
         brand: defaultValues.brand || '',
         caliber: defaultValues.caliber || '',
-        waterCapacityGr: defaultValues.waterCapacityGr,
+        waterCapacityGr: defaultValues.waterCapacityGr ?? undefined,
         amount: defaultValues.amount ?? 0,
         description: defaultValues.description || '',
       });
@@ -142,7 +144,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
           <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6">{title}</h2>
 
-            <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input

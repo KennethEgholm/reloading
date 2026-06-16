@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
+import type { RecipeWithRelations } from '@/lib/types';
 
 function createRecipeSchema(t: (key: string) => string) {
   return z.object({
@@ -26,12 +27,14 @@ function createRecipeSchema(t: (key: string) => string) {
   });
 }
 
-type RecipeFormData = z.infer<ReturnType<typeof createRecipeSchema>>;
+type RecipeSchema = ReturnType<typeof createRecipeSchema>;
+type RecipeFormInput = z.input<RecipeSchema>;
+type RecipeFormData = z.output<RecipeSchema>;
 
 interface RecipeFormProps {
   action?: (formData: FormData) => Promise<void>;
   updateAction?: (id: string, formData: FormData) => Promise<void>;
-  defaultValues?: any;
+  defaultValues?: RecipeWithRelations | null;
   projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number }>;
   propellants: Array<{ id: string; brand: string; type: string }>;
   primers: Array<{ id: string; brand: string; type: string; magnum: boolean }>;
@@ -77,8 +80,7 @@ export function RecipeForm({
     getValues,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<RecipeFormData>({
-    // @ts-expect-error - zod coercion typing issue with react-hook-form
+  } = useForm<RecipeFormInput, unknown, RecipeFormData>({
     resolver: zodResolver(recipeSchema),
     defaultValues: {
       name: defaultValues?.name || '',
@@ -118,17 +120,25 @@ export function RecipeForm({
         notes: defaultValues.notes || '',
       });
     }
-    // Clear any prior AI result when switching to a different recipe.
-    setAiResult(null);
   }, [defaultValues?.id, reset]);
 
-  // Clear the AI result whenever the modal closes.
-  useEffect(() => {
-    if (!isOpen) setAiResult(null);
-  }, [isOpen]);
+  // Clear any prior AI result when switching to a different recipe or when the
+  // modal closes. Tracking the previous values and adjusting state during render
+  // is React's recommended alternative to a setState-in-effect: the stale result
+  // is dropped in the same render, before it could be shown for the new context.
+  const [prevRecipeId, setPrevRecipeId] = useState(defaultValues?.id);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (defaultValues?.id !== prevRecipeId || isOpen !== prevIsOpen) {
+    setPrevRecipeId(defaultValues?.id);
+    setPrevIsOpen(isOpen);
+    if (aiResult !== null) setAiResult(null);
+  }
 
   const handleAiCheck = async () => {
-    const values = getValues();
+    // getValues() returns the raw (pre-coercion) input shape; the AI check wants
+    // the coerced output shape. zodResolver coerces the number fields, so reading
+    // them as the output type here is sound.
+    const values = getValues() as RecipeFormData;
     if (!values.name?.trim() || !values.caliber?.trim() || !values.projectileId || !values.propellantId) {
       toast.error(t('toast.aiCheckRequiredFields'));
       return;
@@ -215,7 +225,7 @@ export function RecipeForm({
           return; // let textarea get newlines, let buttons do their thing
         }
         e.preventDefault();
-        handleSubmit(onSubmit as any)();
+        handleSubmit(onSubmit)();
       }
     };
 
@@ -242,7 +252,7 @@ export function RecipeForm({
           <div className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
             <h2 className="text-xl font-semibold mb-6">{displayTitle}</h2>
 
-            <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5">{t('form.name')}</label>

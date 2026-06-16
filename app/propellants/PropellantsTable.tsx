@@ -4,22 +4,17 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { PropellantForm } from './PropellantForm';
 import { DeletePropellantButton } from './DeletePropellantButton';
+import type { Propellant } from '@/lib/types';
 
 interface PropellantsTableProps {
-  propellants: Array<{
-    id: string;
-    brand: string;
-    type: string;
-    amountGr: number;
-    description: string | null;
-  }>;
+  propellants: Propellant[];
 }
 
 export function PropellantsTable({ propellants }: PropellantsTableProps) {
   const t = useTranslations('propellants');
-  const [editingPropellant, setEditingPropellant] = useState<any | null>(null);
+  const [editingPropellant, setEditingPropellant] = useState<Propellant | null>(null);
 
-  const handleRowClick = (propellant: any) => {
+  const handleRowClick = (propellant: Propellant) => {
     setEditingPropellant(propellant);
   };
 
@@ -71,6 +66,7 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
       {/* Single controlled edit modal */}
       <PropellantForm
         action={async (formData) => {
+          if (!editingPropellant) return;
           const { updatePropellant } = await import('./actions');
           await updatePropellant(editingPropellant.id, formData);
         }}

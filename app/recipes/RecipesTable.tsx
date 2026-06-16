@@ -6,6 +6,13 @@ import { useTranslations } from 'next-intl';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
 import { getPossibleLoads } from '@/lib/inventory';
+import type {
+  RecipeWithRelations,
+  Projectile,
+  Propellant,
+  Primer,
+  Cartridge,
+} from '@/lib/types';
 
 // Compact verdict badge for the list. Renders nothing until a check has run.
 function VerdictBadge({ verdict }: { verdict: string | null }) {
@@ -35,20 +42,20 @@ function VerdictBadge({ verdict }: { verdict: string | null }) {
 }
 
 interface RecipesTableProps {
-  recipes: any[];
-  projectiles: any[];
-  propellants: any[];
-  primers: any[];
-  cartridges: any[];
+  recipes: RecipeWithRelations[];
+  projectiles: Projectile[];
+  propellants: Propellant[];
+  primers: Primer[];
+  cartridges: Cartridge[];
 }
 
 export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges }: RecipesTableProps) {
   const t = useTranslations('recipes');
   const router = useRouter();
-  const [editingRecipe, setEditingRecipe] = useState<any | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<RecipeWithRelations | null>(null);
 
   // Row click opens the readonly detail view; the Edit action opens the form.
-  const handleRowClick = (recipe: any) => {
+  const handleRowClick = (recipe: RecipeWithRelations) => {
     router.push(`/recipes/${recipe.id}`);
   };
 

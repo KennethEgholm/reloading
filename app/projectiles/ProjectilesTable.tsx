@@ -4,24 +4,17 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ProjectileForm } from './ProjectileForm';
 import { DeleteProjectileButton } from './DeleteProjectileButton';
+import type { Projectile } from '@/lib/types';
 
 interface ProjectilesTableProps {
-  projectiles: Array<{
-    id: string;
-    brand: string;
-    type: string | null;
-    weightGr: number;
-    caliber: string;
-    amount: number;
-    description: string | null;
-  }>;
+  projectiles: Projectile[];
 }
 
 export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
   const t = useTranslations('projectiles');
-  const [editingProjectile, setEditingProjectile] = useState<any | null>(null);
+  const [editingProjectile, setEditingProjectile] = useState<Projectile | null>(null);
 
-  const handleRowClick = (projectile: any) => {
+  const handleRowClick = (projectile: Projectile) => {
     setEditingProjectile(projectile);
   };
 
@@ -77,6 +70,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
       {/* Single controlled edit modal */}
       <ProjectileForm
         action={async (formData) => {
+          if (!editingProjectile) return;
           const { updateProjectile } = await import('./actions');
           await updateProjectile(editingProjectile.id, formData);
         }}

@@ -5,9 +5,10 @@ import { useState, useEffect } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/format';
 import { DeleteRangeLogButton } from './DeleteRangeLogButton';
+import type { RangeLogListItem } from '@/lib/types';
 
 interface RangeLogRowProps {
-  log: any; // We can improve typing later
+  log: RangeLogListItem;
 }
 
 export function RangeLogRow({ log }: RangeLogRowProps) {

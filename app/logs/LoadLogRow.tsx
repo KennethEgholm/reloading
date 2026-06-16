@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/format';
+import type { LoadLog } from '@/lib/types';
 
 interface LoadLogRowProps {
-  log: any; // Matches the shape from getLoadLogs (includes snapshots)
+  log: LoadLog; // Matches the shape from getLoadLogs (includes snapshots)
 }
 
 export function LoadLogRow({ log }: LoadLogRowProps) {

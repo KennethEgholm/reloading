@@ -46,7 +46,7 @@ export default async function ReloadingLogPage({
             </div>
           ) : (
             <div className="space-y-3">
-              {logs.map((log: any) => (
+              {logs.map((log) => (
                 <LoadLogRow key={log.id} log={log} />
               ))}
             </div>

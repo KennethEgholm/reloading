@@ -1,10 +1,54 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { useTranslations } from 'next-intl'
 import { Sun, Moon, Monitor } from 'lucide-react'
 
 type Theme = 'light' | 'dark' | 'system'
+
+const THEME_KEY = 'theme'
+
+// The saved theme lives in localStorage (an external store). We read it via
+// useSyncExternalStore rather than syncing into state inside an effect: that
+// keeps the server/first-render snapshot at 'system' (matching the pre-paint
+// script in layout.tsx, so no hydration mismatch) and switches to the saved
+// value right after hydration — without a synchronous setState in an effect.
+const themeListeners = new Set<() => void>()
+
+function readStoredTheme(): Theme {
+  try {
+    return (localStorage.getItem(THEME_KEY) as Theme | null) ?? 'system'
+  } catch {
+    return 'system'
+  }
+}
+
+function writeStoredTheme(value: Theme) {
+  try {
+    localStorage.setItem(THEME_KEY, value)
+  } catch {
+    // ignore storage errors (e.g. private mode)
+  }
+  // Notify same-tab subscribers (the storage event only fires in other tabs).
+  themeListeners.forEach((l) => l())
+}
+
+function subscribeToTheme(callback: () => void) {
+  themeListeners.add(callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    themeListeners.delete(callback)
+    window.removeEventListener('storage', callback)
+  }
+}
+
+/** Resolves a theme preference to whether the dark class should be on, and applies it. */
+function applyTheme(theme: Theme) {
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  document.documentElement.classList.toggle('dark', isDark)
+}
 
 export function ThemeToggle() {
   const t = useTranslations('settings')
@@ -15,21 +59,7 @@ export function ThemeToggle() {
     { value: 'system', label: t('page.theme.system'), icon: Monitor },
   ]
 
-  /** Resolves a theme preference to whether the dark class should be on, and applies it. */
-  function applyTheme(theme: Theme) {
-    const isDark =
-      theme === 'dark' ||
-      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-    document.documentElement.classList.toggle('dark', isDark)
-  }
-
-  // Default 'system' on the server / first render; corrected from localStorage on mount.
-  const [theme, setTheme] = useState<Theme>('system')
-
-  useEffect(() => {
-    const saved = (localStorage.getItem('theme') as Theme | null) ?? 'system'
-    setTheme(saved)
-  }, [])
+  const theme = useSyncExternalStore(subscribeToTheme, readStoredTheme, () => 'system')
 
   // When following the system, re-apply if the OS preference changes live.
   useEffect(() => {
@@ -41,12 +71,7 @@ export function ThemeToggle() {
   }, [theme])
 
   const select = (value: Theme) => {
-    setTheme(value)
-    try {
-      localStorage.setItem('theme', value)
-    } catch {
-      // ignore storage errors (e.g. private mode)
-    }
+    writeStoredTheme(value)
     applyTheme(value)
   }
 

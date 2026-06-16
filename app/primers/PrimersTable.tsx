@@ -4,29 +4,18 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { PrimerForm } from './PrimerForm';
 import { DeleteButton } from './DeleteButton';
-import { PrimerType } from '@prisma/client';
+import type { Primer } from '@/lib/types';
 
 interface PrimersTableProps {
-  primers: Array<{
-    id: string;
-    brand: string;
-    type: PrimerType;
-    magnum: boolean;
-    amount: number;
-    description: string | null;
-  }>;
+  primers: Primer[];
 }
 
 export function PrimersTable({ primers }: PrimersTableProps) {
   const t = useTranslations('primers');
-  const [editingPrimer, setEditingPrimer] = useState<any | null>(null);
+  const [editingPrimer, setEditingPrimer] = useState<Primer | null>(null);
 
-  const handleRowClick = (primer: any) => {
+  const handleRowClick = (primer: Primer) => {
     setEditingPrimer(primer);
-  };
-
-  const handleCloseModal = () => {
-    setEditingPrimer(null);
   };
 
   return (
@@ -89,6 +78,7 @@ export function PrimersTable({ primers }: PrimersTableProps) {
       {/* Single controlled edit modal */}
       <PrimerForm
         action={async (formData) => {
+          if (!editingPrimer) return;
           const { updatePrimer } = await import('./actions');
           await updatePrimer(editingPrimer.id, formData);
         }}
