@@ -1,14 +1,11 @@
-# Allow specific packages to run postinstall/build scripts.
-# Required for Next.js tooling and Prisma.
-allowBuildScripts:
-  - sharp
-  - unrs-resolver
-  - prisma
-  - '@prisma/engines'
+# Approve postinstall/build scripts for these dependencies. This pnpm build
+# blocks all build scripts by default and fails `--frozen-lockfile` installs
+# with ERR_PNPM_IGNORED_BUILDS otherwise. Required for Next.js tooling + Prisma.
 allowBuilds:
   '@parcel/watcher': true
-  '@prisma/engines': set this to true or false
+  '@prisma/client': true
+  '@prisma/engines': true
   '@swc/core': true
-  prisma: set this to true or false
-  sharp: set this to true or false
-  unrs-resolver: set this to true or false
+  prisma: true
+  sharp: true
+  unrs-resolver: true
