@@ -127,7 +127,16 @@ pnpm dev
 
 - Unit tests run with [Vitest](https://vitest.dev): `pnpm test` (single run) or `pnpm test:watch`.
 - Test files live next to the code they cover as `*.test.ts` (config: `vitest.config.ts`, node environment, `@/` path alias).
-- Current coverage focuses on pure domain logic: `lib/inventory.ts` (the "Possible loads" calculation) and `lib/schemas.ts` (the Server Action validation schemas). Add tests here when changing inventory math or validation rules.
+- Coverage:
+  - `lib/inventory.ts` – the "Possible loads" calculation.
+  - `lib/schemas.ts` – the Server Action validation schemas.
+  - `app/logs/actions.ts` – the transactional load-log create/delete, run against a **mocked Prisma client** (no database needed). `vi.mock('@/lib/prisma')` supplies a fake client whose `$transaction(fn)` runs the callback with the mock as `tx`; tests assert the inventory deduction/restoration math, that everything happens inside one transaction, the stock guards, and that a mid-transaction failure propagates. Use this pattern (mock `@/lib/prisma`, `next/cache`, `next-intl/server`) for other Server Action tests.
+- Add tests here when changing inventory math, validation rules, or inventory-mutating actions.
+
+### Continuous Integration
+
+- `.github/workflows/ci.yml` runs on every push to `main` and on pull requests: install → `prisma generate` → lint → test → build.
+- No database is required in CI — every route is dynamic and tests mock Prisma, so a dummy `DATABASE_URL` is set in the workflow.
 
 ## License
 
