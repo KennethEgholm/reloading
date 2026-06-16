@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
+import { getPossibleLoads } from '@/lib/inventory';
 
 // Compact verdict badge for the list. Renders nothing until a check has run.
 function VerdictBadge({ verdict }: { verdict: string | null }) {
@@ -31,30 +32,6 @@ function VerdictBadge({ verdict }: { verdict: string | null }) {
       {labels[verdict] ?? verdict}
     </span>
   );
-}
-
-function getPossibleLoads(recipe: any): number | null {
-  const projAmount = recipe.projectile?.amount ?? 0;
-  const powderGrams = recipe.propellant?.amountGr ?? 0;
-  const chargeGr = recipe.chargeGr ?? 0;
-
-  const GRAIN_TO_GRAM = 0.06479891;
-
-  let fromPowder = Infinity;
-  if (chargeGr > 0 && powderGrams > 0) {
-    const gramsPerLoad = chargeGr * GRAIN_TO_GRAM;
-    fromPowder = Math.floor(powderGrams / gramsPerLoad);
-  }
-
-  const fromProjectile = projAmount;
-
-  let fromPrimer = Infinity;
-  if (recipe.primer) {
-    fromPrimer = recipe.primer.amount ?? 0;
-  }
-
-  const min = Math.min(fromProjectile, fromPowder, fromPrimer);
-  return min === Infinity ? null : Math.max(0, min);
 }
 
 interface RecipesTableProps {

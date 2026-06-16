@@ -4,8 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 import { createLoadLogSchema, formatZodError } from '@/lib/schemas'
-
-const GRAIN_TO_GRAM = 0.06479891
+import { GRAIN_TO_GRAM } from '@/lib/inventory'
 
 export async function createLoadLog(formData: FormData) {
   const t = await getTranslations('logs')
