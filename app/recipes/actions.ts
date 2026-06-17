@@ -46,21 +46,16 @@ export async function createRecipe(formData: FormData) {
 }
 
 // Returns a result object (see DeleteResult) because Next.js redacts thrown
-// Server Action error messages in production builds. We guard against deleting
-// recipes that are still referenced by RangeLog rows, which would otherwise
-// produce an ugly raw Prisma foreign-key error.
+// Server Action error messages in production builds. Both RangeLog and LoadLog
+// reference Recipe through a nullable, ON DELETE SET NULL foreign key, so
+// deleting a recipe simply nulls those pointers — the frozen snapshot stored
+// on each log preserves the historical record. No in-use guard is needed (this
+// mirrors how LoadLog was already unguarded).
 export async function deleteRecipe(id: string): Promise<DeleteResult> {
-  const t = await getTranslations('recipes')
-  const inRangeSessions = await prisma.rangeLog.count({ where: { recipeId: id } })
-  if (inRangeSessions > 0) {
-    return {
-      ok: false,
-      error: t('delete.inUse', { count: inRangeSessions }),
-    }
-  }
-
   await prisma.recipe.delete({ where: { id } })
   revalidatePath('/recipes')
+  revalidatePath('/range')
+  revalidatePath('/logs')
   revalidatePath('/')
   return { ok: true }
 }

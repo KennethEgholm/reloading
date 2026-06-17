@@ -9,6 +9,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { createRangeLogInputSchema, createRangeLogUpdateInputSchema } from '@/lib/schemas'
 import type { DeleteResult } from '@/lib/types'
+import type { Prisma } from '@prisma/client'
 
 const UPLOAD_DIR = path.join(process.cwd(), 'public/uploads/range-logs')
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -102,6 +103,34 @@ async function cleanupUploadFiles(filenames: string[]) {
   }
 }
 
+// A recipe with the component relations needed to build a RangeLog snapshot.
+type RecipeForSnapshot = Prisma.RecipeGetPayload<{
+  include: { projectile: true; propellant: true; primer: true }
+}>
+
+// Builds the frozen-recipe snapshot fields from a fetched recipe. Written onto
+// the RangeLog at create time and refreshed on edit only when the linked recipe
+// changes — so history survives recipe edits and deletion. Mirrors LoadLog
+// (app/logs/actions.ts).
+function recipeSnapshot(recipe: RecipeForSnapshot) {
+  return {
+    recipeName: recipe.name,
+    caliber: recipe.caliber,
+    chargeGr: recipe.chargeGr,
+    coal: recipe.coal,
+    projectileBrand: recipe.projectile.brand,
+    projectileType: recipe.projectile.type,
+    projectileWeightGr: recipe.projectile.weightGr,
+    propellantBrand: recipe.propellant.brand,
+    propellantType: recipe.propellant.type,
+    primerBrand: recipe.primer?.brand ?? null,
+    primerType: recipe.primer?.type ?? null,
+    calculatedV0: recipe.calculatedV0,
+    measuredV0: recipe.measuredV0,
+    fillRate: recipe.fillRate,
+  }
+}
+
 export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
     include: {
@@ -177,6 +206,16 @@ export async function createRangeLog(formData: FormData) {
 
   const date = new Date(dateStr)
 
+  // Fetch the recipe to freeze a snapshot at session-create time (mirrors
+  // createLoadLog). The snapshot survives later recipe edits/deletion.
+  const recipe = await prisma.recipe.findUnique({
+    where: { id: recipeId },
+    include: { projectile: true, propellant: true, primer: true },
+  })
+  if (!recipe) {
+    throw new Error(t('errors.recipeNotFound'))
+  }
+
   const imageFiles = formData.getAll('newImages') as File[]
   const descriptions = formData.getAll('newImageDescriptions') as string[]
 
@@ -210,6 +249,7 @@ export async function createRangeLog(formData: FormData) {
           extremeSpread,
           stdDev,
           notes,
+          ...recipeSnapshot(recipe),
         },
       })
 
@@ -365,6 +405,27 @@ export async function updateRangeLog(id: string, formData: FormData) {
 
   const date = new Date(dateStr)
 
+  // Re-snapshot the recipe only when the link actually changes; otherwise leave
+  // the frozen snapshot untouched so editing a recipe elsewhere (or just
+  // notes/photos here) doesn't overwrite history. An empty submitted recipeId
+  // means "leave the link as-is" (matches the previous keep-old behavior).
+  const existing = await prisma.rangeLog.findUnique({
+    where: { id },
+    select: { recipeId: true },
+  })
+  const submittedRecipeId = recipeId && recipeId.trim() !== '' ? recipeId : null
+  const effectiveRecipeId = submittedRecipeId ?? existing?.recipeId ?? null
+  let linkedRecipe: RecipeForSnapshot | null = null
+  if (effectiveRecipeId !== null && effectiveRecipeId !== existing?.recipeId) {
+    linkedRecipe = await prisma.recipe.findUnique({
+      where: { id: effectiveRecipeId },
+      include: { projectile: true, propellant: true, primer: true },
+    })
+    if (!linkedRecipe) {
+      throw new Error(t('errors.recipeNotFound'))
+    }
+  }
+
   const newImageFiles = formData.getAll('newImages') as File[]
   const newDescriptions = formData.getAll('newImageDescriptions') as string[]
 
@@ -404,7 +465,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
           extremeSpread,
           stdDev,
           notes,
-          ...(recipeId ? { recipeId } : {}),
+          ...(linkedRecipe ? { ...recipeSnapshot(linkedRecipe), recipeId: effectiveRecipeId } : {}),
           mainImageId: mainImageId || null,
         },
       })

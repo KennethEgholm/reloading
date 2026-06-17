@@ -20,6 +20,7 @@ Instructions for AI agents / future sessions working on this codebase.
 - Range log uses a single `RangeLogForm` for create / edit / readonly (readonly disables inputs + hides upload controls, shows "Edit this session" link). After successful edit save: `router.push(\`/range/${id}\`)` to land on readonly detail.
 - Photos (range only): unlimited, each with its own description. Client state split into `existingImages` (with `markedForDelete`) vs new `images[]`. Always append from state in `handleSubmit`; the dynamic `<input type="file">` elements must **not** have a `name` attribute (prevents double FormData entries on edit).
 - Load logs: full denormalized snapshots on the log row + component IDs. Delete uses a transaction that restores using the snapshot values.
+- Range logs: same snapshot model — frozen recipe snapshot on the row (name, caliber, charge, COAL, projectile/propellant/primer, V0, fillRate), `recipeId` nullable + `onDelete: SetNull`. Re-snapshot only when the session's `recipeId` changes (preserve the frozen values otherwise, including when the linked recipe was deleted). `deleteRecipe` is therefore unguarded — deleting a recipe nulls the range-log FKs and the snapshot survives.
 - "Possible" loads calculation lives in `RecipesTable.tsx` (client, uses grain-to-gram conversion).
 - Propellant weights shown with 1 decimal place.
 - Keyboard: document `keydown` listener (Enter save / Esc close). Exception for `<textarea>`. Auto-focus name/brand field on open.

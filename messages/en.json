@@ -150,7 +150,16 @@
       "back": "← Back to Range Sessions",
       "logAnother": "+ Log another session",
       "edit": "Edit",
-      "delete": "Delete"
+      "delete": "Delete",
+      "recipeSnapshot": "Recipe Snapshot (at time of session)",
+      "charge": "Charge",
+      "coal": "COAL",
+      "calcV0": "Calculated V0",
+      "measV0": "Measured V0",
+      "fillRate": "Fill Rate",
+      "projectile": "Projectile",
+      "propellant": "Propellant",
+      "primer": "Primer"
     },
     "edit": {
       "title": "Edit Range Session",
@@ -201,7 +210,8 @@
       "edit": "Edit",
       "photoCount": "📷 {count}",
       "viewFullSession": "View full session →",
-      "closeOverlay": "Close"
+      "closeOverlay": "Close",
+      "recipeDeleted": "Recipe deleted"
     },
     "overlay": {
       "close": "Close",
@@ -225,6 +235,7 @@
     "errors": {
       "imageNotFound": "Image not found",
       "notFound": "Range session not found",
+      "recipeNotFound": "Recipe not found",
       "validation": {
         "dateRequired": "Date is required",
         "recipeRequired": "Recipe is required",

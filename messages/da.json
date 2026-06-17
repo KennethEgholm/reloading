@@ -150,7 +150,16 @@
       "back": "← Tilbage til skydning",
       "logAnother": "+ Log endnu en skydning",
       "edit": "Rediger",
-      "delete": "Slet"
+      "delete": "Slet",
+      "recipeSnapshot": "Recept-snapshot (på skydningstidspunktet)",
+      "charge": "Ladning",
+      "coal": "COAL",
+      "calcV0": "Beregnet V0",
+      "measV0": "Målt V0",
+      "fillRate": "Fyldningsgrad",
+      "projectile": "Projektil",
+      "propellant": "Krudt",
+      "primer": "Tændhætte"
     },
     "edit": {
       "title": "Rediger skydning",
@@ -201,7 +210,8 @@
       "edit": "Rediger",
       "photoCount": "📷 {count}",
       "viewFullSession": "Se fuld skydning →",
-      "closeOverlay": "Luk"
+      "closeOverlay": "Luk",
+      "recipeDeleted": "Recept slettet"
     },
     "overlay": {
       "close": "Luk",
@@ -225,6 +235,7 @@
     "errors": {
       "imageNotFound": "Billede ikke fundet",
       "notFound": "Skydning ikke fundet",
+      "recipeNotFound": "Recept ikke fundet",
       "validation": {
         "dateRequired": "Dato er påkrævet",
         "recipeRequired": "Recept er påkrævet",

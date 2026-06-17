@@ -161,7 +161,7 @@ model RangeLog {
   date          DateTime
   location      String?
   conditions    String?
-  recipeId      String
+  recipeId      String? // Nullable: a recipe deletion nulls the FK; the snapshot below preserves the record
   roundsFired   Int
   velocityMin   Float?
   velocityMax   Float?
@@ -172,7 +172,24 @@ model RangeLog {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  recipe        Recipe          @relation(fields: [recipeId], references: [id])
+  // Snapshot of the recipe at the time the session was logged, frozen for
+  // historical accuracy. Survives recipe edits and deletion. Mirrors LoadLog.
+  recipeName         String?
+  caliber            String?
+  chargeGr           Float?
+  coal               Float?
+  projectileBrand    String?
+  projectileType     String?
+  projectileWeightGr Float?
+  propellantBrand    String?
+  propellantType     String?
+  primerBrand        String?
+  primerType         String?
+  calculatedV0       Float?
+  measuredV0         Float?
+  fillRate           Float?
+
+  recipe        Recipe?         @relation(fields: [recipeId], references: [id], onDelete: SetNull)
   images        RangeLogImage[]   @relation("RangeLogImages")
   mainImageId   String?  @unique
   mainImage     RangeLogImage?    @relation("MainImage", fields: [mainImageId], references: [id], onDelete: SetNull)

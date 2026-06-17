@@ -60,7 +60,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
               <div>
-                <div className="font-semibold text-lg">{log.recipe.name}</div>
+                <div className="font-semibold text-lg">{log.recipe?.name ?? log.recipeName ?? t('row.recipeDeleted')}</div>
                 <div className="text-sm text-zinc-500">
                   {formatDate(log.date, locale)} • {t('row.rounds', { count: log.roundsFired })}
                   {log.location && ` • ${log.location}`}
@@ -127,7 +127,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             />
 
             <div className="mt-3 text-center text-white max-w-2xl">
-              <div className="text-lg font-semibold">{log.recipe.name}</div>
+              <div className="text-lg font-semibold">{log.recipe?.name ?? log.recipeName ?? t('row.recipeDeleted')}</div>
               <div className="text-sm opacity-80">
                 {formatDate(log.date, locale)} • {t('row.rounds', { count: log.roundsFired })}
                 {log.location && ` • ${log.location}`}

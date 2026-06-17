@@ -34,6 +34,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Range Sessions** (`/range` – bullseye icon)
   - Full session logging: date, location, linked recipe, rounds fired, weather/conditions, notes.
+  - **Historical snapshots**: each session freezes a copy of the linked recipe at creation (name, caliber, charge, COAL, projectile/propellant/primer, calculated/measured V0, fill rate), so later recipe edits or deletion never change or erase the session's record. The detail view shows the snapshot; switching the session's recipe re-snapshots, while editing other fields preserves the frozen values.
   - Complete chronograph data: Min/Max/Avg velocity (m/s), Extreme Spread (ES), Standard Deviation (SD).
   - **Unlimited photos** with individual descriptions per photo. Photos stored locally (`public/uploads/range-logs`).
   - List view with photo count badges, velocity summaries, etc. Recent sessions are shown first on the Overview dashboard (before Load Logs).

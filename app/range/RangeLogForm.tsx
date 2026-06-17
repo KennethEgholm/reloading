@@ -230,20 +230,31 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
 
       <div>
         <label className="block text-sm font-medium mb-1.5">{t('form.recipe')}</label>
-        <select
-          name="recipeId"
-          required
-          defaultValue={effectiveDefaultRecipeId}
-          disabled={isReadOnly}
-          className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
-        >
-          <option value="">{t('form.recipePlaceholder')}</option>
-          {recipes.map((r) => (
-            <option key={r.id} value={r.id}>
-              {r.name} — {r.caliber}
-            </option>
-          ))}
-        </select>
+        {isReadOnly && !initialData?.recipe ? (
+          // The linked recipe was deleted; show the frozen snapshot name instead
+          // of an empty select so the session's recipe is still visible.
+          <input
+            type="text"
+            disabled
+            value={initialData?.recipeName ?? t('row.recipeDeleted')}
+            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+          />
+        ) : (
+          <select
+            name="recipeId"
+            required={!isEdit || !!initialData?.recipe}
+            defaultValue={effectiveDefaultRecipeId}
+            disabled={isReadOnly}
+            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
+          >
+            <option value="">{t('form.recipePlaceholder')}</option>
+            {recipes.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} — {r.caliber}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div>
