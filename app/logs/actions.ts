@@ -28,6 +28,7 @@ export async function createLoadLog(formData: FormData) {
       projectile: true,
       propellant: true,
       primer: true,
+      cartridge: true,
     },
   })
 
@@ -92,6 +93,7 @@ export async function createLoadLog(formData: FormData) {
         recipeName: recipe.name,
         caliber: recipe.caliber,
         chargeGr: recipe.chargeGr,
+        coal: recipe.coal,
 
         // Projectile snapshot
         projectileBrand: recipe.projectile.brand,
@@ -105,6 +107,11 @@ export async function createLoadLog(formData: FormData) {
         // Primer snapshot (if used)
         primerBrand: recipe.primer?.brand ?? null,
         primerType: recipe.primer?.type ?? null,
+
+        // Cartridge snapshot (if the recipe links one)
+        cartridgeBrand: recipe.cartridge?.brand ?? null,
+        cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+        cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
 
         // Optional recipe data at time of load
         calculatedV0: recipe.calculatedV0,

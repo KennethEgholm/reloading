@@ -265,6 +265,7 @@
       "calcV0": "Beregnet V0",
       "measV0": "Målt V0",
       "fillRate": "Fyldningsgrad",
+      "cartridge": "Hylster / Patron",
       "componentsTitle": "Komponenter forbrugt ved denne ladning",
       "projectile": "Projektil",
       "propellant": "Krudt",

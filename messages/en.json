@@ -265,6 +265,7 @@
       "calcV0": "Calculated V0",
       "measV0": "Measured V0",
       "fillRate": "Fill Rate",
+      "cartridge": "Cartridge / Case",
       "componentsTitle": "Components Consumed in This Load",
       "projectile": "Projectile",
       "propellant": "Propellant",

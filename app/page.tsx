@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
+import { GRAIN_TO_GRAM } from '@/lib/inventory';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
@@ -248,7 +249,6 @@ export default async function Overview() {
                         const projAmount = recipe.projectile?.amount ?? 0;
                         const powderGrams = recipe.propellant?.amountGr ?? 0;
                         const chargeGr = recipe.chargeGr ?? 0;
-                        const GRAIN_TO_GRAM = 0.06479891;
 
                         let fromPowder = Infinity;
                         if (chargeGr > 0 && powderGrams > 0) {

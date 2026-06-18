@@ -46,22 +46,25 @@ function form(fields: Record<string, string>): FormData {
   return fd
 }
 
-// A fully-stocked recipe with a primer, charge 40 gr.
+// A fully-stocked recipe with a primer, charge 40 gr, COAL 2.8 in, and a cartridge.
 function makeRecipe(overrides: Record<string, unknown> = {}) {
   return {
     id: 'recipe-1',
     name: 'Test Load',
     caliber: '.308',
     chargeGr: 40,
+    coal: 2.8,
     calculatedV0: null,
     measuredV0: null,
     fillRate: null,
     projectileId: 'proj-1',
     propellantId: 'prop-1',
     primerId: 'prim-1',
+    cartridgeId: 'cart-1',
     projectile: { id: 'proj-1', brand: 'Sierra', type: 'GameKing', weightGr: 168, amount: 1000 },
     propellant: { id: 'prop-1', brand: 'Vihtavuori', type: 'N140', amountGr: 1000 },
     primer: { id: 'prim-1', brand: 'CCI', type: 'LARGE_RIFLE', amount: 1000 },
+    cartridge: { id: 'cart-1', brand: 'Lapua', caliber: '.308', waterCapacityGr: 56.0, amount: 100 },
     ...overrides,
   }
 }
@@ -129,9 +132,13 @@ describe('createLoadLog', () => {
       recipeName: 'Test Load',
       caliber: '.308',
       chargeGr: 40,
+      coal: 2.8,
       projectileBrand: 'Sierra',
       propellantBrand: 'Vihtavuori',
       primerBrand: 'CCI',
+      cartridgeBrand: 'Lapua',
+      cartridgeCaliber: '.308',
+      cartridgeWaterCapacityGr: 56.0,
       projectileId: 'proj-1',
       propellantId: 'prop-1',
       primerId: 'prim-1',
@@ -151,6 +158,22 @@ describe('createLoadLog', () => {
     expect(prismaMock.loadLog.create.mock.calls[0][0].data).toMatchObject({
       primerBrand: null,
       primerType: null,
+    })
+  })
+
+  it('records null cartridge fields when the recipe links no cartridge', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(
+      makeRecipe({ cartridgeId: null, cartridge: null }),
+    )
+    await createLoadLog(form({ recipeId: 'recipe-1', quantity: '50' }))
+
+    // Cartridge isn't consumed, so nothing is deducted for it. The snapshot records
+    // null cartridge fields; coal is independent of the cartridge and is still captured.
+    expect(prismaMock.loadLog.create.mock.calls[0][0].data).toMatchObject({
+      cartridgeBrand: null,
+      cartridgeCaliber: null,
+      cartridgeWaterCapacityGr: null,
+      coal: 2.8,
     })
   })
 

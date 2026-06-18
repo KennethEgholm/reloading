@@ -27,7 +27,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 - **Load Logs** (`/logs`)
   - Record a batch you loaded using a recipe (rounds + optional notes).
   - **Atomic inventory deduction** via Prisma transaction.
-  - **Historical snapshots**: the log stores a complete copy of the recipe + component details at the time it was made (so future recipe edits or component deletions don't corrupt history).
+  - **Historical snapshots**: the log stores a complete copy of the recipe + component details at the time it was made — including charge, **COAL**, projectile/propellant/primer, and the linked **cartridge** (brand, caliber, water capacity) — so future recipe edits or component deletions don't corrupt history.
   - Detail view shows the exact snapshot + summary of components consumed.
   - Delete a log (with confirmation) and the components are restored to inventory (again via transaction using the snapshots).
   - Recent load logs are shown on the Overview (after Range Sessions).
@@ -133,7 +133,7 @@ pnpm dev
   - `lib/schemas.ts` – the Server Action validation schemas.
   - `app/logs/actions.ts` – the transactional load-log create/delete, run against a **mocked Prisma client** (no database needed). `vi.mock('@/lib/prisma')` supplies a fake client whose `$transaction(fn)` runs the callback with the mock as `tx`; tests assert the inventory deduction/restoration math, that everything happens inside one transaction, the stock guards, and that a mid-transaction failure propagates. Use this pattern (mock `@/lib/prisma`, `next/cache`, `next-intl/server`) for other Server Action tests.
 - Add tests here when changing inventory math, validation rules, or inventory-mutating actions.
-- **End-to-end verification** (needs the dev DB up): `scripts/verify-range-snapshot.e2e.test.ts` drives the *real* Server Actions against the live Postgres, mocking only `next/cache` / `next-intl/server` / `next/navigation` / `fs/promises` — **not** `@/lib/prisma` — so it exercises the actual transactional/snapshot behavior. It lives under `scripts/` with its own config (`vitest.verify.config.ts`) so the DB-less CI suite never picks it up. Run it explicitly:
+- **End-to-end verification** (needs the dev DB up): `scripts/verify-*.e2e.test.ts` drive the *real* Server Actions against the live Postgres (range-session and load-log snapshot flows), mocking only `next/cache` / `next-intl/server` / `next/navigation` / `fs/promises` — **not** `@/lib/prisma` — so they exercise the actual transactional/snapshot behavior. They live under `scripts/` with their own config (`vitest.verify.config.ts`) so the DB-less CI suite never picks them up. Run them explicitly:
   ```bash
   DATABASE_URL=postgresql://reloading:reloading@localhost:5432/reloading \
     pnpm vitest run --config vitest.verify.config.ts

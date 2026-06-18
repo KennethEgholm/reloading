@@ -126,6 +126,7 @@ model LoadLog {
   recipeName String?
   caliber    String?
   chargeGr   Float? // grains per cartridge at the time
+  coal       Float? // cartridge overall length at the time
 
   // Projectile snapshot
   projectileBrand    String?
@@ -139,6 +140,11 @@ model LoadLog {
   // Primer snapshot (if used)
   primerBrand String?
   primerType  String?
+
+  // Cartridge snapshot (if the recipe links a cartridge)
+  cartridgeBrand           String?
+  cartridgeCaliber         String?
+  cartridgeWaterCapacityGr Float?
 
   // Optional recipe data captured at load time
   calculatedV0 Float?

@@ -4,6 +4,7 @@ import { getLoadLogById } from '../actions'
 import Link from 'next/link'
 import { DeleteLoadLogButton } from '../DeleteLoadLogButton'
 import { formatDateLong } from '@/lib/format'
+import { GRAIN_TO_GRAM } from '@/lib/inventory'
 
 export default async function LoadLogDetailPage({
   params,
@@ -20,8 +21,18 @@ export default async function LoadLogDetailPage({
   }
 
   const propellantUsedGr = log.chargeGr
-    ? (log.quantity * log.chargeGr * 0.06479891).toFixed(1)
+    ? (log.quantity * log.chargeGr * GRAIN_TO_GRAM).toFixed(1)
     : ''
+
+  // Cartridge label for the snapshot (brand + caliber + water capacity, if any).
+  const cartridgeLabel = log.cartridgeBrand
+    ? [
+        `${log.cartridgeBrand} ${log.cartridgeCaliber ?? ''}`.trim(),
+        log.cartridgeWaterCapacityGr != null ? `${log.cartridgeWaterCapacityGr} gr H₂O` : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')
+    : null
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
@@ -58,7 +69,7 @@ export default async function LoadLogDetailPage({
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.coal')}</div>
-              <div className="font-medium mt-1">—</div>
+              <div className="font-medium mt-1">{log.coal ? `${log.coal} in` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.calcV0')}</div>
@@ -71,6 +82,10 @@ export default async function LoadLogDetailPage({
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.fillRate')}</div>
               <div className="font-medium mt-1">{log.fillRate ? `${log.fillRate}%` : '—'}</div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.cartridge')}</div>
+              <div className="font-medium mt-1">{cartridgeLabel ?? '—'}</div>
             </div>
           </div>
         </div>
