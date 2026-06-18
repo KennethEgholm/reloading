@@ -43,11 +43,14 @@ type Snapshot = {
   propellantType: string | null
   primerBrand: string | null
   primerType: string | null
+  cartridgeBrand: string | null
+  cartridgeCaliber: string | null
+  cartridgeWaterCapacityGr: number | null
   calculatedV0: number | null
   measuredV0: number | null
   fillRate: number | null
   roundsFired: number
-  recipe: { id: string; name: string; chargeGr: number | null; coal: number | null } | null
+  recipe: { id: string; name: string; chargeGr: number | null; coal: number | null; cartridgeId: string | null } | null
 }
 
 const SNAPSHOT_SELECT = {
@@ -63,11 +66,14 @@ const SNAPSHOT_SELECT = {
   propellantType: true,
   primerBrand: true,
   primerType: true,
+  cartridgeBrand: true,
+  cartridgeCaliber: true,
+  cartridgeWaterCapacityGr: true,
   calculatedV0: true,
   measuredV0: true,
   fillRate: true,
   roundsFired: true,
-  recipe: { select: { id: true, name: true, chargeGr: true, coal: true } },
+  recipe: { select: { id: true, name: true, chargeGr: true, coal: true, cartridgeId: true } },
 } as const
 
 async function readLog(id: string): Promise<Snapshot> {
@@ -91,9 +97,16 @@ type Seed = {
   projectile: { id: string }
   propellant: { id: string }
   primer: { id: string } | null
+  cartridge: { id: string } | null
 }
 
-async function seedRecipe(name: string, chargeGr: number, coal: number, withPrimer = true): Promise<Seed> {
+async function seedRecipe(
+  name: string,
+  chargeGr: number,
+  coal: number,
+  withPrimer = true,
+  withCartridge = false,
+): Promise<Seed> {
   const projectile = await prisma.projectile.create({
     data: { brand: `${TAG}-proj-${name}`, type: 'GameKing', weightGr: 168, caliber: '.308' },
   })
@@ -102,6 +115,11 @@ async function seedRecipe(name: string, chargeGr: number, coal: number, withPrim
   })
   const primer = withPrimer
     ? await prisma.primer.create({ data: { brand: `${TAG}-prim-${name}`, type: 'LARGE_RIFLE', amount: 100 } })
+    : null
+  const cartridge = withCartridge
+    ? await prisma.cartridge.create({
+        data: { brand: `${TAG}-cart-${name}`, caliber: '.308', waterCapacityGr: 56.0, amount: 100 },
+      })
     : null
   const recipe = await prisma.recipe.create({
     data: {
@@ -112,12 +130,13 @@ async function seedRecipe(name: string, chargeGr: number, coal: number, withPrim
       projectileId: projectile.id,
       propellantId: propellant.id,
       primerId: primer?.id ?? null,
+      cartridgeId: cartridge?.id ?? null,
       calculatedV0: 800,
       measuredV0: null,
       fillRate: 90,
     },
   })
-  return { recipe, projectile, propellant, primer }
+  return { recipe, projectile, propellant, primer, cartridge }
 }
 
 function form(fields: Record<string, string>): FormData {
@@ -134,6 +153,7 @@ const recipeIds: string[] = []
 const projectileIds: string[] = []
 const propellantIds: string[] = []
 const primerIds: string[] = []
+const cartridgeIds: string[] = []
 
 async function safeDelete<T>(fn: () => Promise<T>, label: string) {
   try {
@@ -151,6 +171,7 @@ afterAll(async () => {
   for (const id of primerIds) await safeDelete(() => prisma.primer.delete({ where: { id } }), 'primer')
   for (const id of projectileIds) await safeDelete(() => prisma.projectile.delete({ where: { id } }), 'projectile')
   for (const id of propellantIds) await safeDelete(() => prisma.propellant.delete({ where: { id } }), 'propellant')
+  for (const id of cartridgeIds) await safeDelete(() => prisma.cartridge.delete({ where: { id } }), 'cartridge')
   await prisma.$disconnect()
 }, 60_000)
 
@@ -160,13 +181,14 @@ describe('RangeLog snapshot model (live DB)', () => {
   let r4: Seed
 
   beforeAll(async () => {
-    rA = await seedRecipe(`${TAG}-A`, 40, 2.8, true)
+    rA = await seedRecipe(`${TAG}-A`, 40, 2.8, true, true) // with cartridge → tests the cartridge snapshot path
     r3 = await seedRecipe(`${TAG}-R3`, 50, 3.0, true)
     r4 = await seedRecipe(`${TAG}-R4`, 55, 3.1, false) // no primer → tests null-primer snapshot path
     recipeIds.push(rA.recipe.id, r3.recipe.id, r4.recipe.id)
     projectileIds.push(rA.projectile.id, r3.projectile.id, r4.projectile.id)
     propellantIds.push(rA.propellant.id, r3.propellant.id, r4.propellant.id)
     for (const s of [rA, r3, r4]) if (s.primer) primerIds.push(s.primer.id)
+    for (const s of [rA, r3, r4]) if (s.cartridge) cartridgeIds.push(s.cartridge.id)
   }, 60_000)
 
   it('flow A — snapshot is frozen: editing the recipe does NOT change the session record', async () => {
@@ -177,7 +199,7 @@ describe('RangeLog snapshot model (live DB)', () => {
     rangeLogIds.push(id)
 
     const immediately = await readLog(id)
-    // Snapshot captured A's current values (charge 40, COAL 2.8, primer present).
+    // Snapshot captured A's current values (charge 40, COAL 2.8, primer + cartridge present).
     expect(immediately.recipeId).toBe(rA.recipe.id)
     expect(immediately.recipeName).toBe(`${TAG}-A`)
     expect(immediately.chargeGr).toBe(40)
@@ -186,14 +208,21 @@ describe('RangeLog snapshot model (live DB)', () => {
     expect(immediately.propellantType).toBe('N140')
     expect(immediately.primerBrand).toBe(`${TAG}-prim-${TAG}-A`)
     expect(immediately.primerType).toBe('LARGE_RIFLE')
+    expect(immediately.cartridgeBrand).toBe(`${TAG}-cart-${TAG}-A`)
+    expect(immediately.cartridgeCaliber).toBe('.308')
+    expect(immediately.cartridgeWaterCapacityGr).toBe(56.0)
     expect(immediately.calculatedV0).toBe(800)
     expect(immediately.fillRate).toBe(90)
     expect(immediately.roundsFired).toBe(20)
 
-    // 2. Edit recipe A elsewhere (charge 40→44, COAL 2.8→2.9, rename).
+    // 2. Edit recipe A elsewhere (charge 40→44, COAL 2.8→2.9, rename, swap cartridge).
+    const newCart = await prisma.cartridge.create({
+      data: { brand: `${TAG}-cart2-A`, caliber: '6.5 Creedmoor', waterCapacityGr: 58.0, amount: 50 },
+    })
+    cartridgeIds.push(newCart.id)
     await prisma.recipe.update({
       where: { id: rA.recipe.id },
-      data: { chargeGr: 44, coal: 2.9, name: `${TAG}-A-EDITED` },
+      data: { chargeGr: 44, coal: 2.9, name: `${TAG}-A-EDITED`, cartridgeId: newCart.id },
     })
 
     // 3. Re-read the session: the live `recipe` reflects the edit, but the
@@ -202,11 +231,15 @@ describe('RangeLog snapshot model (live DB)', () => {
     expect(after.recipe?.chargeGr).toBe(44) // live recipe moved
     expect(after.recipe?.coal).toBe(2.9)
     expect(after.recipe?.name).toBe(`${TAG}-A-EDITED`)
+    expect(after.recipe?.cartridgeId).toBe(newCart.id) // live cartridge swapped
     // ...while the snapshot stayed frozen at creation time:
     expect(after.recipeName).toBe(`${TAG}-A`) // unchanged
     expect(after.chargeGr).toBe(40) // unchanged
     expect(after.coal).toBe(2.8) // unchanged
     expect(after.primerBrand).toBe(`${TAG}-prim-${TAG}-A`)
+    expect(after.cartridgeBrand).toBe(`${TAG}-cart-${TAG}-A`) // original cartridge frozen
+    expect(after.cartridgeCaliber).toBe('.308')
+    expect(after.cartridgeWaterCapacityGr).toBe(56.0)
   }, 60_000)
 
   it('flow B — deleting the recipe nulls the FK but the snapshot survives', async () => {

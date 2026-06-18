@@ -191,6 +191,12 @@ model RangeLog {
   propellantType     String?
   primerBrand        String?
   primerType         String?
+
+  // Cartridge snapshot (if the recipe links a cartridge)
+  cartridgeBrand           String?
+  cartridgeCaliber         String?
+  cartridgeWaterCapacityGr Float?
+
   calculatedV0       Float?
   measuredV0         Float?
   fillRate           Float?

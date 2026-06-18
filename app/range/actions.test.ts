@@ -50,7 +50,7 @@ function form(fields: Record<string, string>): FormData {
   return fd
 }
 
-// A recipe with projectile/propellant/primer resolved, charge 40 gr, COAL 2.8.
+// A recipe with projectile/propellant/primer + cartridge resolved, charge 40, COAL 2.8.
 function makeRecipe(overrides: Record<string, unknown> = {}) {
   return {
     id: 'recipe-1',
@@ -64,9 +64,11 @@ function makeRecipe(overrides: Record<string, unknown> = {}) {
     projectileId: 'proj-1',
     propellantId: 'prop-1',
     primerId: 'prim-1',
+    cartridgeId: 'cart-1',
     projectile: { id: 'proj-1', brand: 'Sierra', type: 'GameKing', weightGr: 168 },
     propellant: { id: 'prop-1', brand: 'Vihtavuori', type: 'N140' },
     primer: { id: 'prim-1', brand: 'CCI', type: 'LARGE_RIFLE' },
+    cartridge: { id: 'cart-1', brand: 'Lapua', caliber: '.308', waterCapacityGr: 56.0 },
     ...overrides,
   }
 }
@@ -114,6 +116,9 @@ describe('createRangeLog', () => {
       propellantType: 'N140',
       primerBrand: 'CCI',
       primerType: 'LARGE_RIFLE',
+      cartridgeBrand: 'Lapua',
+      cartridgeCaliber: '.308',
+      cartridgeWaterCapacityGr: 56.0,
       calculatedV0: 800,
       fillRate: 90,
     })
@@ -128,6 +133,19 @@ describe('createRangeLog', () => {
     expect(prismaMock.rangeLog.create.mock.calls[0][0].data).toMatchObject({
       primerBrand: null,
       primerType: null,
+    })
+  })
+
+  it('records null cartridge snapshot fields when the recipe links no cartridge', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe({ cartridgeId: null, cartridge: null }))
+    prismaMock.rangeLog.create.mockResolvedValue({ id: 'range-1' })
+
+    await createRangeLog(form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' }))
+
+    expect(prismaMock.rangeLog.create.mock.calls[0][0].data).toMatchObject({
+      cartridgeBrand: null,
+      cartridgeCaliber: null,
+      cartridgeWaterCapacityGr: null,
     })
   })
 })
@@ -151,6 +169,9 @@ describe('updateRangeLog', () => {
       caliber: '.308',
       chargeGr: 40,
       coal: 2.8,
+      cartridgeBrand: 'Lapua',
+      cartridgeCaliber: '.308',
+      cartridgeWaterCapacityGr: 56.0,
     })
   })
 

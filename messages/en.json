@@ -159,7 +159,8 @@
       "fillRate": "Fill Rate",
       "projectile": "Projectile",
       "propellant": "Propellant",
-      "primer": "Primer"
+      "primer": "Primer",
+      "cartridge": "Cartridge / Case"
     },
     "edit": {
       "title": "Edit Range Session",

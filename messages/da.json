@@ -159,7 +159,8 @@
       "fillRate": "Fyldningsgrad",
       "projectile": "Projektil",
       "propellant": "Krudt",
-      "primer": "Tændhætte"
+      "primer": "Tændhætte",
+      "cartridge": "Hylster / Patron"
     },
     "edit": {
       "title": "Rediger skydning",

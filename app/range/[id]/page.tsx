@@ -97,6 +97,13 @@ export default async function RangeLogDetailPage({
               {log.primerBrand} {log.primerType?.replace('_', ' ')}
             </div>
           )}
+          {log.cartridgeBrand && (
+            <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl p-3">
+              <span className="font-medium text-emerald-700 dark:text-emerald-300">{t('detail.cartridge')}: </span>
+              {[log.cartridgeBrand, log.cartridgeCaliber].filter(Boolean).join(' ')}
+              {log.cartridgeWaterCapacityGr != null ? ` — ${log.cartridgeWaterCapacityGr} gr H₂O` : ''}
+            </div>
+          )}
         </div>
       </div>
 

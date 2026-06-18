@@ -105,7 +105,7 @@ async function cleanupUploadFiles(filenames: string[]) {
 
 // A recipe with the component relations needed to build a RangeLog snapshot.
 type RecipeForSnapshot = Prisma.RecipeGetPayload<{
-  include: { projectile: true; propellant: true; primer: true }
+  include: { projectile: true; propellant: true; primer: true; cartridge: true }
 }>
 
 // Builds the frozen-recipe snapshot fields from a fetched recipe. Written onto
@@ -125,6 +125,9 @@ function recipeSnapshot(recipe: RecipeForSnapshot) {
     propellantType: recipe.propellant.type,
     primerBrand: recipe.primer?.brand ?? null,
     primerType: recipe.primer?.type ?? null,
+    cartridgeBrand: recipe.cartridge?.brand ?? null,
+    cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+    cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
     calculatedV0: recipe.calculatedV0,
     measuredV0: recipe.measuredV0,
     fillRate: recipe.fillRate,
@@ -210,7 +213,7 @@ export async function createRangeLog(formData: FormData) {
   // createLoadLog). The snapshot survives later recipe edits/deletion.
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
-    include: { projectile: true, propellant: true, primer: true },
+    include: { projectile: true, propellant: true, primer: true, cartridge: true },
   })
   if (!recipe) {
     throw new Error(t('errors.recipeNotFound'))
@@ -419,7 +422,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
   if (effectiveRecipeId !== null && effectiveRecipeId !== existing?.recipeId) {
     linkedRecipe = await prisma.recipe.findUnique({
       where: { id: effectiveRecipeId },
-      include: { projectile: true, propellant: true, primer: true },
+      include: { projectile: true, propellant: true, primer: true, cartridge: true },
     })
     if (!linkedRecipe) {
       throw new Error(t('errors.recipeNotFound'))
