@@ -43,8 +43,16 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
             {propellants.map((propellant) => (
               <tr
                 key={propellant.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
+                tabIndex={0}
+                role="button"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
                 onClick={() => handleRowClick(propellant)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(propellant);
+                  }
+                }}
               >
                 <td className="px-6 py-4 font-medium">{propellant.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{propellant.type}</td>

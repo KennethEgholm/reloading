@@ -44,8 +44,16 @@ export function PrimersTable({ primers }: PrimersTableProps) {
             {primers.map((primer) => (
               <tr
                 key={primer.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
+                tabIndex={0}
+                role="button"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
                 onClick={() => handleRowClick(primer)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(primer);
+                  }
+                }}
               >
                 <td className="px-6 py-4 font-medium">{primer.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">

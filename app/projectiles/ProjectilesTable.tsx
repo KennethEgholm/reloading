@@ -45,8 +45,16 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
             {projectiles.map((projectile) => (
               <tr
                 key={projectile.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
+                tabIndex={0}
+                role="button"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
                 onClick={() => handleRowClick(projectile)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(projectile);
+                  }
+                }}
               >
                 <td className="px-6 py-4 font-medium">{projectile.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.type || '—'}</td>

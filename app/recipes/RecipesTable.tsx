@@ -83,8 +83,16 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
             {recipes.map((recipe) => (
               <tr
                 key={recipe.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
+                tabIndex={0}
+                role="link"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
                 onClick={() => handleRowClick(recipe)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleRowClick(recipe);
+                  }
+                }}
               >
                 <td className="px-6 py-4 font-medium">{recipe.name}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>

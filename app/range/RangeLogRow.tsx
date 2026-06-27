@@ -43,19 +43,34 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
     <>
       <div
         onClick={goToDetail}
-        className="block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer"
+        tabIndex={0}
+        role="link"
+        className="block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer focus:outline-none"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            goToDetail();
+          }
+        }}
       >
         <div className="flex gap-4">
           {log.mainImage?.filename && (
-            <img
-              src={`/uploads/range-logs/${log.mainImage.filename}`}
-              alt=""
-              className="w-14 h-14 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+            <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowPhotoOverlay(true);
               }}
-            />
+              className="flex-shrink-0 focus:outline-none"
+              aria-label={t('row.photoCount', { count: 1 })}
+            >
+              <img
+                src={`/uploads/range-logs/${log.mainImage.filename}`}
+                alt=""
+                aria-hidden="true"
+                className="w-14 h-14 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:opacity-90 transition-opacity"
+              />
+            </button>
           )}
           <div className="flex-1 min-w-0">
             <div className="flex justify-between items-start">
