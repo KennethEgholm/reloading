@@ -35,6 +35,13 @@ Instructions for AI agents / future sessions working on this codebase.
 
 - Materials follow a uniform per-domain pattern (`app/<material>/`: `page.tsx` + `Form` + `Table` + `Delete*Button` + `actions.ts`, with a nav link + overview section + summary card). Materials: primers, projectiles, propellants, **cartridges**. To add another, copy an existing one (propellants is the simplest template; projectiles/cartridges add `caliber` + `amount`). Cartridges also have an optional `waterCapacityGr` (grains of water) and link to recipes via optional `Recipe.cartridgeId` (like `primerId`); the cartridge is threaded through `RecipeForm`, the detail view, and the AI prompt (`assessRecipeData` cartridge* fields + `recipeMatchesInput`).
 
+## Internationalization (next-intl, EN/DA)
+The app is **fully bilingual** (English / Danish). This touches nearly every file and must not be ignored.
+- Routing: `i18n/routing.ts` defines `locales: ['en','da']`, `defaultLocale: 'en'`, **`localePrefix: 'never'`** — URLs have no `/en`/`/da` prefix. The active locale lives in a `NEXT_LOCALE` cookie (max-age 1yr). `middleware.ts` detects it cookie → `Accept-Language` → default, sets `x-next-intl-locale` on the response. `i18n/request.ts` loads `messages/<locale>.json` (`timeZone: 'Europe/Copenhagen'`).
+- Dictionaries: `messages/en.json` and `messages/da.json`, 14 top-level namespaces (`nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `recipes`, `logs`, `range`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`). **Every** user-facing string — page headings, table headers, form labels, button labels, toasts, AI verdict text, Zod validation messages — flows through `t()` (client, `useTranslations`) or `getTranslations` (server). Never hard-code English in a component/action; add the key to both message files instead. Server actions in `lib/schemas.ts` take a `t` translator for localized validation errors.
+- UX: the **Settings** page renders `app/settings/LocaleSwitcher.tsx`, a `<select>` that writes `NEXT_LOCALE` and reloads the current path. Dates use `Intl.DateTimeFormat` via `lib/format.ts` with the active locale (avoids hydration mismatch). `app/layout.tsx` sets `<html lang={locale}>` and wraps the tree in `NextIntlClientProvider`.
+- **Drift hazard**: there is no automated check that `en.json` and `da.json` stay in sync. A missing key renders the key path verbatim. When adding/renaming/removing any user-facing string, update BOTH files in the same change. If a string is brand/code/identifier, leave it untranslated (or wrap in `<span translate="no">` if auto-translation could mangle it).
+
 ## UI Patterns to Respect
 - No "+ Add ..." or "Edit" buttons rendered below any list/table.
 - Table wrappers (e.g. `RecipesTable`, `PrimersTable`, `RangeLogRow`) are the only places that hold `editingXxx` state and render the form (outside the `<tbody>`).
@@ -48,6 +55,20 @@ Instructions for AI agents / future sessions working on this codebase.
 - Before saying "Done": run type check (`./node_modules/.bin/tsc --noEmit` on host or equivalent in container) and actually exercise the flow (create/edit/delete/upload) if possible. User has repeatedly said "please make sure that the app compiles before you say 'Done'".
 - When user says "Commit and push", do a clean conventional commit + push.
 - Use the detailed conversation summary provided at the start of sessions + the persistent Grok memory file (`~/.grok/memory/reloading-bc8d498c/MEMORY.md`) for full history.
+
+## Session Workflow (build → verify → test → report)
+When completing a task, run these steps in order before reporting back:
+1. **Build** — `pnpm build` (or `./node_modules/.bin/tsc --noEmit` for a fast typecheck)
+2. **Verify** — confirm exit 0 and inspect output for errors
+3. **Test** — `pnpm test`
+4. **Report back** — summarize what changed and the verification results, then **wait for approval** before committing or pushing
+
+### Commit / Push Rules
+- Do **not** commit or push until the user explicitly approves
+- Do **not** create branches — work on the current branch
+- Do **not** create PRs
+- Push directly to `main` when approved
+- Use clean conventional commit messages
 
 ## Memory & Documentation
 - After any substantial work (especially bug fixes or new major flows), update both:

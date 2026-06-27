@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
-import { GRAIN_TO_GRAM } from '@/lib/inventory';
+import { getPossibleLoads } from '@/lib/inventory';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
@@ -37,6 +37,7 @@ export default async function Overview() {
       include: {
         projectile: true,
         propellant: true,
+        primer: true,
       },
       orderBy: { createdAt: 'desc' },
     }),
@@ -246,19 +247,7 @@ export default async function Overview() {
                     </td>
                     <td className="px-6 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400">
                       {(() => {
-                        const projAmount = recipe.projectile?.amount ?? 0;
-                        const powderGrams = recipe.propellant?.amountGr ?? 0;
-                        const chargeGr = recipe.chargeGr ?? 0;
-
-                        let fromPowder = Infinity;
-                        if (chargeGr > 0 && powderGrams > 0) {
-                          const gramsPerLoad = chargeGr * GRAIN_TO_GRAM;
-                          fromPowder = Math.floor(powderGrams / gramsPerLoad);
-                        }
-                        const fromProjectile = projAmount;
-
-                        const min = Math.min(fromProjectile, fromPowder);
-                        const possible = min === Infinity ? null : Math.max(0, min);
+                        const possible = getPossibleLoads(recipe);
                         return possible !== null ? `${possible}×` : '—';
                       })()}
                     </td>

@@ -13,13 +13,15 @@ graph TB
 
     subgraph Next["Next.js 16 App Router (app container)"]
         direction TB
+        MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
+        I18N["i18n/request.ts · messages/{en,da}.json<br/>14 namespaces · t() / getTranslations()"]
         SC["Server Components<br/>(pages: /, /recipes, /range,<br/>/logs, materials, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
         subgraph Lib["lib/"]
             PRISMA["prisma.ts<br/>PrismaClient + pg adapter"]
             AI["ai.ts<br/>chatCompletion · parseJsonFromModel<br/>AiError · DEFAULT_BASE_URLS"]
-            FMT["format.ts (en-GB dates)"]
+            FMT["format.ts (Intl.DateTimeFormat, locale-aware)"]
             TYP["types.ts (DeleteResult)"]
         end
     end
@@ -31,8 +33,12 @@ graph TB
 
     EXT["External AI provider<br/>(OpenAI-compatible /chat/completions)<br/>xAI Grok etc."]
 
+    REQ["HTTP request"] --> MW
+    MW -- "x-next-intl-locale header" --> I18N
+    I18N -- "messages + locale" --> SC
+    I18N -- "messages + locale" --> SA
     UI -- "FormData submit" --> SA
-    SC -- "render HTML" --> UI
+    SC -- "render HTML (t() strings)" --> UI
     UI <--> LS
     SC -- "queries" --> PRISMA
     SA -- "mutations + transactions" --> PRISMA

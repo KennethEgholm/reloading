@@ -62,9 +62,15 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Server Components + Server Actions for data and mutations. React Hook Form + Zod on complex forms.
   - Responsive, dark-mode friendly, clean zinc-based design.
 
+- **Internationalization (bilingual EN/DA)**
+  - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (14 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `recipes`, `logs`, `range`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
+  - URLs are clean — `localePrefix: 'never'`. The active locale lives in a `NEXT_LOCALE` cookie, detected from the cookie first, then `Accept-Language`, then the default (`en`). `middleware.ts` reads it and sets `x-next-intl-locale` so server components resolve the right dictionary.
+  - Switch locale from **Settings** (`LocaleSwitcher`): a `<select>` that writes the cookie and reloads the current path. Dates format via `Intl.DateTimeFormat` (`lib/format.ts`) and respect the active locale to avoid hydration mismatch.
+  - **When adding/changing a user-facing string, update BOTH `messages/en.json` and `messages/da.json`** — there is no automated drift check; a missing key in one locale renders the key path verbatim.
+
 ## Tech Stack
 
-- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS, Sonner (toasts), React Hook Form + Zod
+- **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS, Sonner (toasts), React Hook Form + Zod, **next-intl** (i18n, EN/DA)
 - **Backend / Data**: Prisma 7 (client engine) + PostgreSQL via `@prisma/adapter-pg` + `pg` Pool
 - **Dev / Ops**: Docker Compose (Postgres with named volume for true persistence), pnpm 11.5, corepack
 - **Other**: local filesystem photo storage, automatic revalidation, migrations for every schema change
@@ -111,6 +117,9 @@ pnpm dev
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
   - `settings/` – AI model configuration (singleton `AiSettings` row) + `SettingsForm` + `Test connection`
 - `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test and the recipe AI safety check
+- `i18n/routing.ts` + `i18n/request.ts` – next-intl routing (`locales: ['en','da']`, `localePrefix: 'never'`) and request config (loads `messages/<locale>.json`, `timeZone: 'Europe/Copenhagen'`)
+- `middleware.ts` – locale detection (cookie → `Accept-Language` → default `en`), sets `x-next-intl-locale` header
+- `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (14 namespaces)
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
