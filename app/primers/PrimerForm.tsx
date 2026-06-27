@@ -143,7 +143,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsOpen(false)} aria-hidden="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsOpen(false)}>
           <div
             ref={modalRef}
             role="dialog"
