@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { CartridgeForm } from './CartridgeForm';
 import { DeleteCartridgeButton } from './DeleteCartridgeButton';
 import type { Cartridge } from '@/lib/types';
@@ -12,6 +12,8 @@ interface CartridgesTableProps {
 
 export function CartridgesTable({ cartridges }: CartridgesTableProps) {
   const t = useTranslations('cartridges');
+  const locale = useLocale();
+  const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
   const [editingCartridge, setEditingCartridge] = useState<Cartridge | null>(null);
 
   const handleRowClick = (cartridge: Cartridge) => {
@@ -58,7 +60,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
                 <td className="px-6 py-4 font-medium">{cartridge.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{cartridge.caliber}</td>
                 <td className="px-6 py-4 text-right font-mono">
-                  {cartridge.waterCapacityGr != null ? cartridge.waterCapacityGr.toFixed(1) : '—'}
+                  {cartridge.waterCapacityGr != null ? fmt1.format(cartridge.waterCapacityGr) : '—'}
                 </td>
                 <td className="px-6 py-4 text-right font-mono font-medium">{cartridge.amount}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">

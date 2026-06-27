@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
@@ -7,6 +7,8 @@ import { getPossibleLoads } from '@/lib/inventory';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
+  const locale = await getLocale();
+  const fmt1 = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
   const [
     primers,
@@ -78,7 +80,7 @@ export default async function Overview() {
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-4 mb-2">
-          <img src="/images/logo.svg" alt={t('title')} className="w-12 h-12" />
+          <img src="/images/logo.svg" alt={t('title')} className="w-12 h-12" width={48} height={48} loading="lazy" />
           <h1 className="font-display text-4xl font-semibold tracking-tighter">{t('title')}</h1>
         </div>
         <p className="text-lg text-zinc-600 dark:text-zinc-400">
@@ -117,7 +119,7 @@ export default async function Overview() {
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: totalPropellantGrams.toFixed(1) })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: fmt1.format(totalPropellantGrams) })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
@@ -130,7 +132,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/range.svg" alt={t('sections.rangeSessions')} className="w-7 h-7" />
+            <img src="/images/range.svg" alt={t('sections.rangeSessions')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.rangeSessions')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.rangeSummary', { count: rangeCount, rounds: totalRounds })}</span>
           </div>
@@ -163,7 +165,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/log.svg" alt={t('sections.loadLogs')} className="w-7 h-7" />
+            <img src="/images/log.svg" alt={t('sections.loadLogs')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.loadLogs')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.loadSummary', { count: loadCount, rounds: totalLoaded })}</span>
           </div>
@@ -190,7 +192,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/recipe.svg" alt={t('sections.recipes')} className="w-7 h-7" />
+            <img src="/images/recipe.svg" alt={t('sections.recipes')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.recipes')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.recipeSummary', { count: recipes.length })}</span>
           </div>
@@ -292,7 +294,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/primer.svg" alt={t('sections.primers')} className="w-7 h-7" />
+            <img src="/images/primer.svg" alt={t('sections.primers')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.primers')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.primerSummary', { count: primers.length, pieces: totalPrimers })}</span>
           </div>
@@ -344,7 +346,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/projectile.svg" alt={t('sections.projectiles')} className="w-7 h-7" />
+            <img src="/images/projectile.svg" alt={t('sections.projectiles')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.projectiles')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.projectileSummary', { count: projectiles.length })}</span>
           </div>
@@ -392,7 +394,7 @@ export default async function Overview() {
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/propellant.svg" alt={t('sections.propellants')} className="w-7 h-7" />
+            <img src="/images/propellant.svg" alt={t('sections.propellants')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.propellants')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.propellantSummary', { count: propellants.length })}</span>
           </div>
@@ -420,7 +422,7 @@ export default async function Overview() {
                   <tr key={prop.id}>
                     <td className="px-6 py-3 font-medium">{prop.brand}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{prop.type}</td>
-                    <td className="px-6 py-3 text-right font-mono">{prop.amountGr.toFixed(1)}</td>
+                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(prop.amountGr)}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
                       {prop.description || '—'}
                     </td>
@@ -438,7 +440,7 @@ export default async function Overview() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <img src="/images/cartridge.svg" alt={t('sections.cartridges')} className="w-7 h-7" />
+            <img src="/images/cartridge.svg" alt={t('sections.cartridges')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.cartridges')}</h2>
             <span className="text-sm text-zinc-500">{t('sections.cartridgeSummary', { count: cartridges.length, cases: totalCases })}</span>
           </div>
@@ -468,7 +470,7 @@ export default async function Overview() {
                     <td className="px-6 py-3 font-medium">{cartridge.brand}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{cartridge.caliber}</td>
                     <td className="px-6 py-3 text-right font-mono">
-                      {cartridge.waterCapacityGr != null ? cartridge.waterCapacityGr.toFixed(1) : '—'}
+                      {cartridge.waterCapacityGr != null ? fmt1.format(cartridge.waterCapacityGr) : '—'}
                     </td>
                     <td className="px-6 py-3 text-right font-mono">{cartridge.amount}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">

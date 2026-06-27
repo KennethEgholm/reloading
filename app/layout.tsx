@@ -81,7 +81,7 @@ export default async function RootLayout({
               <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Link href="/" className="flex items-center gap-2.5">
-                    <img src="/images/logo.svg" alt={t('home')} className="w-9 h-9" />
+                    <img src="/images/logo.svg" alt={t('home')} className="w-9 h-9" width={36} height={36} />
                     <span className="font-semibold text-lg tracking-tight">{t('home')}</span>
                   </Link>
                   <div className="flex items-center gap-1 text-sm">

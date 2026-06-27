@@ -98,7 +98,7 @@ export function AiVerdictDisplay({ verdict, summary, concerns, model, checkedAt 
       {checkedAtLabel && (
         <div className="text-xs text-zinc-500">
           {t('aiCheck.lastChecked', { date: checkedAtLabel })}
-          {model && ` · ${model}`}
+          {model && ` · `}{model && <span translate="no">{model}</span>}
         </div>
       )}
     </div>

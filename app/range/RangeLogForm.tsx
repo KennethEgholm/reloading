@@ -395,6 +395,9 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                   <img
                     src={`/uploads/range-logs/${img.filename}`}
                     alt=""
+                    width={64}
+                    height={64}
+                    loading="lazy"
                     className="w-16 h-16 object-cover rounded flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
                     onClick={(e) => {
                       e.stopPropagation()
@@ -538,6 +541,9 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           <img
             src={`/uploads/range-logs/${currentOverlayImg.filename}`}
             alt={currentOverlayImg.description || ''}
+            width={800}
+            height={600}
+            loading="lazy"
             className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl bg-zinc-900"
           />
 

@@ -71,6 +71,9 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                 src={`/uploads/range-logs/${log.mainImage.filename}`}
                 alt=""
                 aria-hidden="true"
+                width={56}
+                height={56}
+                loading="lazy"
                 className="w-14 h-14 object-cover rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:opacity-90 transition-opacity"
               />
             </button>
@@ -145,6 +148,9 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             <img
               src={`/uploads/range-logs/${log.mainImage.filename}`}
               alt={log.mainImage.description || ''}
+              width={800}
+              height={600}
+              loading="lazy"
               className="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl bg-zinc-900"
             />
 

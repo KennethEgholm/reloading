@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { PropellantForm } from './PropellantForm';
 import { DeletePropellantButton } from './DeletePropellantButton';
 import type { Propellant } from '@/lib/types';
@@ -12,6 +12,8 @@ interface PropellantsTableProps {
 
 export function PropellantsTable({ propellants }: PropellantsTableProps) {
   const t = useTranslations('propellants');
+  const locale = useLocale();
+  const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
   const [editingPropellant, setEditingPropellant] = useState<Propellant | null>(null);
 
   const handleRowClick = (propellant: Propellant) => {
@@ -57,7 +59,7 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
                 <td className="px-6 py-4 font-medium">{propellant.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{propellant.type}</td>
                 <td className="px-6 py-4 text-right font-mono font-medium">
-                  {propellant.amountGr.toFixed(1)}
+                  {fmt1.format(propellant.amountGr)}
                 </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {propellant.description || '—'}

@@ -91,7 +91,7 @@ export function ThemeToggle() {
                 : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
             }`}
           >
-            <Icon size={16} />
+            <Icon size={16} aria-hidden="true" />
             {label}
           </button>
         )

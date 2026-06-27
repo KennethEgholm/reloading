@@ -88,7 +88,7 @@ export function ThemePicker() {
               className="w-4 h-4 rounded-full flex items-center justify-center"
               style={{ backgroundColor: swatch }}
             >
-              {active && <Check size={12} className="text-white" />}
+              {active && <Check size={12} className="text-white" aria-hidden="true" />}
             </span>
             {t(`page.theme.accents.${value}`)}
           </button>

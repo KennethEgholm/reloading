@@ -14,6 +14,7 @@ export default async function LoadLogDetailPage({
   const { id } = await params
   const t = await getTranslations('logs')
   const locale = await getLocale()
+  const fmt1 = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
   const log = await getLoadLogById(id)
 
   if (!log) {
@@ -21,7 +22,7 @@ export default async function LoadLogDetailPage({
   }
 
   const propellantUsedGr = log.chargeGr
-    ? (log.quantity * log.chargeGr * GRAIN_TO_GRAM).toFixed(1)
+    ? fmt1.format(log.quantity * log.chargeGr * GRAIN_TO_GRAM)
     : ''
 
   // Cartridge label for the snapshot (brand + caliber + water capacity, if any).
