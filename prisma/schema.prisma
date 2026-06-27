@@ -205,6 +205,7 @@ model RangeLog {
   images        RangeLogImage[]   @relation("RangeLogImages")
   mainImageId   String?  @unique
   mainImage     RangeLogImage?    @relation("MainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
+  shots         RangeLogShot[]    @relation("RangeLogShots")
 }
 
 model RangeLogImage {
@@ -216,4 +217,14 @@ model RangeLogImage {
 
   rangeLog    RangeLog @relation("RangeLogImages", fields: [rangeLogId], references: [id], onDelete: Cascade)
   mainForLog  RangeLog? @relation("MainImage")
+}
+
+model RangeLogShot {
+  id         String   @id @default(cuid())
+  rangeLogId String
+  shotIndex  Int
+  velocity   Float
+  rangeLog   RangeLog @relation("RangeLogShots", fields: [rangeLogId], references: [id], onDelete: Cascade)
+
+  @@index([rangeLogId])
 }
