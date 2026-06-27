@@ -7,6 +7,7 @@ import { createRangeLog, updateRangeLog } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import type { RangeLogWithImages } from '@/lib/types'
+import { useFocusTrap } from '@/lib/useFocusTrap'
 import { ChronographImport } from './ChronographImport'
 import type { ParsedShot, ParsedChronograph } from '@/lib/parseChronographCsv'
 
@@ -63,6 +64,8 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
 
   const [images, setImages] = useState<ImageInput[]>([{ file: null, description: '' }])
   const [overlayIndex, setOverlayIndex] = useState<number | null>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(overlayRef, overlayIndex !== null)
 
   const [shots, setShots] = useState<ParsedShot[] | null>(
     initialData?.shots && initialData.shots.length >= 2
@@ -514,9 +517,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     {overlayIndex !== null && currentOverlayImg && currentOverlayImg.filename && (
       <div
         className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('overlay.close')}
         onClick={closeOverlay}
       >
         <div
+          ref={overlayRef}
           className="relative w-full max-w-[95vw] max-h-[95vh] flex flex-col items-center"
           onClick={(e) => e.stopPropagation()}
         >

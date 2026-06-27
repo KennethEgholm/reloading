@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { formatDate } from '@/lib/format';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 import { DeleteRangeLogButton } from './DeleteRangeLogButton';
 import type { RangeLogListItem } from '@/lib/types';
 
@@ -16,6 +17,8 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
   const t = useTranslations('range');
   const locale = useLocale();
   const [showPhotoOverlay, setShowPhotoOverlay] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(overlayRef, showPhotoOverlay);
 
   const goToDetail = () => {
     router.push(`/range/${log.id}`);
@@ -121,9 +124,13 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
       {showPhotoOverlay && log.mainImage?.filename && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('row.closeOverlay')}
           onClick={() => setShowPhotoOverlay(false)}
         >
           <div
+            ref={overlayRef}
             className="relative w-full max-w-[95vw] max-h-[95vh] flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >

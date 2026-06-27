@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
 import type { RecipeWithRelations } from '@/lib/types';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 function createRecipeSchema(t: (key: string) => string) {
   return z.object({
@@ -201,6 +202,8 @@ export function RecipeForm({
   };
 
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -248,9 +251,16 @@ export function RecipeForm({
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
-            <h2 className="text-xl font-semibold mb-6">{displayTitle}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setIsOpen(false)} aria-hidden="true">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="recipe-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+          >
+            <h2 id="recipe-modal-title" className="text-xl font-semibold mb-6">{displayTitle}</h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

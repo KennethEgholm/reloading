@@ -8,6 +8,7 @@ import { PrimerType } from '@prisma/client';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import type { Primer } from '@/lib/types';
+import { useFocusTrap } from '@/lib/useFocusTrap';
 
 function createPrimerSchema(t: (key: string) => string) {
   return z.object({
@@ -81,6 +82,8 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
   };
 
   const brandInputRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(modalRef, isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -140,9 +143,16 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
       )}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800">
-            <h2 className="text-xl font-semibold mb-6">{title}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsOpen(false)} aria-hidden="true">
+          <div
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="primer-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+          >
+            <h2 id="primer-modal-title" className="text-xl font-semibold mb-6">{title}</h2>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
