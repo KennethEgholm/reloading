@@ -201,7 +201,16 @@
       "save": "Gem skydning",
       "saveChanges": "Gem ændringer",
       "saving": "Gemmer...",
-      "editSession": "Rediger denne skydning"
+      "editSession": "Rediger denne skydning",
+      "importCsv": "Importér fra kronograf",
+      "csvFile": "CSV-fil",
+      "csvParsed": "{count} skud analyseret",
+      "removeCsv": "Fjern import",
+      "shotTable": {
+        "title": "Skud-for-skud",
+        "header": "#",
+        "velocity": "Hastighed (m/s)"
+      }
     },
     "row": {
       "rounds_one": "{count} skud",
@@ -237,6 +246,10 @@
       "imageNotFound": "Billede ikke fundet",
       "notFound": "Skydning ikke fundet",
       "recipeNotFound": "Recept ikke fundet",
+      "csvHeader": "Ikke en genkendt kronograf-eksport (mangler forventet header).",
+      "csvNoShots": "Ingen skud fundet i CSV-filen (kræver mindst 2).",
+      "csvParse": "Kunne ikke analysere CSV-filen.",
+      "csvShotsInvalid": "Ugyldige skuddata.",
       "validation": {
         "dateRequired": "Dato er påkrævet",
         "recipeRequired": "Recept er påkrævet",
