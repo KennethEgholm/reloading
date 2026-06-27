@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
@@ -39,6 +39,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#fafafa' },
+    { media: '(prefers-color-scheme: dark)', color: '#0c0a09' },
+  ],
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -55,6 +62,7 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col text-zinc-950 dark:text-zinc-50">
+        <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-black focus:rounded-lg focus:shadow">{t('skipToContent')}</a>
         {/*
           The pre-paint anti-FOUC theme script is injected into <head> by
           ThemeScriptRegistry via useServerInsertedHTML. Rendering a <script>
@@ -106,7 +114,7 @@ export default async function RootLayout({
                     href="/settings"
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                   >
-                    <Settings size={20} />
+                    <Settings size={20} aria-hidden="true" />
                     {t('settings')}
                   </Link>
                   <span className="text-xs text-zinc-500 dark:text-zinc-500">
@@ -115,7 +123,7 @@ export default async function RootLayout({
                 </div>
               </div>
             </nav>
-            <main className="flex-1">{children}</main>
+            <main id="main" className="flex-1">{children}</main>
             <Toaster position="top-center" richColors closeButton />
           </NextIntlClientProvider>
         </ThemeScriptRegistry>

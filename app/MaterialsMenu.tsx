@@ -43,9 +43,9 @@ export function MaterialsMenu() {
         aria-expanded={open}
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       >
-        <Boxes size={20} />
+        <Boxes size={20} aria-hidden="true" />
         {t('materials')}
-        <ChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={16} aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (

@@ -154,7 +154,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                     register('brand').ref(e);
                     brandInputRef.current = e;
                   }}
-                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 focus:outline-none focus:ring-2 focus:ring-black/10 dark:focus:ring-white/20"
+                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.brandPlaceholder')}
                 />
                 {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
