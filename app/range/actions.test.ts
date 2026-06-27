@@ -273,10 +273,10 @@ describe('createRangeLog — chronograph shots', () => {
     await createRangeLog(fd)
 
     const data = prismaMock.rangeLog.create.mock.calls[0][0].data
-    expect(data.velocityMin).toBeCloseTo(950.0, 1)
-    expect(data.velocityMax).toBeCloseTo(960.0, 1)
-    expect(data.velocityAvg).toBeCloseTo(955.0, 1)
-    expect(data.extremeSpread).toBeCloseTo(10.0, 1)
+    expect(data.velocityMin).toBe(950)
+    expect(data.velocityMax).toBe(960)
+    expect(data.velocityAvg).toBe(955)
+    expect(data.extremeSpread).toBe(10)
   })
 
   it('throws and does not write shots when the shots JSON is malformed', async () => {

@@ -101,9 +101,9 @@ export function ChronographImport({
           </div>
 
           <div className="grid grid-cols-5 gap-2 text-xs">
-            <Stat label={t('form.velocityMin')} value={parsed.velocityMin.toFixed(1)} />
-            <Stat label={t('form.velocityMax')} value={parsed.velocityMax.toFixed(1)} />
-            <Stat label={t('form.velocityAvg')} value={parsed.velocityAvg.toFixed(1)} />
+            <Stat label={t('form.velocityMin')} value={String(parsed.velocityMin)} />
+            <Stat label={t('form.velocityMax')} value={String(parsed.velocityMax)} />
+            <Stat label={t('form.velocityAvg')} value={String(parsed.velocityAvg)} />
             <Stat label={t('form.velocityES')} value={parsed.extremeSpread.toFixed(1)} />
             <Stat label={t('form.velocitySD')} value={parsed.stdDev.toFixed(1)} />
           </div>

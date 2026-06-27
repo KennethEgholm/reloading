@@ -60,18 +60,17 @@ export function computeAggregates(shots: ParsedShot[]): ParsedChronograph {
   const min = Math.min(...velocities)
   const max = Math.max(...velocities)
   const avg = velocities.reduce((a, b) => a + b, 0) / velocities.length
-  const extremeSpread = max - min
   const stdDev = Math.sqrt(
     velocities.reduce((sum, v) => sum + (v - avg) ** 2, 0) / velocities.length,
   )
 
   return {
     shots,
-    velocityMin: min,
-    velocityMax: max,
-    velocityAvg: avg,
-    extremeSpread,
-    stdDev,
+    velocityMin: Math.round(min),
+    velocityMax: Math.round(max),
+    velocityAvg: Math.round(avg),
+    extremeSpread: Math.round((max - min) * 10) / 10,
+    stdDev: Math.round(stdDev * 10) / 10,
     roundsFired: shots.length,
   }
 }

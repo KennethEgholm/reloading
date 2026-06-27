@@ -117,9 +117,9 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const handleChronoParsed = (_shots: ParsedShot[], aggregates: ParsedChronograph) => {
     setShots(_shots)
     setReplaceShots(true)
-    if (velocityMinRef.current) velocityMinRef.current.value = aggregates.velocityMin.toFixed(1)
-    if (velocityMaxRef.current) velocityMaxRef.current.value = aggregates.velocityMax.toFixed(1)
-    if (velocityAvgRef.current) velocityAvgRef.current.value = aggregates.velocityAvg.toFixed(1)
+    if (velocityMinRef.current) velocityMinRef.current.value = String(aggregates.velocityMin)
+    if (velocityMaxRef.current) velocityMaxRef.current.value = String(aggregates.velocityMax)
+    if (velocityAvgRef.current) velocityAvgRef.current.value = String(aggregates.velocityAvg)
     if (extremeSpreadRef.current) extremeSpreadRef.current.value = aggregates.extremeSpread.toFixed(1)
     if (stdDevRef.current) stdDevRef.current.value = aggregates.stdDev.toFixed(1)
     if (roundsFiredRef.current) roundsFiredRef.current.value = String(aggregates.roundsFired)
@@ -346,11 +346,11 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityES')}</label>
-          <input ref={extremeSpreadRef} type="number" step="1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={extremeSpreadRef} type="number" step="0.1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocitySD')}</label>
-          <input ref={stdDevRef} type="number" step="1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={stdDevRef} type="number" step="0.1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
       </div>
 

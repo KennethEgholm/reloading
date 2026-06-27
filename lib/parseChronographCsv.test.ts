@@ -34,11 +34,11 @@ describe('parseChronographCsv', () => {
     expect(r.shots[0]).toEqual({ shotIndex: 1, velocity: 958.2 })
     expect(r.shots[14]).toEqual({ shotIndex: 15, velocity: 949.6 })
     expect(r.roundsFired).toBe(15)
-    expect(r.velocityMin).toBeCloseTo(946.8, 1)
-    expect(r.velocityMax).toBeCloseTo(958.2, 1)
-    expect(r.velocityAvg).toBeCloseTo(953.95, 1)
+    expect(r.velocityMin).toBe(947)
+    expect(r.velocityMax).toBe(958)
+    expect(r.velocityAvg).toBe(954)
     expect(r.extremeSpread).toBeCloseTo(11.4, 1)
-    expect(r.stdDev).toBeCloseTo(3.1, 0)
+    expect(r.stdDev).toBeCloseTo(3.1, 1)
   })
 
   it('throws ChronoCsvError kind=header when the header row is missing', () => {
