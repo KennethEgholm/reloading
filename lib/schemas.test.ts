@@ -5,6 +5,7 @@ import {
   createPrimerSchema,
   createPropellantSchema,
   createLoadLogSchema,
+  shotsSchema,
   formatZodError,
 } from './schemas'
 
@@ -158,5 +159,44 @@ describe('formatZodError', () => {
       expect(msg).toContain('brand: form.validation.brandRequired')
       expect(msg.split('\n').length).toBeGreaterThan(1)
     }
+  })
+})
+
+describe('shotsSchema', () => {
+  it('accepts two or more valid shots', () => {
+    const r = shotsSchema.safeParse([
+      { shotIndex: 1, velocity: 950.0 },
+      { shotIndex: 2, velocity: 960.0 },
+    ])
+    expect(r.success).toBe(true)
+  })
+
+  it('rejects fewer than two shots', () => {
+    const r = shotsSchema.safeParse([{ shotIndex: 1, velocity: 950.0 }])
+    expect(r.success).toBe(false)
+  })
+
+  it('rejects a non-positive velocity', () => {
+    const r = shotsSchema.safeParse([
+      { shotIndex: 1, velocity: 0 },
+      { shotIndex: 2, velocity: 960.0 },
+    ])
+    expect(r.success).toBe(false)
+  })
+
+  it('rejects NaN velocity', () => {
+    const r = shotsSchema.safeParse([
+      { shotIndex: 1, velocity: NaN },
+      { shotIndex: 2, velocity: 960.0 },
+    ])
+    expect(r.success).toBe(false)
+  })
+
+  it('rejects a non-integer shotIndex', () => {
+    const r = shotsSchema.safeParse([
+      { shotIndex: 1.5, velocity: 950.0 },
+      { shotIndex: 2, velocity: 960.0 },
+    ])
+    expect(r.success).toBe(false)
   })
 })

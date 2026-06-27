@@ -124,3 +124,18 @@ export function createLoadLogSchema(t: Translator) {
     notes: z.string().nullish().transform((v) => v?.trim() || null),
   })
 }
+
+/**
+ * Validates the JSON `shots` array sent from the chronograph CSV importer.
+ * Structural check (no translator) — errors surface as a generic toast.
+ * Mirrors the parser's ≥2-shots rule and rejects non-finite / non-positive
+ * velocities so a garbled client payload can never reach the DB.
+ */
+export const shotsSchema = z
+  .array(
+    z.object({
+      shotIndex: z.number().int().min(1),
+      velocity: z.number().finite().positive(),
+    }),
+  )
+  .min(2)
