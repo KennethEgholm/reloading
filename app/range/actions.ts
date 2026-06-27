@@ -7,7 +7,7 @@ import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { createRangeLogInputSchema, createRangeLogUpdateInputSchema } from '@/lib/schemas'
+import { createRangeLogInputSchema, createRangeLogUpdateInputSchema, shotsSchema } from '@/lib/schemas'
 import type { DeleteResult } from '@/lib/types'
 import type { Prisma } from '@prisma/client'
 
@@ -134,6 +134,21 @@ function recipeSnapshot(recipe: RecipeForSnapshot) {
   }
 }
 
+function recomputeAggregates(shots: { shotIndex: number; velocity: number }[]) {
+  const velocities = shots.map((s) => s.velocity)
+  const min = Math.min(...velocities)
+  const max = Math.max(...velocities)
+  const avg = velocities.reduce((a, b) => a + b, 0) / velocities.length
+  return {
+    velocityMin: min,
+    velocityMax: max,
+    velocityAvg: avg,
+    extremeSpread: max - min,
+    stdDev: Math.sqrt(velocities.reduce((sum, v) => sum + (v - avg) ** 2, 0) / velocities.length),
+    roundsFired: shots.length,
+  }
+}
+
 export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
     include: {
@@ -209,6 +224,24 @@ export async function createRangeLog(formData: FormData) {
 
   const date = new Date(dateStr)
 
+  const rawShots = formData.get('shots')
+  let validShots: { shotIndex: number; velocity: number }[] | null = null
+  if (rawShots && typeof rawShots === 'string') {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(rawShots)
+    } catch {
+      throw new Error(t('errors.csvShotsInvalid'))
+    }
+    const shotResult = shotsSchema.safeParse(parsed)
+    if (!shotResult.success) {
+      throw new Error(t('errors.csvShotsInvalid'))
+    }
+    validShots = shotResult.data
+  }
+
+  const effectiveAggregates = validShots ? recomputeAggregates(validShots) : null
+
   // Fetch the recipe to freeze a snapshot at session-create time (mirrors
   // createLoadLog). The snapshot survives later recipe edits/deletion.
   const recipe = await prisma.recipe.findUnique({
@@ -245,12 +278,12 @@ export async function createRangeLog(formData: FormData) {
           location,
           conditions,
           recipeId,
-          roundsFired,
-          velocityMin,
-          velocityMax,
-          velocityAvg,
-          extremeSpread,
-          stdDev,
+          roundsFired: effectiveAggregates?.roundsFired ?? roundsFired,
+          velocityMin: effectiveAggregates?.velocityMin ?? velocityMin,
+          velocityMax: effectiveAggregates?.velocityMax ?? velocityMax,
+          velocityAvg: effectiveAggregates?.velocityAvg ?? velocityAvg,
+          extremeSpread: effectiveAggregates?.extremeSpread ?? extremeSpread,
+          stdDev: effectiveAggregates?.stdDev ?? stdDev,
           notes,
           ...recipeSnapshot(recipe),
         },
@@ -274,6 +307,12 @@ export async function createRangeLog(formData: FormData) {
         await tx.rangeLog.update({
           where: { id: rangeLog.id },
           data: { mainImageId: createdImages[0].id },
+        })
+      }
+
+      if (validShots) {
+        await tx.rangeLogShot.createMany({
+          data: validShots.map((s) => ({ ...s, rangeLogId: rangeLog.id })),
         })
       }
     })
@@ -408,6 +447,25 @@ export async function updateRangeLog(id: string, formData: FormData) {
 
   const date = new Date(dateStr)
 
+  const rawShots = formData.get('shots')
+  const replaceShots = formData.get('replaceShots') === 'true'
+  let validShots: { shotIndex: number; velocity: number }[] | null = null
+  if (rawShots && typeof rawShots === 'string') {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(rawShots)
+    } catch {
+      throw new Error(t('errors.csvShotsInvalid'))
+    }
+    const shotResult = shotsSchema.safeParse(parsed)
+    if (!shotResult.success) {
+      throw new Error(t('errors.csvShotsInvalid'))
+    }
+    validShots = shotResult.data
+  }
+
+  const effectiveAggregates = validShots ? recomputeAggregates(validShots) : null
+
   // Re-snapshot the recipe only when the link actually changes; otherwise leave
   // the frozen snapshot untouched so editing a recipe elsewhere (or just
   // notes/photos here) doesn't overwrite history. An empty submitted recipeId
@@ -461,12 +519,12 @@ export async function updateRangeLog(id: string, formData: FormData) {
           date,
           location,
           conditions,
-          roundsFired,
-          velocityMin,
-          velocityMax,
-          velocityAvg,
-          extremeSpread,
-          stdDev,
+          roundsFired: effectiveAggregates?.roundsFired ?? roundsFired,
+          velocityMin: effectiveAggregates?.velocityMin ?? velocityMin,
+          velocityMax: effectiveAggregates?.velocityMax ?? velocityMax,
+          velocityAvg: effectiveAggregates?.velocityAvg ?? velocityAvg,
+          extremeSpread: effectiveAggregates?.extremeSpread ?? extremeSpread,
+          stdDev: effectiveAggregates?.stdDev ?? stdDev,
           notes,
           ...(linkedRecipe ? { ...recipeSnapshot(linkedRecipe), recipeId: effectiveRecipeId } : {}),
           mainImageId: mainImageId || null,
@@ -508,6 +566,13 @@ export async function updateRangeLog(id: string, formData: FormData) {
         await tx.rangeLog.update({
           where: { id },
           data: { mainImageId: createdIds[0] },
+        })
+      }
+
+      if (validShots && replaceShots) {
+        await tx.rangeLogShot.deleteMany({ where: { rangeLogId: id } })
+        await tx.rangeLogShot.createMany({
+          data: validShots.map((s) => ({ ...s, rangeLogId: id })),
         })
       }
     })
