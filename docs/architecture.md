@@ -72,6 +72,7 @@ erDiagram
     Recipe ||--o{ RangeLog : "recipeId (required)"
     RangeLog ||--o{ RangeLogImage : "images"
     RangeLog |o--o| RangeLogImage : "mainImage"
+    RangeLog ||--o{ RangeLogShot : "shots (cascade)"
 
     Recipe {
         string id PK
@@ -111,6 +112,13 @@ erDiagram
         string path
         string description
     }
+
+    RangeLogShot {
+        string id PK
+        string rangeLogId FK
+        int shotIndex "1-based from CSV"
+        float velocity "m/s"
+    }
 ```
 
 ## Key flows
@@ -137,6 +145,16 @@ sequenceDiagram
     A->>FS: write UUID files / unlink deleted
     A->>DB: upsert RangeLog + images
     A-->>U: redirect to readonly detail
+    end
+
+    rect rgb(30,41,59)
+    note over U,A: Chronograph CSV import (Xero C1)
+    U->>U: select CSV → parseChronographCsv (client)
+    U->>U: preview shots + auto-fill velocity fields
+    U->>A: FormData (shots JSON + replaceShots)
+    A->>A: shotsSchema.safeParse + recompute aggregates
+    A->>DB: TX: upsert RangeLog + deleteMany/insertMany RangeLogShot
+    A-->>U: revalidate + redirect to detail
     end
 
     rect rgb(30,41,59)

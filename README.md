@@ -37,6 +37,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - **Historical snapshots**: each session freezes a copy of the linked recipe at creation (name, caliber, charge, COAL, projectile/propellant/primer, linked **cartridge** (brand, caliber, water capacity), calculated/measured V0, fill rate), so later recipe edits or deletion never change or erase the session's record. The detail view shows the snapshot; switching the session's recipe re-snapshots, while editing other fields preserves the frozen values.
   - Complete chronograph data: Min/Max/Avg velocity (m/s), Extreme Spread (ES), Standard Deviation (SD).
   - **Unlimited photos** with individual descriptions per photo. Photos stored locally (`public/uploads/range-logs`).
+  - **Chronograph CSV import**: upload a Xero C1 export (`.csv`) from inside the range session form. The app parses per-shot velocities in the browser, shows a preview with computed stats (min/max/avg/ES/SD), auto-fills the velocity fields, and — on save — stores both the individual shots (new `RangeLogShot` model) and the recomputed aggregates. The detail page shows a shot-by-shot table.
   - List view with photo count badges, velocity summaries, etc. Recent sessions are shown first on the Overview dashboard (before Load Logs).
   - Unified experience:
     - `/range/new` – create (optionally prefilled from a recipe link)
