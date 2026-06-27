@@ -278,6 +278,28 @@ describe('createRangeLog — chronograph shots', () => {
     expect(data.velocityAvg).toBeCloseTo(955.0, 1)
     expect(data.extremeSpread).toBeCloseTo(10.0, 1)
   })
+
+  it('throws and does not write shots when the shots JSON is malformed', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe())
+    prismaMock.rangeLog.create.mockResolvedValue({ id: 'range-1' })
+
+    const fd = form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '2' })
+    fd.set('shots', '{not json')
+
+    await expect(createRangeLog(fd)).rejects.toThrow('errors.csvShotsInvalid')
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
+
+  it('throws and does not write shots when the shots fail Zod validation', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe())
+    prismaMock.rangeLog.create.mockResolvedValue({ id: 'range-1' })
+
+    const fd = form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '2' })
+    fd.set('shots', JSON.stringify([{ shotIndex: 1, velocity: -5 }]))
+
+    await expect(createRangeLog(fd)).rejects.toThrow('errors.csvShotsInvalid')
+    expect(prismaMock.$transaction).not.toHaveBeenCalled()
+  })
 })
 
 describe('updateRangeLog — chronograph shots', () => {
@@ -305,6 +327,20 @@ describe('updateRangeLog — chronograph shots', () => {
     await updateRangeLog('range-1', form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' }))
 
     expect(prismaMock.rangeLogShot.deleteMany).not.toHaveBeenCalled()
+    expect(prismaMock.rangeLogShot.createMany).not.toHaveBeenCalled()
+  })
+
+  it('deletes existing shots when replaceShots=true and no shots are submitted (remove case)', async () => {
+    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+    prismaMock.rangeLog.update.mockResolvedValue({ id: 'range-1' })
+
+    const fd = form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' })
+    fd.set('replaceShots', 'true')
+    // No shots field — user clicked "Remove import"
+
+    await updateRangeLog('range-1', fd)
+
+    expect(prismaMock.rangeLogShot.deleteMany).toHaveBeenCalledWith({ where: { rangeLogId: 'range-1' } })
     expect(prismaMock.rangeLogShot.createMany).not.toHaveBeenCalled()
   })
 })

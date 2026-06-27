@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import {
   parseChronographCsv,
   ChronoCsvError,
+  computeAggregates,
   type ParsedShot,
   type ParsedChronograph,
 } from '@/lib/parseChronographCsv'
@@ -60,7 +61,7 @@ export function ChronographImport({
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  if (isReadOnly && !parsed) return null
+  if (isReadOnly) return null
 
   return (
     <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 space-y-3">
@@ -140,20 +141,4 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-mono font-medium mt-0.5">{value}</div>
     </div>
   )
-}
-
-function computeAggregates(shots: ParsedShot[]): ParsedChronograph {
-  const velocities = shots.map((s) => s.velocity)
-  const min = Math.min(...velocities)
-  const max = Math.max(...velocities)
-  const avg = velocities.reduce((a, b) => a + b, 0) / velocities.length
-  return {
-    shots,
-    velocityMin: min,
-    velocityMax: max,
-    velocityAvg: avg,
-    extremeSpread: max - min,
-    stdDev: Math.sqrt(velocities.reduce((sum, v) => sum + (v - avg) ** 2, 0) / velocities.length),
-    roundsFired: shots.length,
-  }
 }

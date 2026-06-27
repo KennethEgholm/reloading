@@ -8,6 +8,7 @@ import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
 import { createRangeLogInputSchema, createRangeLogUpdateInputSchema, shotsSchema } from '@/lib/schemas'
+import { computeAggregates } from '@/lib/parseChronographCsv'
 import type { DeleteResult } from '@/lib/types'
 import type { Prisma } from '@prisma/client'
 
@@ -134,21 +135,6 @@ function recipeSnapshot(recipe: RecipeForSnapshot) {
   }
 }
 
-function recomputeAggregates(shots: { shotIndex: number; velocity: number }[]) {
-  const velocities = shots.map((s) => s.velocity)
-  const min = Math.min(...velocities)
-  const max = Math.max(...velocities)
-  const avg = velocities.reduce((a, b) => a + b, 0) / velocities.length
-  return {
-    velocityMin: min,
-    velocityMax: max,
-    velocityAvg: avg,
-    extremeSpread: max - min,
-    stdDev: Math.sqrt(velocities.reduce((sum, v) => sum + (v - avg) ** 2, 0) / velocities.length),
-    roundsFired: shots.length,
-  }
-}
-
 export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
     include: {
@@ -241,7 +227,7 @@ export async function createRangeLog(formData: FormData) {
     validShots = shotResult.data
   }
 
-  const effectiveAggregates = validShots ? recomputeAggregates(validShots) : null
+  const effectiveAggregates = validShots ? computeAggregates(validShots) : null
 
   // Fetch the recipe to freeze a snapshot at session-create time (mirrors
   // createLoadLog). The snapshot survives later recipe edits/deletion.
@@ -465,7 +451,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
     validShots = shotResult.data
   }
 
-  const effectiveAggregates = validShots ? recomputeAggregates(validShots) : null
+  const effectiveAggregates = validShots ? computeAggregates(validShots) : null
 
   // Re-snapshot the recipe only when the link actually changes; otherwise leave
   // the frozen snapshot untouched so editing a recipe elsewhere (or just
@@ -570,11 +556,13 @@ export async function updateRangeLog(id: string, formData: FormData) {
         })
       }
 
-      if (validShots && replaceShots) {
+      if (replaceShots) {
         await tx.rangeLogShot.deleteMany({ where: { rangeLogId: id } })
-        await tx.rangeLogShot.createMany({
-          data: validShots.map((s) => ({ ...s, rangeLogId: id })),
-        })
+        if (validShots) {
+          await tx.rangeLogShot.createMany({
+            data: validShots.map((s) => ({ ...s, rangeLogId: id })),
+          })
+        }
       }
     })
 

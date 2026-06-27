@@ -203,7 +203,6 @@
       "saving": "Saving...",
       "editSession": "Edit this session",
       "importCsv": "Import from chronograph",
-      "csvFile": "CSV file",
       "csvParsed": "{count} shots parsed",
       "removeCsv": "Remove import",
       "shotTable": {

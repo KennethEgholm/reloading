@@ -52,6 +52,10 @@ export function parseChronographCsv(text: string): ParsedChronograph {
     throw new ChronoCsvError('noShots', 'No shots found in the CSV (at least 2 required).')
   }
 
+  return computeAggregates(shots)
+}
+
+export function computeAggregates(shots: ParsedShot[]): ParsedChronograph {
   const velocities = shots.map((s) => s.velocity)
   const min = Math.min(...velocities)
   const max = Math.max(...velocities)

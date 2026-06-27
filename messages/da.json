@@ -203,7 +203,6 @@
       "saving": "Gemmer...",
       "editSession": "Rediger denne skydning",
       "importCsv": "Importér fra kronograf",
-      "csvFile": "CSV-fil",
       "csvParsed": "{count} skud analyseret",
       "removeCsv": "Fjern import",
       "shotTable": {
