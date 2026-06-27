@@ -114,6 +114,29 @@ export default async function RangeLogDetailPage({
           logId={log.id}
           readonly={true}
         />
+        {log.shots && log.shots.length >= 2 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-3">{t('form.shotTable.title')}</h3>
+            <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">{t('form.shotTable.header')}</th>
+                    <th className="text-right px-3 py-2 font-medium">{t('form.shotTable.velocity')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {log.shots.map((s) => (
+                    <tr key={s.id} className="border-t border-zinc-100 dark:border-zinc-800">
+                      <td className="px-3 py-2 font-mono">{s.shotIndex}</td>
+                      <td className="px-3 py-2 text-right font-mono">{s.velocity.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

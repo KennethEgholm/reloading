@@ -177,6 +177,7 @@ export async function getRangeLogById(id: string) {
         select: { id: true, filename: true, description: true },
       },
       images: true,
+      shots: { orderBy: { shotIndex: 'asc' } },
     },
   })
 }

@@ -48,5 +48,6 @@ export type RangeLogWithImages = Prisma.RangeLogGetPayload<{
     recipe: { select: { id: true; name: true; caliber: true } }
     mainImage: { select: { id: true; filename: true; description: true } }
     images: true
+    shots: { orderBy: { shotIndex: 'asc' } }
   }
 }>

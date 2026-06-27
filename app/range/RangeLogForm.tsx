@@ -65,8 +65,8 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const [overlayIndex, setOverlayIndex] = useState<number | null>(null)
 
   const [shots, setShots] = useState<ParsedShot[] | null>(
-    (initialData as any)?.shots && (initialData as any).shots.length >= 2
-      ? (initialData as any).shots.map((s: { shotIndex: number; velocity: number }, i: number) => ({ shotIndex: s.shotIndex, velocity: s.velocity }))
+    initialData?.shots && initialData.shots.length >= 2
+      ? initialData.shots.map((s) => ({ shotIndex: s.shotIndex, velocity: s.velocity }))
       : null,
   )
   const [replaceShots, setReplaceShots] = useState(false)
