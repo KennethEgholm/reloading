@@ -1,8 +1,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { getRangeLogById, getRecipesForRangeLog, deleteRangeLogAndRedirect } from '../actions'
+import { getRangeLogById, getRecipesForRangeLog } from '../actions'
 import { RangeLogForm } from '../RangeLogForm'
+import { DeleteRangeLogButton } from '../DeleteRangeLogButton'
 
 export default async function RangeLogDetailPage({
   params,
@@ -41,14 +42,7 @@ export default async function RangeLogDetailPage({
         >
           {t('detail.edit')}
         </Link>
-        <form action={deleteRangeLogAndRedirect.bind(null, id)}>
-          <button
-            type="submit"
-            className="text-red-600 hover:text-red-700 text-sm font-medium"
-          >
-            {t('detail.delete')}
-          </button>
-        </form>
+        <DeleteRangeLogButton id={id} redirectTo="/range" />
       </div>
 
       {/* Recipe snapshot frozen at the time the session was logged. Survives
