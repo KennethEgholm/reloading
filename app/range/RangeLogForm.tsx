@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { createRangeLog, updateRangeLog } from './actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import type { RangeLogWithImages } from '@/lib/types'
+import { ChronographImport } from './ChronographImport'
+import type { ParsedShot, ParsedChronograph } from '@/lib/parseChronographCsv'
 
 interface RecipeOption {
   id: string
@@ -62,6 +64,21 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const [images, setImages] = useState<ImageInput[]>([{ file: null, description: '' }])
   const [overlayIndex, setOverlayIndex] = useState<number | null>(null)
 
+  const [shots, setShots] = useState<ParsedShot[] | null>(
+    (initialData as any)?.shots && (initialData as any).shots.length >= 2
+      ? (initialData as any).shots.map((s: { shotIndex: number; velocity: number }, i: number) => ({ shotIndex: s.shotIndex, velocity: s.velocity }))
+      : null,
+  )
+  const [replaceShots, setReplaceShots] = useState(false)
+
+  // Refs to the velocity + roundsFired inputs so a CSV parse can auto-fill them.
+  const velocityMinRef = useRef<HTMLInputElement>(null)
+  const velocityMaxRef = useRef<HTMLInputElement>(null)
+  const velocityAvgRef = useRef<HTMLInputElement>(null)
+  const extremeSpreadRef = useRef<HTMLInputElement>(null)
+  const stdDevRef = useRef<HTMLInputElement>(null)
+  const roundsFiredRef = useRef<HTMLInputElement>(null)
+
   const today = initialData?.date
     ? new Date(initialData.date).toISOString().split('T')[0]
     : new Date().toISOString().split('T')[0]
@@ -95,6 +112,22 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
         isMain: img.id === id,
       }))
     )
+  }
+
+  const handleChronoParsed = (_shots: ParsedShot[], aggregates: ParsedChronograph) => {
+    setShots(_shots)
+    setReplaceShots(true)
+    if (velocityMinRef.current) velocityMinRef.current.value = aggregates.velocityMin.toFixed(1)
+    if (velocityMaxRef.current) velocityMaxRef.current.value = aggregates.velocityMax.toFixed(1)
+    if (velocityAvgRef.current) velocityAvgRef.current.value = aggregates.velocityAvg.toFixed(1)
+    if (extremeSpreadRef.current) extremeSpreadRef.current.value = aggregates.extremeSpread.toFixed(1)
+    if (stdDevRef.current) stdDevRef.current.value = aggregates.stdDev.toFixed(1)
+    if (roundsFiredRef.current) roundsFiredRef.current.value = String(aggregates.roundsFired)
+  }
+
+  const handleChronoRemove = () => {
+    setShots(null)
+    setReplaceShots(true)
   }
 
   // Keyboard support for photo overlay
@@ -175,6 +208,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       } else {
         formData.append('mainImageId', '')
       }
+    }
+
+    if (shots && shots.length >= 2) {
+      formData.append('shots', JSON.stringify(shots))
+    }
+    if (replaceShots) {
+      formData.append('replaceShots', 'true')
     }
 
     try {
@@ -260,6 +300,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       <div>
         <label className="block text-sm font-medium mb-1.5">{t('form.roundsFired')}</label>
         <input
+          ref={roundsFiredRef}
           type="number"
           name="roundsFired"
           min="1"
@@ -282,27 +323,34 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
         />
       </div>
 
+      <ChronographImport
+        onParsed={handleChronoParsed}
+        onRemove={handleChronoRemove}
+        isReadOnly={isReadOnly}
+        existingShots={shots}
+      />
+
       {/* Chronograph Data */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMin')}</label>
-          <input type="number" step="1" name="velocityMin" defaultValue={initialData?.velocityMin ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={velocityMinRef} type="number" step="1" name="velocityMin" defaultValue={initialData?.velocityMin ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMax')}</label>
-          <input type="number" step="1" name="velocityMax" defaultValue={initialData?.velocityMax ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={velocityMaxRef} type="number" step="1" name="velocityMax" defaultValue={initialData?.velocityMax ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityAvg')}</label>
-          <input type="number" step="1" name="velocityAvg" defaultValue={initialData?.velocityAvg ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={velocityAvgRef} type="number" step="1" name="velocityAvg" defaultValue={initialData?.velocityAvg ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityES')}</label>
-          <input type="number" step="1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={extremeSpreadRef} type="number" step="1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
           <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocitySD')}</label>
-          <input type="number" step="1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <input ref={stdDevRef} type="number" step="1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
       </div>
 
