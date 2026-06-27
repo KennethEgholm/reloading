@@ -245,10 +245,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     <form action={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5">{t('form.date')}</label>
+          <label htmlFor="range-date" className="block text-sm font-medium mb-1.5">{t('form.date')}</label>
           <input
+            id="range-date"
             type="date"
             name="date"
+            autoComplete="off"
             defaultValue={today}
             required
             disabled={isReadOnly}
@@ -256,10 +258,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">{t('form.location')}</label>
+          <label htmlFor="range-location" className="block text-sm font-medium mb-1.5">{t('form.location')}</label>
           <input
+            id="range-location"
             type="text"
             name="location"
+            autoComplete="off"
             defaultValue={initialData?.location || ''}
             placeholder={t('form.locationPlaceholder')}
             disabled={isReadOnly}
@@ -269,20 +273,24 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.recipe')}</label>
+        <label htmlFor="range-recipe" className="block text-sm font-medium mb-1.5">{t('form.recipe')}</label>
         {isReadOnly && !initialData?.recipe ? (
           // The linked recipe was deleted; show the frozen snapshot name instead
           // of an empty select so the session's recipe is still visible.
           <input
+            id="range-recipe"
             type="text"
             disabled
+            autoComplete="off"
             value={initialData?.recipeName ?? t('row.recipeDeleted')}
             className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
           />
         ) : (
           <select
+            id="range-recipe"
             name="recipeId"
             required={!isEdit || !!initialData?.recipe}
+            autoComplete="off"
             defaultValue={effectiveDefaultRecipeId}
             disabled={isReadOnly}
             className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
@@ -298,13 +306,16 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.roundsFired')}</label>
+        <label htmlFor="range-rounds-fired" className="block text-sm font-medium mb-1.5">{t('form.roundsFired')}</label>
         <input
+          id="range-rounds-fired"
           ref={roundsFiredRef}
           type="number"
           name="roundsFired"
           min="1"
+          inputMode="numeric"
           required
+          autoComplete="off"
           defaultValue={initialData?.roundsFired ?? "20"}
           disabled={isReadOnly}
           className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
@@ -312,10 +323,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.conditions')}</label>
+        <label htmlFor="range-conditions" className="block text-sm font-medium mb-1.5">{t('form.conditions')}</label>
         <textarea
+          id="range-conditions"
           name="conditions"
           rows={2}
+          autoComplete="off"
           defaultValue={initialData?.conditions || ''}
           placeholder={t('form.conditionsPlaceholder')}
           disabled={isReadOnly}
@@ -333,32 +346,34 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       {/* Chronograph Data */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMin')}</label>
-          <input ref={velocityMinRef} type="number" step="1" name="velocityMin" defaultValue={initialData?.velocityMin ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <label htmlFor="range-velocity-min" className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMin')}</label>
+          <input id="range-velocity-min" ref={velocityMinRef} type="number" step="1" inputMode="numeric" name="velocityMin" autoComplete="off" defaultValue={initialData?.velocityMin ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMax')}</label>
-          <input ref={velocityMaxRef} type="number" step="1" name="velocityMax" defaultValue={initialData?.velocityMax ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <label htmlFor="range-velocity-max" className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityMax')}</label>
+          <input id="range-velocity-max" ref={velocityMaxRef} type="number" step="1" inputMode="numeric" name="velocityMax" autoComplete="off" defaultValue={initialData?.velocityMax ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityAvg')}</label>
-          <input ref={velocityAvgRef} type="number" step="1" name="velocityAvg" defaultValue={initialData?.velocityAvg ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <label htmlFor="range-velocity-avg" className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityAvg')}</label>
+          <input id="range-velocity-avg" ref={velocityAvgRef} type="number" step="1" inputMode="numeric" name="velocityAvg" autoComplete="off" defaultValue={initialData?.velocityAvg ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityES')}</label>
-          <input ref={extremeSpreadRef} type="number" step="0.1" name="extremeSpread" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <label htmlFor="range-velocity-es" className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocityES')}</label>
+          <input id="range-velocity-es" ref={extremeSpreadRef} type="number" step="0.1" inputMode="decimal" name="extremeSpread" autoComplete="off" defaultValue={initialData?.extremeSpread ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
         <div>
-          <label className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocitySD')}</label>
-          <input ref={stdDevRef} type="number" step="0.1" name="stdDev" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
+          <label htmlFor="range-velocity-sd" className="block text-xs font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.velocitySD')}</label>
+          <input id="range-velocity-sd" ref={stdDevRef} type="number" step="0.1" inputMode="decimal" name="stdDev" autoComplete="off" defaultValue={initialData?.stdDev ?? ''} disabled={isReadOnly} className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800" />
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
+        <label htmlFor="range-notes" className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
         <textarea
+          id="range-notes"
           name="notes"
           rows={3}
+          autoComplete="off"
           defaultValue={initialData?.notes || ''}
           placeholder={t('form.notesPlaceholder')}
           disabled={isReadOnly}
@@ -397,6 +412,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                     <>
                       <input
                         type="text"
+                        autoComplete="off"
                         value={img.description}
                         onChange={(e) => updateExistingDescription(img.id, e.target.value)}
                         placeholder={t('form.photoDescription')}
@@ -405,6 +421,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
                       <label className="flex items-center gap-2 mt-2 text-sm text-red-600">
                         <input
                           type="checkbox"
+                          autoComplete="off"
                           checked={img.markedForDelete}
                           onChange={() => toggleDeleteExisting(img.id)}
                         />
@@ -446,11 +463,13 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             <input
               type="file"
               accept="image/*"
+              autoComplete="off"
               onChange={(e) => updateImage(index, 'file', e.target.files?.[0] || null)}
               className="flex-1 text-sm file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-zinc-100 dark:file:bg-zinc-800"
             />
             <input
               type="text"
+              autoComplete="off"
               placeholder={t('form.photoDescription')}
               value={img.description}
               onChange={(e) => updateImage(index, 'description', e.target.value)}

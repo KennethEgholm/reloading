@@ -255,8 +255,11 @@ export function RecipeForm({
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.name')}</label>
+                  <label htmlFor="recipe-name" className="block text-sm font-medium mb-1.5">{t('form.name')}</label>
                   <input
+                    id="recipe-name"
+                    autoComplete="off"
+                    aria-describedby="recipe-name-error"
                     {...register('name')}
                     ref={(e) => {
                       // Merge react-hook-form's ref with our own for auto-focus
@@ -266,24 +269,30 @@ export function RecipeForm({
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                     placeholder={t('form.namePlaceholder')}
                   />
-                  {errors.name && <p className="text-red-600 text-xs mt-1">{errors.name.message}</p>}
+                  {errors.name && <p id="recipe-name-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.name.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
+                  <label htmlFor="recipe-caliber" className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                   <input
+                    id="recipe-caliber"
+                    autoComplete="off"
+                    aria-describedby="recipe-caliber-error"
                     {...register('caliber')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                     placeholder={t('form.caliberPlaceholder')}
                   />
-                  {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
+                  {errors.caliber && <p id="recipe-caliber-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.projectile')}</label>
+                  <label htmlFor="recipe-projectile" className="block text-sm font-medium mb-1.5">{t('form.projectile')}</label>
                   <select
+                    id="recipe-projectile"
+                    autoComplete="off"
+                    aria-describedby="recipe-projectile-error"
                     {...register('projectileId')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   >
@@ -294,12 +303,15 @@ export function RecipeForm({
                       </option>
                     ))}
                   </select>
-                  {errors.projectileId && <p className="text-red-600 text-xs mt-1">{errors.projectileId.message}</p>}
+                  {errors.projectileId && <p id="recipe-projectile-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.projectileId.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.propellant')}</label>
+                  <label htmlFor="recipe-propellant" className="block text-sm font-medium mb-1.5">{t('form.propellant')}</label>
                   <select
+                    id="recipe-propellant"
+                    autoComplete="off"
+                    aria-describedby="recipe-propellant-error"
                     {...register('propellantId')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   >
@@ -310,13 +322,15 @@ export function RecipeForm({
                       </option>
                     ))}
                   </select>
-                  {errors.propellantId && <p className="text-red-600 text-xs mt-1">{errors.propellantId.message}</p>}
+                  {errors.propellantId && <p id="recipe-propellant-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.propellantId.message}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.primer')}</label>
+                <label htmlFor="recipe-primer" className="block text-sm font-medium mb-1.5">{t('form.primer')}</label>
                 <select
+                  id="recipe-primer"
+                  autoComplete="off"
                   {...register('primerId')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 >
@@ -330,8 +344,10 @@ export function RecipeForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.cartridge')}</label>
+                <label htmlFor="recipe-cartridge" className="block text-sm font-medium mb-1.5">{t('form.cartridge')}</label>
                 <select
+                  id="recipe-cartridge"
+                  autoComplete="off"
                   {...register('cartridgeId')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 >
@@ -346,20 +362,26 @@ export function RecipeForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.charge')}</label>
+                  <label htmlFor="recipe-charge" className="block text-sm font-medium mb-1.5">{t('form.charge')}</label>
                   <input
+                    id="recipe-charge"
                     type="number"
                     step="0.1"
+                    inputMode="decimal"
+                    autoComplete="off"
                     {...register('chargeGr')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.coal')}</label>
+                  <label htmlFor="recipe-coal" className="block text-sm font-medium mb-1.5">{t('form.coal')}</label>
                   <input
+                    id="recipe-coal"
                     type="number"
                     step="0.001"
+                    inputMode="decimal"
+                    autoComplete="off"
                     {...register('coal')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
@@ -368,30 +390,39 @@ export function RecipeForm({
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.calcV0')}</label>
+                  <label htmlFor="recipe-calc-v0" className="block text-sm font-medium mb-1.5">{t('form.calcV0')}</label>
                   <input
+                    id="recipe-calc-v0"
                     type="number"
                     step="1"
+                    inputMode="numeric"
+                    autoComplete="off"
                     {...register('calculatedV0')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.measV0')}</label>
+                  <label htmlFor="recipe-meas-v0" className="block text-sm font-medium mb-1.5">{t('form.measV0')}</label>
                   <input
+                    id="recipe-meas-v0"
                     type="number"
                     step="1"
+                    inputMode="numeric"
+                    autoComplete="off"
                     {...register('measuredV0')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.fillRate')}</label>
+                  <label htmlFor="recipe-fill-rate" className="block text-sm font-medium mb-1.5">{t('form.fillRate')}</label>
                   <input
+                    id="recipe-fill-rate"
                     type="number"
                     step="0.1"
+                    inputMode="decimal"
+                    autoComplete="off"
                     {...register('fillRate')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
@@ -399,8 +430,10 @@ export function RecipeForm({
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
+                <label htmlFor="recipe-notes" className="block text-sm font-medium mb-1.5">{t('form.notes')}</label>
                 <textarea
+                  id="recipe-notes"
+                  autoComplete="off"
                   {...register('notes')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"

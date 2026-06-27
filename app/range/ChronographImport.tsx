@@ -67,11 +67,13 @@ export function ChronographImport({
     <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl p-4 space-y-3">
       {!isReadOnly && (
         <div className="flex items-center justify-between gap-3">
-          <label className="text-sm font-medium">{t('form.importCsv')}</label>
+          <label htmlFor="chrono-csv" className="text-sm font-medium">{t('form.importCsv')}</label>
           <input
+            id="chrono-csv"
             ref={fileInputRef}
             type="file"
             accept=".csv,text/csv"
+            autoComplete="off"
             onChange={(e) => handleFile(e.target.files?.[0] || null)}
             disabled={isReadOnly}
             className="text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:bg-zinc-100 dark:file:bg-zinc-800"
@@ -80,11 +82,11 @@ export function ChronographImport({
       )}
 
       {errorHint && (
-        <p className="text-sm text-red-600 dark:text-red-400">{errorHint}</p>
+        <p aria-live="polite" className="text-sm text-red-600 dark:text-red-400">{errorHint}</p>
       )}
 
       {parsed && (
-        <div className="space-y-2">
+        <div className="space-y-2" aria-live="polite">
           <div className="flex items-center justify-between">
             <span className="text-sm text-zinc-600 dark:text-zinc-400">
               {t('form.csvParsed', { count: parsed.roundsFired })}

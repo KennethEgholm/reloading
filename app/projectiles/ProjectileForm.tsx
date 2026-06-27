@@ -149,8 +149,11 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
+                <label htmlFor="projectile-brand" className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
+                  id="projectile-brand"
+                  autoComplete="off"
+                  aria-describedby="projectile-brand-error"
                   {...register('brand')}
                   ref={(e) => {
                     // Merge react-hook-form's ref with our own for auto-focus
@@ -160,54 +163,69 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.brandPlaceholder')}
                 />
-                {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
+                {errors.brand && <p id="projectile-brand-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
+                <label htmlFor="projectile-type" className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
                 <input
+                  id="projectile-type"
+                  autoComplete="off"
+                  aria-describedby="projectile-type-error"
                   {...register('type')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.typePlaceholder')}
                 />
-                {errors.type && <p className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
+                {errors.type && <p id="projectile-type-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.type.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.weight')}</label>
+                <label htmlFor="projectile-weight" className="block text-sm font-medium mb-1.5">{t('form.weight')}</label>
                 <input
+                  id="projectile-weight"
                   type="number"
                   step="0.1"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  aria-describedby="projectile-weight-error"
                   {...register('weightGr')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 />
-                {errors.weightGr && <p className="text-red-600 text-xs mt-1">{errors.weightGr.message}</p>}
+                {errors.weightGr && <p id="projectile-weight-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.weightGr.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
+                <label htmlFor="projectile-caliber" className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                 <input
+                  id="projectile-caliber"
+                  autoComplete="off"
+                  aria-describedby="projectile-caliber-error"
                   {...register('caliber')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.caliberPlaceholder')}
                 />
-                {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
+                {errors.caliber && <p id="projectile-caliber-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
+                <label htmlFor="projectile-amount" className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                 <input
+                  id="projectile-amount"
                   type="number"
                   step="1"
                   min="0"
+                  inputMode="numeric"
+                  autoComplete="off"
                   {...register('amount')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
+                <label htmlFor="projectile-description" className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
+                  id="projectile-description"
+                  autoComplete="off"
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"

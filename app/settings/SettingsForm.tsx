@@ -108,9 +108,11 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       className="space-y-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6"
     >
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.provider')}</label>
+        <label htmlFor="settings-provider" className="block text-sm font-medium mb-1.5">{t('form.provider')}</label>
         <select
+          id="settings-provider"
           name="provider"
+          autoComplete="off"
           value={provider}
           onChange={(e) => onProviderChange(e.target.value)}
           className={inputClass}
@@ -124,11 +126,14 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.model')}</label>
+        <label htmlFor="settings-model" className="block text-sm font-medium mb-1.5">{t('form.model')}</label>
         <input
+          id="settings-model"
           ref={modelInputRef}
           type="text"
           name="model"
+          autoComplete="off"
+          spellCheck={false}
           defaultValue={initialData.model}
           placeholder={currentProvider.modelHint}
           className={inputClass}
@@ -137,8 +142,9 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.apiKey')}</label>
+        <label htmlFor="settings-api-key" className="block text-sm font-medium mb-1.5">{t('form.apiKey')}</label>
         <input
+          id="settings-api-key"
           type="password"
           name="apiKey"
           autoComplete="off"
@@ -151,10 +157,13 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t('form.baseUrl')}</label>
+        <label htmlFor="settings-base-url" className="block text-sm font-medium mb-1.5">{t('form.baseUrl')}</label>
         <input
+          id="settings-base-url"
           type="text"
           name="baseUrl"
+          autoComplete="off"
+          spellCheck={false}
           value={baseUrl}
           onChange={(e) => setBaseUrl(e.target.value)}
           placeholder={currentProvider.defaultBaseUrl}
@@ -164,25 +173,31 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5">{t('form.temperature')}</label>
+          <label htmlFor="settings-temperature" className="block text-sm font-medium mb-1.5">{t('form.temperature')}</label>
           <input
+            id="settings-temperature"
             type="number"
             step="0.1"
             min="0"
             max="2"
+            inputMode="decimal"
             name="temperature"
+            autoComplete="off"
             defaultValue={initialData.temperature ?? ''}
             placeholder={t('form.temperaturePlaceholder')}
             className={inputClass}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1.5">{t('form.maxTokens')}</label>
+          <label htmlFor="settings-max-tokens" className="block text-sm font-medium mb-1.5">{t('form.maxTokens')}</label>
           <input
+            id="settings-max-tokens"
             type="number"
             step="1"
             min="1"
+            inputMode="numeric"
             name="maxTokens"
+            autoComplete="off"
             defaultValue={initialData.maxTokens ?? ''}
             placeholder={t('form.maxTokensPlaceholder')}
             className={inputClass}

@@ -146,8 +146,11 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
+                <label htmlFor="cartridge-brand" className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
+                  id="cartridge-brand"
+                  autoComplete="off"
+                  aria-describedby="cartridge-brand-error"
                   {...register('brand')}
                   ref={(e) => {
                     register('brand').ref(e);
@@ -156,49 +159,62 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.brandPlaceholder')}
                 />
-                {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
+                {errors.brand && <p id="cartridge-brand-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
+                <label htmlFor="cartridge-caliber" className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
                 <input
+                  id="cartridge-caliber"
+                  autoComplete="off"
+                  aria-describedby="cartridge-caliber-error"
                   {...register('caliber')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.caliberPlaceholder')}
                 />
-                {errors.caliber && <p className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
+                {errors.caliber && <p id="cartridge-caliber-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.waterCapacity')}</label>
+                  <label htmlFor="cartridge-water-capacity" className="block text-sm font-medium mb-1.5">{t('form.waterCapacity')}</label>
                   <input
+                    id="cartridge-water-capacity"
                     type="number"
                     step="0.1"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    aria-describedby="cartridge-water-capacity-error"
                     {...register('waterCapacityGr')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                     placeholder={t('form.waterCapacityPlaceholder')}
                   />
                   {errors.waterCapacityGr && (
-                    <p className="text-red-600 text-xs mt-1">{errors.waterCapacityGr.message}</p>
+                    <p id="cartridge-water-capacity-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.waterCapacityGr.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
+                  <label htmlFor="cartridge-amount" className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                   <input
+                    id="cartridge-amount"
                     type="number"
                     step="1"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    aria-describedby="cartridge-amount-error"
                     {...register('amount')}
                     className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   />
-                  {errors.amount && <p className="text-red-600 text-xs mt-1">{errors.amount.message}</p>}
+                  {errors.amount && <p id="cartridge-amount-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.amount.message}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
+                <label htmlFor="cartridge-description" className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
+                  id="cartridge-description"
+                  autoComplete="off"
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"

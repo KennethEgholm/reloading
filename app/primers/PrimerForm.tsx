@@ -146,8 +146,11 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
+                <label htmlFor="primer-brand" className="block text-sm font-medium mb-1.5">{t('form.brand')}</label>
                 <input
+                  id="primer-brand"
+                  autoComplete="off"
+                  aria-describedby="primer-brand-error"
                   {...register('brand')}
                   ref={(e) => {
                     // Merge react-hook-form's ref with our own for auto-focus
@@ -157,12 +160,14 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                   placeholder={t('form.brandPlaceholder')}
                 />
-                {errors.brand && <p className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
+                {errors.brand && <p id="primer-brand-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.brand.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
+                <label htmlFor="primer-type" className="block text-sm font-medium mb-1.5">{t('form.type')}</label>
                 <select
+                  id="primer-type"
+                  autoComplete="off"
                   {...register('type')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 >
@@ -178,6 +183,7 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
                 <input
                   type="checkbox"
                   id="magnum"
+                  autoComplete="off"
                   {...register('magnum')}
                   className="w-4 h-4"
                 />
@@ -185,17 +191,22 @@ export function PrimerForm({ action, defaultValues, title, submitLabel, open, on
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
+                <label htmlFor="primer-amount" className="block text-sm font-medium mb-1.5">{t('form.amount')}</label>
                 <input
+                  id="primer-amount"
                   type="number"
+                  inputMode="numeric"
+                  autoComplete="off"
                   {...register('amount')}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
+                <label htmlFor="primer-description" className="block text-sm font-medium mb-1.5">{t('form.description')}</label>
                 <textarea
+                  id="primer-description"
+                  autoComplete="off"
                   {...register('description')}
                   rows={3}
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
