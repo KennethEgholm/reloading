@@ -40,7 +40,11 @@ export function useSortBy<T, K extends string>(items: T[], defaultKey?: K) {
 }
 
 function getSortValue<T>(item: T, key: string): string | number | boolean | null {
-  const v = (item as Record<string, unknown>)[key]
+  // Support dot-paths (e.g. "caliber.name") so callers can sort by a nested
+  // relation field without flattening their row shape first.
+  const v = key.includes('.')
+    ? key.split('.').reduce<unknown>((acc, k) => (acc == null ? acc : (acc as Record<string, unknown>)[k]), item)
+    : (item as Record<string, unknown>)[key]
   if (v == null) return null
   if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') return v
   return String(v)

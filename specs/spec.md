@@ -6,6 +6,9 @@ The tool is a web app.
 - Backend is Typescript with node, React, database is postgres with prisma, docker
 
 ## Features
+### Import recipes from QL via screenshot
+The user can take a screenshot of a QuickLoad recipe and upload it to the tool. This will make it posible to extract the data from the screenshot and create a new recipe in the tool. For this feature, a LLM that is image capable must be used.
+
 ### Keeping track of the stock
 A inventory system, to keep track of the: Propellants, Projectiles, and Primers.
 The user can: create new "rows" for each type of material and edit the amount on stock.

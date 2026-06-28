@@ -21,6 +21,7 @@ function createAiSettingsSchema(t: (key: string) => string) {
     // didn't type a new key over the masked placeholder).
     apiKey: z.string().optional(),
     model: z.string().optional(),
+    visionModel: z.string().optional(),
     baseUrl: z.string().url(t('errors.baseUrlInvalid')).optional().or(z.literal('')),
     temperature: z.coerce.number().min(0).max(2, t('errors.temperatureRange')).optional(),
     maxTokens: z.coerce.number().int().positive(t('errors.maxTokensPositive')).optional(),
@@ -44,6 +45,7 @@ export async function saveAiSettings(formData: FormData) {
     provider: str(formData, 'provider') ?? 'grok',
     apiKey: formData.get('apiKey') === null ? undefined : (formData.get('apiKey') as string),
     model: str(formData, 'model'),
+    visionModel: str(formData, 'visionModel'),
     baseUrl: str(formData, 'baseUrl'),
     temperature: str(formData, 'temperature'),
     maxTokens: str(formData, 'maxTokens'),
@@ -63,6 +65,7 @@ export async function saveAiSettings(formData: FormData) {
       provider: data.provider,
       apiKey: newApiKey ?? null,
       model: data.model ?? null,
+      visionModel: data.visionModel ?? null,
       baseUrl: data.baseUrl || null,
       temperature: data.temperature ?? null,
       maxTokens: data.maxTokens ?? null,
@@ -72,6 +75,7 @@ export async function saveAiSettings(formData: FormData) {
       // Only overwrite the key when a new one was actually entered.
       ...(newApiKey ? { apiKey: newApiKey } : {}),
       model: data.model ?? null,
+      visionModel: data.visionModel ?? null,
       baseUrl: data.baseUrl || null,
       temperature: data.temperature ?? null,
       maxTokens: data.maxTokens ?? null,

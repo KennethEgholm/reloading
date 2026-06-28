@@ -33,10 +33,12 @@ export default async function Overview() {
       orderBy: { createdAt: 'desc' },
     }),
     prisma.cartridge.findMany({
+      include: { caliber: true },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.recipe.findMany({
       include: {
+        caliber: true,
         projectile: true,
         propellant: true,
         primer: true,
@@ -225,7 +227,7 @@ export default async function Overview() {
                 {recipes.map((recipe) => (
                   <tr key={recipe.id}>
                     <td className="px-6 py-3 font-medium">{recipe.name}</td>
-                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">
                       {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
                     </td>
@@ -468,7 +470,7 @@ export default async function Overview() {
                 {cartridges.map((cartridge) => (
                   <tr key={cartridge.id}>
                     <td className="px-6 py-3 font-medium">{cartridge.brand}</td>
-                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{cartridge.caliber}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{cartridge.caliber.name}</td>
                     <td className="px-6 py-3 text-right font-mono">
                       {cartridge.waterCapacityGr != null ? fmt1.format(cartridge.waterCapacityGr) : '—'}
                     </td>

@@ -6,9 +6,13 @@ import { CartridgesTable } from './CartridgesTable';
 
 export default async function CartridgesPage() {
   const t = await getTranslations('cartridges');
-  const cartridges = await prisma.cartridge.findMany({
-    orderBy: { createdAt: 'desc' },
-  });
+  const [cartridges, calibers] = await Promise.all([
+    prisma.cartridge.findMany({
+      include: { caliber: true },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.caliber.findMany({ orderBy: { name: 'asc' } }),
+  ]);
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-10">
@@ -24,10 +28,11 @@ export default async function CartridgesPage() {
           action={createCartridge}
           title={t('form.titleAdd')}
           submitLabel={t('form.submit')}
+          calibers={calibers}
         />
       </div>
 
-      <CartridgesTable cartridges={cartridges} />
+      <CartridgesTable cartridges={cartridges} calibers={calibers} />
     </div>
   );
 }

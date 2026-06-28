@@ -98,15 +98,18 @@ async function seedRecipe(name: string, chargeGr: number, coal: number, withCart
   const primer = await prisma.primer.create({
     data: { brand: `${TAG}-prim-${name}`, type: 'LARGE_RIFLE', amount: 1000 },
   })
+  const caliber = await prisma.caliber.upsert({
+    where: { name: '.308' }, create: { name: '.308' }, update: {},
+  })
   const cartridge = withCartridge
     ? await prisma.cartridge.create({
-        data: { brand: `${TAG}-cart-${name}`, caliber: '.308', waterCapacityGr: 56.0, amount: 100 },
+        data: { brand: `${TAG}-cart-${name}`, caliberId: caliber.id, waterCapacityGr: 56.0, amount: 100 },
       })
     : null
   const recipe = await prisma.recipe.create({
     data: {
       name,
-      caliber: '.308',
+      caliberId: caliber.id,
       chargeGr,
       coal,
       projectileId: projectile.id,
@@ -190,8 +193,9 @@ describe('LoadLog snapshot model (live DB)', () => {
     expect(immediately.quantity).toBe(10)
 
     // 2. Edit recipe A elsewhere (charge 40→44, COAL 2.8→2.9, rename, swap cartridge).
+    const cal2 = await prisma.caliber.upsert({ where: { name: '6.5 Creedmoor' }, create: { name: '6.5 Creedmoor' }, update: {} })
     const newCart = await prisma.cartridge.create({
-      data: { brand: `${TAG}-cart2-A`, caliber: '6.5 Creedmoor', waterCapacityGr: 58.0, amount: 50 },
+      data: { brand: `${TAG}-cart2-A`, caliberId: cal2.id, waterCapacityGr: 58.0, amount: 50 },
     })
     cartridgeIds.push(newCart.id)
     await prisma.recipe.update({

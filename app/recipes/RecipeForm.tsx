@@ -8,8 +8,9 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
-import type { RecipeWithRelations } from '@/lib/types';
+import type { RecipeWithRelations, CaliberOption } from '@/lib/types';
 import { useFocusTrap } from '@/lib/useFocusTrap';
+import { CaliberField } from '../CaliberField';
 
 function createRecipeSchema(t: (key: string) => string) {
   return z.object({
@@ -39,7 +40,8 @@ interface RecipeFormProps {
   projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number }>;
   propellants: Array<{ id: string; brand: string; type: string }>;
   primers: Array<{ id: string; brand: string; type: string; magnum: boolean }>;
-  cartridges: Array<{ id: string; brand: string; caliber: string }>;
+  cartridges: Array<{ id: string; brand: string; caliber: { name: string } }>;
+  calibers: CaliberOption[];
   title?: string;
   submitLabel?: string;
   open?: boolean;
@@ -54,6 +56,7 @@ export function RecipeForm({
   propellants,
   primers,
   cartridges,
+  calibers,
   title,
   submitLabel,
   open,
@@ -79,13 +82,15 @@ export function RecipeForm({
     register,
     handleSubmit,
     getValues,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<RecipeFormInput, unknown, RecipeFormData>({
     resolver: zodResolver(recipeSchema),
     defaultValues: {
       name: defaultValues?.name || '',
-      caliber: defaultValues?.caliber || '',
+      caliber: defaultValues?.caliber?.name || '',
       projectileId: defaultValues?.projectileId || '',
       propellantId: defaultValues?.propellantId || '',
       primerId: defaultValues?.primerId || '',
@@ -108,7 +113,7 @@ export function RecipeForm({
     if (defaultValues?.id) {
       reset({
         name: defaultValues.name || '',
-        caliber: defaultValues.caliber || '',
+        caliber: defaultValues.caliber?.name || '',
         projectileId: defaultValues.projectileId || '',
         propellantId: defaultValues.propellantId || '',
         primerId: defaultValues.primerId || '',
@@ -205,14 +210,21 @@ export function RecipeForm({
   const modalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(modalRef, isOpen);
 
+  // Auto-focus the first field ONLY when the modal transitions to open. Keyed
+  // solely on isOpen so it does NOT re-run on every render — otherwise editing a
+  // controlled field (e.g. picking "Add new" in CaliberField, which re-renders
+  // the form) would steal focus back to the name input mid-interaction.
   useEffect(() => {
     if (!isOpen) return;
-
-    // Auto-focus the first field when the modal opens (critical for keyboard handling)
     const focusTimer = setTimeout(() => {
       nameInputRef.current?.focus();
       nameInputRef.current?.select();
     }, 0);
+    return () => clearTimeout(focusTimer);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -234,7 +246,6 @@ export function RecipeForm({
 
     document.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
-      clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
@@ -284,13 +295,13 @@ export function RecipeForm({
 
                 <div>
                   <label htmlFor="recipe-caliber" className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
-                  <input
+                  <input type="hidden" {...register('caliber')} />
+                  <CaliberField
                     id="recipe-caliber"
-                    autoComplete="off"
-                    aria-describedby="recipe-caliber-error"
-                    {...register('caliber')}
-                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                    placeholder={t('form.caliberPlaceholder')}
+                    describedBy="recipe-caliber-error"
+                    calibers={calibers}
+                    value={watch('caliber') ?? ''}
+                    onChange={(name) => setValue('caliber', name, { shouldValidate: true })}
                   />
                   {errors.caliber && <p id="recipe-caliber-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
                 </div>
@@ -364,7 +375,7 @@ export function RecipeForm({
                   <option value="">{t('form.cartridgePlaceholder')}</option>
                   {cartridges.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.brand} – {c.caliber}
+                      {c.brand} – {c.caliber.name}
                     </option>
                   ))}
                 </select>

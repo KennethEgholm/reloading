@@ -425,6 +425,50 @@
       "projectileNotFound": "Selected projectile not found.",
       "propellantNotFound": "Selected propellant not found.",
       "requiredForCheck": "Name, caliber, projectile, and propellant are required to run a check."
+    },
+    "qlImport": {
+      "title": "Import from QuickLoad",
+      "button": "Import from QL",
+      "hint": "Upload a QuickLoad .dat export file to create a recipe. Bullet and powder will be matched to your existing inventory.",
+      "preview": "Preview",
+      "projectile": "Projectile",
+      "matchFound": "Matched: {name}",
+      "noMatch": "No match found — will create new",
+      "selectExisting": "Select existing...",
+      "createNew": "Create new",
+      "propellant": "Propellant",
+      "recipeName": "Recipe name",
+      "caliber": "Caliber",
+      "charge": "Charge (gr)",
+      "coal": "COAL (in)",
+      "calcV0": "Calculated V0 (m/s)",
+      "measV0": "Measured V0 (m/s)",
+      "fillRate": "Fill rate (%)",
+      "notes": "Notes",
+      "save": "Save recipe",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "success": "Recipe imported from QuickLoad",
+      "failed": "Failed to import recipe",
+      "invalidFile": "Not a valid QuickLoad .dat file.",
+      "newProjectile": "New projectile: {brand} {type} ({weight} gr, {caliber})",
+      "newPropellant": "New propellant: {brand} {type}"
+    },
+    "qlImageImport": {
+      "button": "Import from screenshot",
+      "title": "Import from QuickLoad screenshot",
+      "hint": "Upload a screenshot of a QuickLoad recipe screen. A vision-capable AI model reads the values; review and edit them before saving. Bullet and powder are matched to your existing inventory.",
+      "extracting": "Reading screenshot…",
+      "preview": "Preview",
+      "success": "Recipe imported from screenshot",
+      "failed": "Failed to import recipe",
+      "errors": {
+        "noImage": "Please choose an image file.",
+        "tooLarge": "Image is too large (max 10MB).",
+        "notImage": "That file is not a recognized image.",
+        "noVisionModel": "No vision model is configured. Set a vision-capable model in Settings (the regular text model may not accept images).",
+        "unreadable": "Couldn't read recipe data from that screenshot. Try a clearer image."
+      }
     }
   },
   "primers": {
@@ -652,6 +696,8 @@
       "provider": "Provider",
       "model": "Model",
       "modelHint": "Free text, so new model names work without an app update.",
+      "visionModel": "Vision model",
+      "visionModelHint": "Image-capable model used for QuickLoad screenshot import (e.g. grok-2-vision-1212).",
       "apiKey": "API Key",
       "apiKeyStored": "Leave blank to keep the existing key. Stored in the database.",
       "apiKeyNew": "Stored in the database.",
@@ -715,5 +761,11 @@
     "deleteFailed": "Failed to delete",
     "required": "Required",
     "validationFailed": "Validation failed"
+  },
+  "calibers": {
+    "selectPlaceholder": "Select caliber…",
+    "addNew": "+ Add new caliber…",
+    "addPlaceholder": "e.g. .308 Win",
+    "chooseExisting": "Choose existing"
   }
 }

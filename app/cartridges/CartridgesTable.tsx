@@ -6,22 +6,23 @@ import { CartridgeForm } from './CartridgeForm';
 import { DeleteCartridgeButton } from './DeleteCartridgeButton';
 import { SortIndicator } from '../SortIndicator';
 import { useSortBy } from '@/lib/useSortBy';
-import type { Cartridge } from '@/lib/types';
+import type { CartridgeWithCaliber, CaliberOption } from '@/lib/types';
 
-type SortKey = 'brand' | 'caliber' | 'waterCapacityGr' | 'amount' | 'description';
+type SortKey = 'brand' | 'caliber.name' | 'waterCapacityGr' | 'amount' | 'description';
 
 interface CartridgesTableProps {
-  cartridges: Cartridge[];
+  cartridges: CartridgeWithCaliber[];
+  calibers: CaliberOption[];
 }
 
-export function CartridgesTable({ cartridges }: CartridgesTableProps) {
+export function CartridgesTable({ cartridges, calibers }: CartridgesTableProps) {
   const t = useTranslations('cartridges');
   const locale = useLocale();
   const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
-  const [editingCartridge, setEditingCartridge] = useState<Cartridge | null>(null);
-  const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Cartridge, SortKey>(cartridges, 'brand');
+  const [editingCartridge, setEditingCartridge] = useState<CartridgeWithCaliber | null>(null);
+  const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<CartridgeWithCaliber, SortKey>(cartridges, 'brand');
 
-  const handleRowClick = (cartridge: Cartridge) => {
+  const handleRowClick = (cartridge: CartridgeWithCaliber) => {
     setEditingCartridge(cartridge);
   };
 
@@ -44,7 +45,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
               {sortableHeader('brand', t('table.brand'))}
-              {sortableHeader('caliber', t('table.caliber'))}
+              {sortableHeader('caliber.name', t('table.caliber'))}
               {sortableHeader('waterCapacityGr', t('table.waterCapacity'), 'right')}
               {sortableHeader('amount', t('table.amount'), 'right')}
               {sortableHeader('description', t('table.description'))}
@@ -75,7 +76,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
                 }}
               >
                 <td className="px-6 py-4 font-medium">{cartridge.brand}</td>
-                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{cartridge.caliber}</td>
+                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{cartridge.caliber.name}</td>
                 <td className="px-6 py-4 text-right font-mono">
                   {cartridge.waterCapacityGr != null ? fmt1.format(cartridge.waterCapacityGr) : '—'}
                 </td>
@@ -100,6 +101,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
           await updateCartridge(editingCartridge.id, formData);
         }}
         defaultValues={editingCartridge}
+        calibers={calibers}
         title={t('form.titleEdit')}
         submitLabel={t('form.saveChanges')}
         open={!!editingCartridge}

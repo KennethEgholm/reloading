@@ -425,6 +425,50 @@
       "projectileNotFound": "Valgt projektil ikke fundet.",
       "propellantNotFound": "Valgt krudt ikke fundet.",
       "requiredForCheck": "Navn, kaliber, projektil og krudt er påkrævet for at køre et tjek."
+    },
+    "qlImport": {
+      "title": "Importér fra QuickLoad",
+      "button": "Import from QL",
+      "hint": "Upload en QuickLoad .dat-eksportfil for at oprette en opskrift. Projektil og krudt matches til dit eksisterende lager.",
+      "preview": "Forhåndsvisning",
+      "projectile": "Projektil",
+      "matchFound": "Matchet: {name}",
+      "noMatch": "Intet match fundet — opretter ny",
+      "selectExisting": "Vælg eksisterende...",
+      "createNew": "Opret ny",
+      "propellant": "Krudt",
+      "recipeName": "Opskrift navn",
+      "caliber": "Kaliber",
+      "charge": "Ladning (gr)",
+      "coal": "COAL (tommer)",
+      "calcV0": "Beregnet V0 (m/s)",
+      "measV0": "Målt V0 (m/s)",
+      "fillRate": "Fyldningsgrad (%)",
+      "notes": "Noter",
+      "save": "Gem opskrift",
+      "saving": "Gemmer...",
+      "cancel": "Annullér",
+      "success": "Opskrift importeret fra QuickLoad",
+      "failed": "Kunne ikke importere opskrift",
+      "invalidFile": "Ikke en gyldig QuickLoad .dat-fil.",
+      "newProjectile": "Ny projektil: {brand} {type} ({weight} gr, {caliber})",
+      "newPropellant": "Nyt krudt: {brand} {type}"
+    },
+    "qlImageImport": {
+      "button": "Importér fra skærmbillede",
+      "title": "Importér fra QuickLoad-skærmbillede",
+      "hint": "Upload et skærmbillede af en QuickLoad-opskriftsskærm. En billedkapabel AI-model læser værdierne; gennemse og ret dem før du gemmer. Projektil og krudt matches mod dit eksisterende lager.",
+      "extracting": "Læser skærmbillede…",
+      "preview": "Forhåndsvisning",
+      "success": "Opskrift importeret fra skærmbillede",
+      "failed": "Kunne ikke importere opskrift",
+      "errors": {
+        "noImage": "Vælg venligst en billedfil.",
+        "tooLarge": "Billedet er for stort (maks. 10MB).",
+        "notImage": "Filen er ikke et genkendt billede.",
+        "noVisionModel": "Der er ikke konfigureret en vision-model. Angiv en billedkapabel model i Indstillinger (den almindelige tekstmodel accepterer måske ikke billeder).",
+        "unreadable": "Kunne ikke læse opskriftsdata fra skærmbilledet. Prøv et tydeligere billede."
+      }
     }
   },
   "primers": {
@@ -652,6 +696,8 @@
       "provider": "Udbyder",
       "model": "Model",
       "modelHint": "Fritekst, så nye modelnavne virker uden en app-opdatering.",
+      "visionModel": "Vision-model",
+      "visionModelHint": "Billedkapabel model brugt til import af QuickLoad-skærmbillede (f.eks. grok-2-vision-1212).",
       "apiKey": "API-nøgle",
       "apiKeyStored": "Lad feltet stå tomt for at beholde den eksisterende nøgle. Gemt i databasen.",
       "apiKeyNew": "Gemt i databasen.",
@@ -715,5 +761,11 @@
     "deleteFailed": "Kunne ikke slette",
     "required": "Påkrævet",
     "validationFailed": "Validering mislykkedes"
+  },
+  "calibers": {
+    "selectPlaceholder": "Vælg kaliber…",
+    "addNew": "+ Tilføj ny kaliber…",
+    "addPlaceholder": "f.eks. .308 Win",
+    "chooseExisting": "Vælg eksisterende"
   }
 }

@@ -3,8 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
-import { chatCompletion, parseJsonFromModel, DEFAULT_BASE_URLS, AiError } from '@/lib/ai'
+import { chatCompletion, visionCompletion, parseJsonFromModel, DEFAULT_BASE_URLS, AiError } from '@/lib/ai'
+import { getImageMimeType } from '@/lib/imageType'
+import { resolveCaliberId } from '@/lib/resolveCaliber'
+import type { ParsedQuickLoad } from '@/lib/parseQuickLoadDat'
 import type { DeleteResult } from '@/lib/types'
+
+const MAX_IMPORT_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 
 export async function createRecipe(formData: FormData) {
   const t = await getTranslations('recipes')
@@ -25,10 +30,12 @@ export async function createRecipe(formData: FormData) {
     throw new Error(t('errors.requiredForCheck'))
   }
 
+  const caliberId = await resolveCaliberId(caliber, t('errors.requiredForCheck'))
+
   await prisma.recipe.create({
     data: {
       name,
-      caliber,
+      caliberId,
       projectileId,
       propellantId,
       primerId,
@@ -43,6 +50,216 @@ export async function createRecipe(formData: FormData) {
   })
 
   revalidatePath('/recipes')
+}
+
+export interface QuickLoadImportData {
+  name: string
+  caliber: string
+  chargeGr: number | null
+  coal: number | null
+  calculatedV0: number | null
+  measuredV0: number | null
+  fillRate: number | null
+  notes: string | null
+  projectileId: string | null
+  createProjectile: boolean
+  projectileBrand: string
+  projectileType: string
+  projectileWeightGr: number
+  projectileCaliber: string
+  propellantId: string | null
+  createPropellant: boolean
+  propellantBrand: string
+  propellantType: string
+}
+
+export async function importRecipeFromQuickLoad(data: QuickLoadImportData) {
+  const t = await getTranslations('recipes')
+
+  if (!data.name || !data.caliber) {
+    throw new Error(t('errors.requiredForCheck'))
+  }
+
+  let projectileId = data.projectileId
+  if (data.createProjectile && !projectileId) {
+    if (!data.projectileBrand || !data.projectileCaliber || !data.projectileWeightGr) {
+      throw new Error(t('errors.requiredForCheck'))
+    }
+    const created = await prisma.projectile.create({
+      data: {
+        brand: data.projectileBrand,
+        type: data.projectileType || null,
+        weightGr: data.projectileWeightGr,
+        caliber: data.projectileCaliber,
+        amount: 0,
+      },
+    })
+    projectileId = created.id
+  }
+
+  if (!projectileId) {
+    throw new Error(t('errors.requiredForCheck'))
+  }
+
+  let propellantId = data.propellantId
+  if (data.createPropellant && !propellantId) {
+    if (!data.propellantBrand) {
+      throw new Error(t('errors.requiredForCheck'))
+    }
+    const created = await prisma.propellant.create({
+      data: {
+        brand: data.propellantBrand,
+        type: data.propellantType || '',
+        amountGr: 0,
+      },
+    })
+    propellantId = created.id
+  }
+
+  if (!propellantId) {
+    throw new Error(t('errors.requiredForCheck'))
+  }
+
+  const caliberId = await resolveCaliberId(data.caliber, t('errors.requiredForCheck'))
+
+  await prisma.recipe.create({
+    data: {
+      name: data.name,
+      caliberId,
+      projectileId,
+      propellantId,
+      chargeGr: data.chargeGr,
+      coal: data.coal,
+      calculatedV0: data.calculatedV0,
+      measuredV0: data.measuredV0,
+      fillRate: data.fillRate,
+      notes: data.notes,
+    },
+  })
+
+  revalidatePath('/recipes')
+  revalidatePath('/projectiles')
+  revalidatePath('/propellants')
+  revalidatePath('/')
+}
+
+const QL_EXTRACT_SYSTEM_PROMPT = `You are a data-extraction assistant reading a screenshot of the QuickLoad internal-ballistics software showing a single load.
+Extract the load's values and respond with ONLY a JSON object (no markdown, no prose) of EXACTLY this shape:
+{"name": string, "caliber": string, "bulletBrand": string, "bulletType": string, "bulletWeightGr": number, "bulletCaliber": string, "propellantBrand": string, "propellantType": string, "chargeGr": number, "coal": number, "calculatedV0": number|null, "measuredV0": number|null, "fillRate": number|null, "notes": string}
+
+Field guidance:
+- caliber: the cartridge designation, e.g. ".308 Win" or ".30-06 Spring".
+- bulletBrand/bulletType: the projectile maker and model, e.g. brand "Sierra", type "MatchKing". bulletWeightGr in grains. bulletCaliber is the bullet diameter, e.g. ".308".
+- propellantBrand/propellantType: e.g. brand "Vihtavuori", type "N140". chargeGr is the powder charge in grains.
+- coal: cartridge overall length in inches.
+- calculatedV0: the computed muzzle velocity in m/s (QuickLoad's predicted V0). measuredV0: only if a measured velocity is shown, else null.
+- fillRate: percent case fill / loading density (a number like 95), else null.
+- name: a short human label for the load; if none is visible, build one like "<caliber> <bulletWeightGr>gr <bulletBrand>".
+- notes: any extra free text worth keeping, else an empty string.
+
+Rules: Use null (for the nullable fields) or 0 / empty string when a value is NOT visible in the screenshot. NEVER invent or guess values that aren't shown. Numbers must be plain JSON numbers (no units, no quotes).`
+
+function toNum(v: unknown): number {
+  if (typeof v === 'number' && isFinite(v)) return v
+  if (typeof v === 'string') {
+    const n = parseFloat(v)
+    if (!isNaN(n)) return n
+  }
+  return 0
+}
+
+function toNullableNum(v: unknown): number | null {
+  if (v === null || v === undefined || v === '') return null
+  const n = toNum(v)
+  return n === 0 ? null : n
+}
+
+function toStr(v: unknown): string {
+  return typeof v === 'string' ? v.trim() : ''
+}
+
+/**
+ * Extracts a QuickLoad recipe from an uploaded screenshot using a vision-capable
+ * model. The image is sent to the model in-memory and never stored. Returns a
+ * ParsedQuickLoad for the preview/confirm step (does NOT persist anything).
+ * Throws Error with a user-friendly, translated message (callers surface it as
+ * a toast).
+ */
+export async function extractQuickLoadFromImage(formData: FormData): Promise<ParsedQuickLoad> {
+  const t = await getTranslations('recipes')
+
+  const file = formData.get('image')
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error(t('qlImageImport.errors.noImage'))
+  }
+  if (file.size > MAX_IMPORT_IMAGE_SIZE) {
+    throw new Error(t('qlImageImport.errors.tooLarge'))
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const mimeType = getImageMimeType(buffer)
+  if (!mimeType) {
+    throw new Error(t('qlImageImport.errors.notImage'))
+  }
+
+  const settings = await prisma.aiSettings.findUnique({ where: { id: 'singleton' } })
+  if (!settings?.apiKey) {
+    throw new Error(t('errors.configureAi'))
+  }
+  // No fallback to the text model: a non-vision model can't read the screenshot,
+  // so require an explicit vision model and tell the user how to set one.
+  if (!settings.visionModel) {
+    throw new Error(t('qlImageImport.errors.noVisionModel'))
+  }
+
+  const baseUrl = settings.baseUrl || DEFAULT_BASE_URLS[settings.provider] || ''
+
+  let content: string
+  try {
+    content = await visionCompletion({
+      baseUrl,
+      apiKey: settings.apiKey,
+      model: settings.visionModel,
+      imageBase64: buffer.toString('base64'),
+      mimeType,
+      systemPrompt: QL_EXTRACT_SYSTEM_PROMPT,
+      userPrompt: 'Extract the load data from this QuickLoad screenshot.',
+      temperature: settings.temperature,
+      maxTokens: settings.maxTokens,
+      responseFormat: 'json_object',
+    })
+  } catch (e) {
+    if (e instanceof AiError) throw new Error(e.message)
+    throw e
+  }
+
+  const parsed = parseJsonFromModel<Record<string, unknown>>(content)
+  if (!parsed || typeof parsed !== 'object') {
+    throw new Error(t('qlImageImport.errors.unreadable'))
+  }
+
+  const caliber = toStr(parsed.caliber)
+  const bulletBrand = toStr(parsed.bulletBrand)
+  const bulletType = toStr(parsed.bulletType)
+  const bulletWeightGr = toNum(parsed.bulletWeightGr)
+  const name = toStr(parsed.name) || `${caliber} ${bulletBrand} ${bulletType}`.trim() || 'Imported recipe'
+
+  return {
+    name,
+    caliber,
+    bulletBrand,
+    bulletType,
+    bulletWeightGr,
+    bulletCaliber: toStr(parsed.bulletCaliber),
+    propellantBrand: toStr(parsed.propellantBrand),
+    propellantType: toStr(parsed.propellantType),
+    chargeGr: toNum(parsed.chargeGr),
+    coal: toNum(parsed.coal),
+    calculatedV0: toNullableNum(parsed.calculatedV0),
+    measuredV0: toNullableNum(parsed.measuredV0),
+    fillRate: toNullableNum(parsed.fillRate),
+    notes: toStr(parsed.notes),
+  }
 }
 
 // Returns a result object (see DeleteResult) because Next.js redacts thrown
@@ -79,11 +296,13 @@ export async function updateRecipe(id: string, formData: FormData) {
     throw new Error(t('errors.requiredForCheck'))
   }
 
+  const caliberId = await resolveCaliberId(caliber, t('errors.requiredForCheck'))
+
   await prisma.recipe.update({
     where: { id },
     data: {
       name,
-      caliber,
+      caliberId,
       projectileId,
       propellantId,
       primerId,
@@ -104,10 +323,11 @@ export async function getRecipeById(id: string) {
   return prisma.recipe.findUnique({
     where: { id },
     include: {
+      caliber: true,
       projectile: true,
       propellant: true,
       primer: true,
-      cartridge: true,
+      cartridge: { include: { caliber: true } },
       loadLogs: {
         orderBy: { date: 'desc' },
         take: 5,
@@ -270,7 +490,7 @@ export async function runRecipeAiCheck(recipeId: string) {
   const t = await getTranslations('recipes')
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
-    include: { projectile: true, propellant: true, primer: true, cartridge: true },
+    include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } } },
   })
 
   if (!recipe) {
@@ -279,7 +499,7 @@ export async function runRecipeAiCheck(recipeId: string) {
 
   const result = await assessRecipeData({
     name: recipe.name,
-    caliber: recipe.caliber,
+    caliber: recipe.caliber.name,
     projectileBrand: recipe.projectile.brand,
     projectileType: recipe.projectile.type,
     projectileWeightGr: recipe.projectile.weightGr,
@@ -289,7 +509,7 @@ export async function runRecipeAiCheck(recipeId: string) {
     primerType: recipe.primer?.type ?? null,
     primerMagnum: recipe.primer?.magnum ?? false,
     cartridgeBrand: recipe.cartridge?.brand ?? null,
-    cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+    cartridgeCaliber: recipe.cartridge?.caliber?.name ?? null,
     cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
     chargeGr: recipe.chargeGr,
     coal: recipe.coal,
@@ -342,7 +562,7 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     prisma.projectile.findUnique({ where: { id: input.projectileId } }),
     prisma.propellant.findUnique({ where: { id: input.propellantId } }),
     input.primerId ? prisma.primer.findUnique({ where: { id: input.primerId } }) : Promise.resolve(null),
-    input.cartridgeId ? prisma.cartridge.findUnique({ where: { id: input.cartridgeId } }) : Promise.resolve(null),
+    input.cartridgeId ? prisma.cartridge.findUnique({ where: { id: input.cartridgeId }, include: { caliber: true } }) : Promise.resolve(null),
   ])
 
   if (!projectile) throw new Error(t('errors.projectileNotFound'))
@@ -360,7 +580,7 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     primerType: primer?.type ?? null,
     primerMagnum: primer?.magnum ?? false,
     cartridgeBrand: cartridge?.brand ?? null,
-    cartridgeCaliber: cartridge?.caliber ?? null,
+    cartridgeCaliber: cartridge?.caliber?.name ?? null,
     cartridgeWaterCapacityGr: cartridge?.waterCapacityGr ?? null,
     chargeGr: input.chargeGr,
     coal: input.coal,
@@ -374,7 +594,7 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
   // verdict always reflects saved data.
   let persisted = false
   if (input.recipeId) {
-    const saved = await prisma.recipe.findUnique({ where: { id: input.recipeId } })
+    const saved = await prisma.recipe.findUnique({ where: { id: input.recipeId }, include: { caliber: true } })
     if (saved && recipeMatchesInput(saved, input)) {
       await persistAssessment(input.recipeId, result)
       revalidatePath(`/recipes/${input.recipeId}`)
@@ -395,7 +615,7 @@ function num(v: unknown): number | null {
 function recipeMatchesInput(
   saved: {
     name: string
-    caliber: string
+    caliber: { name: string }
     projectileId: string
     propellantId: string
     primerId: string | null
@@ -411,7 +631,10 @@ function recipeMatchesInput(
 ): boolean {
   return (
     saved.name === input.name.trim() &&
-    saved.caliber === input.caliber.trim() &&
+    // Caliber is matched case-insensitively to mirror resolveCaliberId's dedup,
+    // so re-checking right after a save (where the form holds the typed name and
+    // the recipe holds the canonical Caliber) still counts as "matches saved".
+    saved.caliber.name.toLowerCase() === input.caliber.trim().toLowerCase() &&
     saved.projectileId === input.projectileId &&
     saved.propellantId === input.propellantId &&
     (saved.primerId ?? '') === (input.primerId ?? '') &&

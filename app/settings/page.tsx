@@ -53,6 +53,7 @@ export default async function SettingsPage() {
         initialData={{
           provider: settings?.provider ?? 'grok',
           model: settings?.model ?? '',
+          visionModel: settings?.visionModel ?? '',
           baseUrl: settings?.baseUrl ?? '',
           temperature: settings?.temperature ?? null,
           maxTokens: settings?.maxTokens ?? null,

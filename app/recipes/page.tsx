@@ -3,23 +3,27 @@ import { getTranslations } from 'next-intl/server'
 import { createRecipe } from './actions'
 import { RecipesTable } from './RecipesTable'
 import { RecipeForm } from './RecipeForm'
+import { QuickLoadImport } from './QuickLoadImport'
+import { QuickLoadImageImport } from './QuickLoadImageImport'
 
 export default async function RecipesPage() {
   const t = await getTranslations('recipes')
-  const [recipes, projectiles, propellants, primers, cartridges] = await Promise.all([
+  const [recipes, projectiles, propellants, primers, cartridges, calibers] = await Promise.all([
     prisma.recipe.findMany({
       include: {
+        caliber: true,
         projectile: true,
         propellant: true,
         primer: true,
-        cartridge: true,
+        cartridge: { include: { caliber: true } },
       },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.projectile.findMany({ orderBy: { brand: 'asc' } }),
     prisma.propellant.findMany({ orderBy: { brand: 'asc' } }),
     prisma.primer.findMany({ orderBy: { brand: 'asc' } }),
-    prisma.cartridge.findMany({ orderBy: { brand: 'asc' } }),
+    prisma.cartridge.findMany({ include: { caliber: true }, orderBy: { brand: 'asc' } }),
+    prisma.caliber.findMany({ orderBy: { name: 'asc' } }),
   ])
 
   return (
@@ -32,15 +36,20 @@ export default async function RecipesPage() {
           </p>
         </div>
 
-        <RecipeForm
-          action={createRecipe}
-          title={t('form.titleAdd')}
-          submitLabel={t('form.save')}
-          projectiles={projectiles}
-          propellants={propellants}
-          primers={primers}
-          cartridges={cartridges}
-        />
+        <div className="flex items-center gap-2">
+          <QuickLoadImageImport projectiles={projectiles} propellants={propellants} calibers={calibers} />
+          <QuickLoadImport projectiles={projectiles} propellants={propellants} calibers={calibers} />
+          <RecipeForm
+            action={createRecipe}
+            title={t('form.titleAdd')}
+            submitLabel={t('form.save')}
+            projectiles={projectiles}
+            propellants={propellants}
+            primers={primers}
+            cartridges={cartridges}
+            calibers={calibers}
+          />
+        </div>
       </div>
 
       {/* Recipes List */}
@@ -55,6 +64,7 @@ export default async function RecipesPage() {
           propellants={propellants}
           primers={primers}
           cartridges={cartridges}
+          calibers={calibers}
         />
       )}
     </div>

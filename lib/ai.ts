@@ -62,6 +62,67 @@ export async function chatCompletion(params: ChatCompletionParams): Promise<stri
   if (maxTokens !== null && maxTokens !== undefined) body.max_tokens = maxTokens
   if (responseFormat === 'json_object') body.response_format = { type: 'json_object' }
 
+  return postChatCompletion(url, apiKey, body)
+}
+
+export interface VisionCompletionParams {
+  baseUrl: string
+  apiKey: string
+  /** Image-capable model id (e.g. "grok-2-vision-1212"). */
+  model: string
+  /** Base64-encoded image bytes (no data: prefix). */
+  imageBase64: string
+  /** Image MIME type, e.g. "image/png". */
+  mimeType: string
+  systemPrompt: string
+  userPrompt: string
+  temperature?: number | null
+  maxTokens?: number | null
+  responseFormat?: 'json_object'
+}
+
+/**
+ * Calls an OpenAI-compatible chat-completions endpoint with a single image plus
+ * a text prompt, using the multimodal message shape (a user message whose
+ * `content` is an array of text + image_url parts). Returns the assistant
+ * message text. Throws an AiError (never a bare fetch error), mirroring
+ * chatCompletion.
+ */
+export async function visionCompletion(params: VisionCompletionParams): Promise<string> {
+  const { baseUrl, apiKey, model, imageBase64, mimeType, systemPrompt, userPrompt, temperature, maxTokens, responseFormat } = params
+
+  if (!apiKey) throw new AiError('config', 'No API key configured.')
+  if (!model) throw new AiError('config', 'No vision model configured.')
+  if (!baseUrl) throw new AiError('config', 'No base URL configured.')
+  if (!imageBase64) throw new AiError('config', 'No image provided.')
+
+  const url = `${normalizeBaseUrl(baseUrl)}/chat/completions`
+
+  const body: Record<string, unknown> = {
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: userPrompt },
+          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+        ],
+      },
+    ],
+  }
+  if (temperature !== null && temperature !== undefined) body.temperature = temperature
+  if (maxTokens !== null && maxTokens !== undefined) body.max_tokens = maxTokens
+  if (responseFormat === 'json_object') body.response_format = { type: 'json_object' }
+
+  return postChatCompletion(url, apiKey, body)
+}
+
+/**
+ * Shared POST + response handling for chat/vision completions. Maps transport
+ * and HTTP failures to AiError and returns the assistant message text.
+ */
+async function postChatCompletion(url: string, apiKey: string, body: Record<string, unknown>): Promise<string> {
   let res: Response
   try {
     res = await fetch(url, {

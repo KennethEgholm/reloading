@@ -20,6 +20,7 @@ interface SettingsFormProps {
   initialData: {
     provider: string
     model: string
+    visionModel: string
     baseUrl: string
     temperature: number | null
     maxTokens: number | null
@@ -139,6 +140,21 @@ export function SettingsForm({ initialData }: SettingsFormProps) {
           className={inputClass}
         />
         <p className="text-xs text-zinc-500 mt-1">{t('form.modelHint')}</p>
+      </div>
+
+      <div>
+        <label htmlFor="settings-vision-model" className="block text-sm font-medium mb-1.5">{t('form.visionModel')}</label>
+        <input
+          id="settings-vision-model"
+          type="text"
+          name="visionModel"
+          autoComplete="off"
+          spellCheck={false}
+          defaultValue={initialData.visionModel}
+          placeholder="grok-2-vision-1212"
+          className={inputClass}
+        />
+        <p className="text-xs text-zinc-500 mt-1">{t('form.visionModelHint')}</p>
       </div>
 
       <div>

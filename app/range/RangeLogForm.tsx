@@ -14,7 +14,7 @@ import type { ParsedShot, ParsedChronograph } from '@/lib/parseChronographCsv'
 interface RecipeOption {
   id: string
   name: string
-  caliber: string
+  caliber: { name: string }
 }
 
 interface RangeLogFormProps {
@@ -301,7 +301,7 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             <option value="">{t('form.recipePlaceholder')}</option>
             {recipes.map((r) => (
               <option key={r.id} value={r.id}>
-                {r.name} — {r.caliber}
+                {r.name} — {r.caliber.name}
               </option>
             ))}
           </select>

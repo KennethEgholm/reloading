@@ -25,10 +25,11 @@ export async function createLoadLog(formData: FormData) {
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
     include: {
+      caliber: true,
       projectile: true,
       propellant: true,
       primer: true,
-      cartridge: true,
+      cartridge: { include: { caliber: true } },
     },
   })
 
@@ -91,7 +92,7 @@ export async function createLoadLog(formData: FormData) {
 
         // Recipe snapshot
         recipeName: recipe.name,
-        caliber: recipe.caliber,
+        caliber: recipe.caliber.name,
         chargeGr: recipe.chargeGr,
         coal: recipe.coal,
 
@@ -110,7 +111,7 @@ export async function createLoadLog(formData: FormData) {
 
         // Cartridge snapshot (if the recipe links one)
         cartridgeBrand: recipe.cartridge?.brand ?? null,
-        cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+        cartridgeCaliber: recipe.cartridge?.caliber?.name ?? null,
         cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
 
         // Optional recipe data at time of load
@@ -168,7 +169,7 @@ export async function getRecipesForLog() {
     select: {
       id: true,
       name: true,
-      caliber: true,
+      caliber: { select: { name: true } },
     },
     orderBy: { name: 'asc' },
   })

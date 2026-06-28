@@ -6,8 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import type { Cartridge } from '@/lib/types';
+import type { CartridgeWithCaliber, CaliberOption } from '@/lib/types';
 import { useFocusTrap } from '@/lib/useFocusTrap';
+import { CaliberField } from '../CaliberField';
 
 function createCartridgeSchema(t: (key: string) => string) {
   return z.object({
@@ -25,14 +26,15 @@ type CartridgeFormData = z.output<CartridgeSchema>;
 
 interface CartridgeFormProps {
   action: (formData: FormData) => Promise<void>;
-  defaultValues?: Partial<Cartridge> | null;
+  defaultValues?: Partial<CartridgeWithCaliber> | null;
+  calibers: CaliberOption[];
   title: string;
   submitLabel: string;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function CartridgeForm({ action, defaultValues, title, submitLabel, open, onOpenChange }: CartridgeFormProps) {
+export function CartridgeForm({ action, defaultValues, calibers, title, submitLabel, open, onOpenChange }: CartridgeFormProps) {
   const t = useTranslations('cartridges');
   const cartridgeSchema = useMemo(() => createCartridgeSchema(t), [t]);
 
@@ -49,13 +51,15 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<CartridgeFormInput, unknown, CartridgeFormData>({
     resolver: zodResolver(cartridgeSchema),
     defaultValues: {
       brand: defaultValues?.brand || '',
-      caliber: defaultValues?.caliber || '',
+      caliber: defaultValues?.caliber?.name || '',
       waterCapacityGr: defaultValues?.waterCapacityGr ?? undefined,
       amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description || '',
@@ -86,13 +90,21 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
   const modalRef = useRef<HTMLDivElement>(null);
   useFocusTrap(modalRef, isOpen);
 
+  // Auto-focus the first field ONLY when the modal transitions to open. Keyed
+  // solely on isOpen so it does NOT re-run on every render — otherwise editing a
+  // controlled field (e.g. picking "Add new" in CaliberField, which re-renders
+  // the form) would steal focus back to the brand input mid-interaction.
   useEffect(() => {
     if (!isOpen) return;
-
     const focusTimer = setTimeout(() => {
       brandInputRef.current?.focus();
       brandInputRef.current?.select();
     }, 0);
+    return () => clearTimeout(focusTimer);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
 
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -114,7 +126,6 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
 
     document.addEventListener('keydown', handleGlobalKeyDown);
     return () => {
-      clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleGlobalKeyDown);
     };
   }, [isOpen, setIsOpen, reset, handleSubmit, onSubmit]);
@@ -123,7 +134,7 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
     if (defaultValues?.id) {
       reset({
         brand: defaultValues.brand || '',
-        caliber: defaultValues.caliber || '',
+        caliber: defaultValues.caliber?.name || '',
         waterCapacityGr: defaultValues.waterCapacityGr ?? undefined,
         amount: defaultValues.amount ?? 0,
         description: defaultValues.description || '',
@@ -174,13 +185,13 @@ export function CartridgeForm({ action, defaultValues, title, submitLabel, open,
 
               <div>
                 <label htmlFor="cartridge-caliber" className="block text-sm font-medium mb-1.5">{t('form.caliber')}</label>
-                <input
+                <input type="hidden" {...register('caliber')} />
+                <CaliberField
                   id="cartridge-caliber"
-                  autoComplete="off"
-                  aria-describedby="cartridge-caliber-error"
-                  {...register('caliber')}
-                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
-                  placeholder={t('form.caliberPlaceholder')}
+                  describedBy="cartridge-caliber-error"
+                  calibers={calibers}
+                  value={watch('caliber') ?? ''}
+                  onChange={(name) => setValue('caliber', name, { shouldValidate: true })}
                 />
                 {errors.caliber && <p id="cartridge-caliber-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.caliber.message}</p>}
               </div>

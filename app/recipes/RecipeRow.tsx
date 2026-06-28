@@ -10,7 +10,8 @@ import type {
   Projectile,
   Propellant,
   Primer,
-  Cartridge,
+  CartridgeWithCaliber,
+  CaliberOption,
 } from '@/lib/types';
 
 interface RecipeRowProps {
@@ -18,10 +19,11 @@ interface RecipeRowProps {
   projectiles: Projectile[];
   propellants: Propellant[];
   primers: Primer[];
-  cartridges: Cartridge[];
+  cartridges: CartridgeWithCaliber[];
+  calibers: CaliberOption[];
 }
 
-export function RecipeRow({ recipe, projectiles, propellants, primers, cartridges }: RecipeRowProps) {
+export function RecipeRow({ recipe, projectiles, propellants, primers, cartridges, calibers }: RecipeRowProps) {
   const t = useTranslations('recipes');
   const [editOpen, setEditOpen] = useState(false);
 
@@ -32,7 +34,7 @@ export function RecipeRow({ recipe, projectiles, propellants, primers, cartridge
         onClick={() => setEditOpen(true)}
       >
         <td className="px-6 py-4 font-medium">{recipe.name}</td>
-        <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>
+        <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
         <td className="px-6 py-4">
           {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
         </td>
@@ -76,6 +78,7 @@ export function RecipeRow({ recipe, projectiles, propellants, primers, cartridge
         propellants={propellants}
         primers={primers}
         cartridges={cartridges}
+        calibers={calibers}
         open={editOpen}
         onOpenChange={setEditOpen}
       />

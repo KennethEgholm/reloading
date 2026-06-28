@@ -24,10 +24,25 @@ model AiSettings {
   provider    String   @default("grok")
   apiKey      String? // bearer token (stored plaintext; app has no auth)
   model       String? // e.g. "grok-3", "grok-2-latest"
+  visionModel String? // image-capable model for screenshot import, e.g. "grok-2-vision-1212"
   baseUrl     String? // e.g. "https://api.x.ai/v1"
   temperature Float? // optional call param
   maxTokens   Int? // optional call param
   updatedAt   DateTime @updatedAt
+}
+
+// Canonical cartridge designations (e.g. ".308 Win", ".30-06 Spring"),
+// referenced by recipes and cartridges. Names are stored as the user first
+// typed them; uniqueness/deduplication is enforced case-insensitively at the
+// resolver (see resolveCaliberId), so ".308 win" reuses an existing ".308 Win".
+model Caliber {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipes    Recipe[]
+  cartridges Cartridge[]
 }
 
 model Propellant {
@@ -72,20 +87,23 @@ model Primer {
 model Cartridge {
   id              String   @id @default(cuid())
   brand           String // Brand / name (e.g. "Lapua", "Starline")
-  caliber         String
+  caliberId       String
   waterCapacityGr Float? // Case water capacity in grains of water (optional)
   amount          Int      @default(0) // Number of cases in stock
   description     String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  caliber Caliber  @relation(fields: [caliberId], references: [id])
   recipes Recipe[]
+
+  @@index([caliberId])
 }
 
 model Recipe {
   id           String   @id @default(cuid())
   name         String
-  caliber      String
+  caliberId    String
   projectileId String
   propellantId String
   primerId     String?
@@ -106,12 +124,15 @@ model Recipe {
   aiModel     String? // model used, for provenance
   aiCheckedAt DateTime? // when the check was last run
 
+  caliber    Caliber    @relation(fields: [caliberId], references: [id])
   projectile Projectile @relation(fields: [projectileId], references: [id])
   propellant Propellant @relation(fields: [propellantId], references: [id])
   primer     Primer?    @relation(fields: [primerId], references: [id])
   cartridge  Cartridge? @relation(fields: [cartridgeId], references: [id])
   loadLogs   LoadLog[]
   rangeLogs  RangeLog[]
+
+  @@index([caliberId])
 }
 
 model LoadLog {

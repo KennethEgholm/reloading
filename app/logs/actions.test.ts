@@ -51,7 +51,7 @@ function makeRecipe(overrides: Record<string, unknown> = {}) {
   return {
     id: 'recipe-1',
     name: 'Test Load',
-    caliber: '.308',
+    caliber: { id: 'cal-1', name: '.308' },
     chargeGr: 40,
     coal: 2.8,
     calculatedV0: null,
@@ -64,7 +64,7 @@ function makeRecipe(overrides: Record<string, unknown> = {}) {
     projectile: { id: 'proj-1', brand: 'Sierra', type: 'GameKing', weightGr: 168, amount: 1000 },
     propellant: { id: 'prop-1', brand: 'Vihtavuori', type: 'N140', amountGr: 1000 },
     primer: { id: 'prim-1', brand: 'CCI', type: 'LARGE_RIFLE', amount: 1000 },
-    cartridge: { id: 'cart-1', brand: 'Lapua', caliber: '.308', waterCapacityGr: 56.0, amount: 100 },
+    cartridge: { id: 'cart-1', brand: 'Lapua', caliber: { id: 'cal-1', name: '.308' }, waterCapacityGr: 56.0, amount: 100 },
     ...overrides,
   }
 }

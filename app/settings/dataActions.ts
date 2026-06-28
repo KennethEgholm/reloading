@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma'
 import { getTranslations } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
+import { resolveCaliberId } from '@/lib/resolveCaliber'
 
 export interface InventoryExport {
   version: number
@@ -18,7 +19,7 @@ export async function exportInventory(): Promise<string> {
     prisma.primer.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.projectile.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.propellant.findMany({ orderBy: { createdAt: 'asc' } }),
-    prisma.cartridge.findMany({ orderBy: { createdAt: 'asc' } }),
+    prisma.cartridge.findMany({ include: { caliber: true }, orderBy: { createdAt: 'asc' } }),
   ])
 
   const data: InventoryExport = {
@@ -47,7 +48,7 @@ export async function exportInventory(): Promise<string> {
     })),
     cartridges: cartridges.map((c) => ({
       brand: c.brand,
-      caliber: c.caliber,
+      caliber: c.caliber.name,
       waterCapacityGr: c.waterCapacityGr,
       amount: c.amount,
       description: c.description,
@@ -71,14 +72,14 @@ export async function previewInventoryImport(jsonString: string): Promise<Import
     prisma.primer.findMany(),
     prisma.projectile.findMany(),
     prisma.propellant.findMany(),
-    prisma.cartridge.findMany(),
+    prisma.cartridge.findMany({ include: { caliber: true } }),
   ])
 
   return {
     primers: countMatchExisting(data.primers, existingPrimers, (i) => i.brand + '|' + i.type, (e) => e.brand + '|' + e.type),
     projectiles: countMatchExisting(data.projectiles, existingProjectiles, (i) => i.brand + '|' + i.caliber, (e) => e.brand + '|' + e.caliber),
     propellants: countMatchExisting(data.propellants, existingPropellants, (i) => i.brand + '|' + i.type, (e) => e.brand + '|' + e.type),
-    cartridges: countMatchExisting(data.cartridges, existingCartridges, (i) => i.brand + '|' + i.caliber, (e) => e.brand + '|' + e.caliber),
+    cartridges: countMatchExisting(data.cartridges, existingCartridges, (i) => i.brand + '|' + i.caliber, (e) => e.brand + '|' + e.caliber.name),
   }
 }
 
@@ -90,13 +91,13 @@ export async function executeInventoryImport(jsonString: string): Promise<Import
     prisma.primer.findMany(),
     prisma.projectile.findMany(),
     prisma.propellant.findMany(),
-    prisma.cartridge.findMany(),
+    prisma.cartridge.findMany({ include: { caliber: true } }),
   ])
 
   const primerMap = new Map(existingPrimers.map((p) => [p.brand + '|' + p.type, p]))
   const projectileMap = new Map(existingProjectiles.map((p) => [p.brand + '|' + p.caliber, p]))
   const propellantMap = new Map(existingPropellants.map((p) => [p.brand + '|' + p.type, p]))
-  const cartridgeMap = new Map(existingCartridges.map((c) => [c.brand + '|' + c.caliber, c]))
+  const cartridgeMap = new Map(existingCartridges.map((c) => [c.brand + '|' + c.caliber.name, c]))
 
   let primerCreated = 0, primerUpdated = 0
   let projectileCreated = 0, projectileUpdated = 0
@@ -146,7 +147,8 @@ export async function executeInventoryImport(jsonString: string): Promise<Import
       await prisma.cartridge.update({ where: { id: existing.id }, data: { waterCapacityGr: item.waterCapacityGr, amount: item.amount, description: item.description } })
       cartridgeUpdated++
     } else {
-      await prisma.cartridge.create({ data: { brand: item.brand, caliber: item.caliber, waterCapacityGr: item.waterCapacityGr, amount: item.amount, description: item.description } })
+      const caliberId = await resolveCaliberId(item.caliber)
+      await prisma.cartridge.create({ data: { brand: item.brand, caliberId, waterCapacityGr: item.waterCapacityGr, amount: item.amount, description: item.description } })
       cartridgeCreated++
     }
   }

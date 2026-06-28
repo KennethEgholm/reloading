@@ -29,7 +29,7 @@ export default async function RecipeDetailPage({
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="font-display text-4xl font-semibold tracking-tight">{recipe.name}</h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{recipe.caliber}</p>
+          <p className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{recipe.caliber.name}</p>
         </div>
 
         <div className="flex gap-3">

@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 interface RecipeOption {
   id: string
   name: string
-  caliber: string
+  caliber: { name: string }
 }
 
 interface LoadLogFormProps {
@@ -52,7 +52,7 @@ export function LoadLogForm({ recipes, defaultRecipeId }: LoadLogFormProps) {
           <option value="">{t('form.recipePlaceholder')}</option>
           {recipes.map((recipe) => (
             <option key={recipe.id} value={recipe.id}>
-              {recipe.name} — {recipe.caliber}
+              {recipe.name} — {recipe.caliber.name}
             </option>
           ))}
         </select>

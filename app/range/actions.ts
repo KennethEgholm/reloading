@@ -9,6 +9,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { createRangeLogInputSchema, createRangeLogUpdateInputSchema, shotsSchema } from '@/lib/schemas'
 import { computeAggregates } from '@/lib/parseChronographCsv'
+import { getImageMimeType } from '@/lib/imageType'
 import type { DeleteResult } from '@/lib/types'
 import type { Prisma } from '@prisma/client'
 
@@ -51,27 +52,6 @@ type PendingUpload = {
 }
 
 /**
- * Detects the MIME type of an image by inspecting its magic bytes.
- * Returns null if the buffer is not a recognized image format.
- */
-function getImageMimeType(buffer: Buffer): string | null {
-  if (buffer.length < 12) return null
-  if (buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return 'image/jpeg'
-  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return 'image/png'
-  if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x38) return 'image/gif'
-  if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
-    if (buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50) return 'image/webp'
-  }
-  // ISO Base Media File Format (AVIF, HEIC)
-  if (buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) {
-    const brand = buffer.slice(8, 12).toString('ascii')
-    if (brand === 'avif' || brand === 'avis') return 'image/avif'
-    if (brand === 'heic' || brand === 'heix' || brand === 'mif1' || brand === 'hevc') return 'image/heic'
-  }
-  return null
-}
-
-/**
  * Validates an uploaded image and returns a pending upload descriptor.
  * Throws if the file is empty, too large, or not a recognized image.
  */
@@ -106,7 +86,7 @@ async function cleanupUploadFiles(filenames: string[]) {
 
 // A recipe with the component relations needed to build a RangeLog snapshot.
 type RecipeForSnapshot = Prisma.RecipeGetPayload<{
-  include: { projectile: true; propellant: true; primer: true; cartridge: true }
+  include: { caliber: true; projectile: true; propellant: true; primer: true; cartridge: { include: { caliber: true } } }
 }>
 
 // Builds the frozen-recipe snapshot fields from a fetched recipe. Written onto
@@ -116,7 +96,7 @@ type RecipeForSnapshot = Prisma.RecipeGetPayload<{
 function recipeSnapshot(recipe: RecipeForSnapshot) {
   return {
     recipeName: recipe.name,
-    caliber: recipe.caliber,
+    caliber: recipe.caliber.name,
     chargeGr: recipe.chargeGr,
     coal: recipe.coal,
     projectileBrand: recipe.projectile.brand,
@@ -127,7 +107,7 @@ function recipeSnapshot(recipe: RecipeForSnapshot) {
     primerBrand: recipe.primer?.brand ?? null,
     primerType: recipe.primer?.type ?? null,
     cartridgeBrand: recipe.cartridge?.brand ?? null,
-    cartridgeCaliber: recipe.cartridge?.caliber ?? null,
+    cartridgeCaliber: recipe.cartridge?.caliber?.name ?? null,
     cartridgeWaterCapacityGr: recipe.cartridge?.waterCapacityGr ?? null,
     calculatedV0: recipe.calculatedV0,
     measuredV0: recipe.measuredV0,
@@ -139,7 +119,7 @@ export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
     include: {
       recipe: {
-        select: { id: true, name: true, caliber: true },
+        select: { id: true, name: true, caliber: { select: { name: true } } },
       },
       mainImage: {
         select: { id: true, filename: true, description: true },
@@ -157,7 +137,7 @@ export async function getRangeLogById(id: string) {
     where: { id },
     include: {
       recipe: {
-        select: { id: true, name: true, caliber: true },
+        select: { id: true, name: true, caliber: { select: { name: true } } },
       },
       mainImage: {
         select: { id: true, filename: true, description: true },
@@ -170,7 +150,7 @@ export async function getRangeLogById(id: string) {
 
 export async function getRecipesForRangeLog() {
   return prisma.recipe.findMany({
-    select: { id: true, name: true, caliber: true },
+    select: { id: true, name: true, caliber: { select: { name: true } } },
     orderBy: { name: 'asc' },
   })
 }
@@ -233,7 +213,7 @@ export async function createRangeLog(formData: FormData) {
   // createLoadLog). The snapshot survives later recipe edits/deletion.
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
-    include: { projectile: true, propellant: true, primer: true, cartridge: true },
+    include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } } },
   })
   if (!recipe) {
     throw new Error(t('errors.recipeNotFound'))
@@ -467,7 +447,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
   if (effectiveRecipeId !== null && effectiveRecipeId !== existing?.recipeId) {
     linkedRecipe = await prisma.recipe.findUnique({
       where: { id: effectiveRecipeId },
-      include: { projectile: true, propellant: true, primer: true, cartridge: true },
+      include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } } },
     })
     if (!linkedRecipe) {
       throw new Error(t('errors.recipeNotFound'))

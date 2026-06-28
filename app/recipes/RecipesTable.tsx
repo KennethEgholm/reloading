@@ -11,7 +11,8 @@ import type {
   Projectile,
   Propellant,
   Primer,
-  Cartridge,
+  CartridgeWithCaliber,
+  CaliberOption,
 } from '@/lib/types';
 
 // Compact verdict badge for the list. Renders nothing until a check has run.
@@ -46,10 +47,11 @@ interface RecipesTableProps {
   projectiles: Projectile[];
   propellants: Propellant[];
   primers: Primer[];
-  cartridges: Cartridge[];
+  cartridges: CartridgeWithCaliber[];
+  calibers: CaliberOption[];
 }
 
-export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges }: RecipesTableProps) {
+export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges, calibers }: RecipesTableProps) {
   const t = useTranslations('recipes');
   const router = useRouter();
   const [editingRecipe, setEditingRecipe] = useState<RecipeWithRelations | null>(null);
@@ -95,7 +97,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                 }}
               >
                 <td className="px-6 py-4 font-medium">{recipe.name}</td>
-                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber}</td>
+                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
                 <td className="px-6 py-4">
                   {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
                 </td>
@@ -152,6 +154,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
         propellants={propellants}
         primers={primers}
         cartridges={cartridges}
+        calibers={calibers}
         open={!!editingRecipe}
         onOpenChange={(open) => {
           if (!open) setEditingRecipe(null);

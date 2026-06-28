@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getTranslations } from 'next-intl/server';
 import { prisma } from '@/lib/prisma';
 import { createCartridgeSchema, formatZodError } from '@/lib/schemas';
+import { resolveCaliberId } from '@/lib/resolveCaliber';
 import type { DeleteResult } from '@/lib/types';
 
 function parseCartridgeForm(formData: FormData, t: (key: string) => string) {
@@ -22,9 +23,10 @@ function parseCartridgeForm(formData: FormData, t: (key: string) => string) {
 
 export async function createCartridge(formData: FormData) {
   const t = await getTranslations('cartridges');
-  const data = parseCartridgeForm(formData, t);
+  const { caliber, ...data } = parseCartridgeForm(formData, t);
+  const caliberId = await resolveCaliberId(caliber, t('form.validation.caliberRequired'));
 
-  await prisma.cartridge.create({ data });
+  await prisma.cartridge.create({ data: { ...data, caliberId } });
 
   revalidatePath('/cartridges');
   revalidatePath('/');
@@ -32,11 +34,12 @@ export async function createCartridge(formData: FormData) {
 
 export async function updateCartridge(id: string, formData: FormData) {
   const t = await getTranslations('cartridges');
-  const data = parseCartridgeForm(formData, t);
+  const { caliber, ...data } = parseCartridgeForm(formData, t);
+  const caliberId = await resolveCaliberId(caliber, t('form.validation.caliberRequired'));
 
   await prisma.cartridge.update({
     where: { id },
-    data,
+    data: { ...data, caliberId },
   });
 
   revalidatePath('/cartridges');

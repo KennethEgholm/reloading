@@ -8,6 +8,7 @@ export type DeleteResult = { ok: true } | { ok: false; error: string };
 // Re-export the Prisma model types so components import domain shapes from one
 // place rather than typing rows as `any`.
 export type {
+  Caliber,
   Cartridge,
   Primer,
   Projectile,
@@ -18,15 +19,25 @@ export type {
   RangeLogImage,
 } from '@prisma/client'
 
+// A Cartridge with its caliber relation resolved — the shape returned by the
+// cartridge list query and consumed by CartridgesTable / CartridgeForm.
+export type CartridgeWithCaliber = Prisma.CartridgeGetPayload<{
+  include: { caliber: true }
+}>
+
+// Minimal Caliber option passed to forms for the caliber dropdown.
+export type CaliberOption = { id: string; name: string }
+
 // A Recipe with its component relations resolved — the shape returned by the
 // recipe list/detail queries (which `include` projectile/propellant/primer/
 // cartridge) and consumed by RecipeRow / RecipesTable / RecipeForm.
 export type RecipeWithRelations = Prisma.RecipeGetPayload<{
   include: {
+    caliber: true
     projectile: true
     propellant: true
     primer: true
-    cartridge: true
+    cartridge: { include: { caliber: true } }
   }
 }>
 
@@ -34,7 +45,7 @@ export type RecipeWithRelations = Prisma.RecipeGetPayload<{
 // main image are selected down to a few fields and an images count is added.
 export type RangeLogListItem = Prisma.RangeLogGetPayload<{
   include: {
-    recipe: { select: { id: true; name: true; caliber: true } }
+    recipe: { select: { id: true; name: true; caliber: { select: { name: true } } } }
     mainImage: { select: { id: true; filename: true; description: true } }
     _count: { select: { images: true } }
   }
@@ -45,7 +56,7 @@ export type RangeLogListItem = Prisma.RangeLogGetPayload<{
 // `initialData` of RangeLogForm in edit/view mode.
 export type RangeLogWithImages = Prisma.RangeLogGetPayload<{
   include: {
-    recipe: { select: { id: true; name: true; caliber: true } }
+    recipe: { select: { id: true; name: true; caliber: { select: { name: true } } } }
     mainImage: { select: { id: true; filename: true; description: true } }
     images: true
     shots: { orderBy: { shotIndex: 'asc' } }
