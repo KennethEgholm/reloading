@@ -4,7 +4,11 @@ import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { CartridgeForm } from './CartridgeForm';
 import { DeleteCartridgeButton } from './DeleteCartridgeButton';
+import { SortIndicator } from '../SortIndicator';
+import { useSortBy } from '@/lib/useSortBy';
 import type { Cartridge } from '@/lib/types';
+
+type SortKey = 'brand' | 'caliber' | 'waterCapacityGr' | 'amount' | 'description';
 
 interface CartridgesTableProps {
   cartridges: Cartridge[];
@@ -15,10 +19,23 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
   const locale = useLocale();
   const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
   const [editingCartridge, setEditingCartridge] = useState<Cartridge | null>(null);
+  const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Cartridge, SortKey>(cartridges, 'brand');
 
   const handleRowClick = (cartridge: Cartridge) => {
     setEditingCartridge(cartridge);
   };
+
+  const sortableHeader = (key: SortKey, label: string, align: 'left' | 'right' | 'center' = 'left') => (
+    <th
+      className={`px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400 cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-200 text-${align}`}
+      onClick={() => toggleSort(key)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''} ${align === 'center' ? 'justify-center w-full' : ''}`}>
+        {label}
+        <SortIndicator active={sortKey === key} direction={sortKey === key ? sortDirection : null} />
+      </span>
+    </th>
+  );
 
   return (
     <>
@@ -26,16 +43,16 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.brand')}</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.caliber')}</th>
-              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.waterCapacity')}</th>
-              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.amount')}</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.description')}</th>
+              {sortableHeader('brand', t('table.brand'))}
+              {sortableHeader('caliber', t('table.caliber'))}
+              {sortableHeader('waterCapacityGr', t('table.waterCapacity'), 'right')}
+              {sortableHeader('amount', t('table.amount'), 'right')}
+              {sortableHeader('description', t('table.description'))}
               <th className="w-40"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {cartridges.length === 0 && (
+            {sorted.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                   {t('table.empty')}
@@ -43,7 +60,7 @@ export function CartridgesTable({ cartridges }: CartridgesTableProps) {
               </tr>
             )}
 
-            {cartridges.map((cartridge) => (
+            {sorted.map((cartridge) => (
               <tr
                 key={cartridge.id}
                 tabIndex={0}

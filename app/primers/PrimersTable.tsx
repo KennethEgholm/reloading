@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { PrimerForm } from './PrimerForm';
 import { DeleteButton } from './DeleteButton';
+import { SortIndicator } from '../SortIndicator';
+import { useSortBy } from '@/lib/useSortBy';
 import type { Primer } from '@/lib/types';
+
+type SortKey = 'brand' | 'type' | 'magnum' | 'amount' | 'description';
 
 interface PrimersTableProps {
   primers: Primer[];
@@ -13,10 +17,23 @@ interface PrimersTableProps {
 export function PrimersTable({ primers }: PrimersTableProps) {
   const t = useTranslations('primers');
   const [editingPrimer, setEditingPrimer] = useState<Primer | null>(null);
+  const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Primer, SortKey>(primers, 'brand');
 
   const handleRowClick = (primer: Primer) => {
     setEditingPrimer(primer);
   };
+
+  const sortableHeader = (key: SortKey, label: string, align: 'left' | 'right' | 'center' = 'left') => (
+    <th
+      className={`px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400 cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-200 text-${align}`}
+      onClick={() => toggleSort(key)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''} ${align === 'center' ? 'justify-center w-full' : ''}`}>
+        {label}
+        <SortIndicator active={sortKey === key} direction={sortKey === key ? sortDirection : null} />
+      </span>
+    </th>
+  );
 
   return (
     <>
@@ -24,16 +41,16 @@ export function PrimersTable({ primers }: PrimersTableProps) {
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.brand')}</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.type')}</th>
-              <th className="text-center px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.magnum')}</th>
-              <th className="text-right px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.amount')}</th>
-              <th className="text-left px-6 py-3 font-medium text-zinc-600 dark:text-zinc-400">{t('table.description')}</th>
+              {sortableHeader('brand', t('table.brand'))}
+              {sortableHeader('type', t('table.type'))}
+              {sortableHeader('magnum', t('table.magnum'), 'center')}
+              {sortableHeader('amount', t('table.amount'), 'right')}
+              {sortableHeader('description', t('table.description'))}
               <th className="w-40"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {primers.length === 0 && (
+            {sorted.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                   {t('table.empty')}
@@ -41,7 +58,7 @@ export function PrimersTable({ primers }: PrimersTableProps) {
               </tr>
             )}
 
-            {primers.map((primer) => (
+            {sorted.map((primer) => (
               <tr
                 key={primer.id}
                 tabIndex={0}
