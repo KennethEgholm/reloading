@@ -117,9 +117,6 @@ export default async function RootLayout({
                     <Settings size={20} aria-hidden="true" />
                     {t('settings')}
                   </Link>
-                  <span className="text-xs text-zinc-500 dark:text-zinc-500">
-                    {t('personalInventory')}
-                  </span>
                 </div>
               </div>
             </nav>
