@@ -735,10 +735,10 @@
     },
     "data": {
       "title": "Data",
-      "export": "Eksportér lager",
-      "exportHint": "Download alle dine lagervarer (fænghætter, projektiler, krudt, hylstre) som en JSON-fil.",
-      "import": "Importér lager",
-      "importHint": "Upload en tidligere eksporteret JSON-fil for at flette varer ind i dit lager.",
+      "export": "Eksportér",
+      "exportHint": "Download dine data som en JSON-fil. Lager, opskrifter, læsse-log, skydebane-sessions eller det hele på én gang.",
+      "import": "Importér",
+      "importHint": "Upload en tidligere eksporteret JSON-fil. Filtypen registreres automatisk.",
       "preview": "Forhåndsvisning",
       "confirm": "Bekræft import",
       "cancel": "Annullér",
@@ -749,10 +749,18 @@
       "projectiles": "Projektiler",
       "propellants": "Krudt",
       "cartridges": "Hylstre",
-      "invalidFile": "Kunne ikke læse JSON-filen. Sikr at det er en gyldig lager-eksport.",
+      "recipes": "Opskrifter",
+      "loadLogs": "Læsse-log",
+      "rangeLogs": "Skydebane-sessions",
+      "exportInventory": "Eksportér lager",
+      "exportRecipes": "Eksportér opskrifter",
+      "exportLoadLogs": "Eksportér læsse-log",
+      "exportRangeLogs": "Eksportér skydebane-sessions",
+      "exportEverything": "Eksportér alt",
+      "invalidFile": "Kunne ikke læse JSON-filen. Sikr at det er en gyldig eksport.",
       "importSuccess": "Import fuldført: {created} oprettet, {updated} opdateret.",
       "importFailed": "Import mislykkedes: {error}",
-      "noData": "Ingen lagervarer fundet i filen."
+      "noData": "Ingen poster fundet i filen."
     }
   },
   "errors": {

@@ -735,10 +735,10 @@
     },
     "data": {
       "title": "Data",
-      "export": "Export inventory",
-      "exportHint": "Download all your inventory items (primers, projectiles, propellants, cartridges) as a JSON file.",
-      "import": "Import inventory",
-      "importHint": "Upload a previously exported JSON file to merge items into your inventory.",
+      "export": "Export",
+      "exportHint": "Download your data as a JSON file. Inventory, recipes, load logs, range sessions, or everything at once.",
+      "import": "Import",
+      "importHint": "Upload a previously exported JSON file. The file type is detected automatically.",
       "preview": "Preview",
       "confirm": "Confirm import",
       "cancel": "Cancel",
@@ -749,10 +749,18 @@
       "projectiles": "Projectiles",
       "propellants": "Propellants",
       "cartridges": "Cartridges",
-      "invalidFile": "Could not read the JSON file. Make sure it is a valid inventory export.",
+      "recipes": "Recipes",
+      "loadLogs": "Load Logs",
+      "rangeLogs": "Range Sessions",
+      "exportInventory": "Export inventory",
+      "exportRecipes": "Export recipes",
+      "exportLoadLogs": "Export load logs",
+      "exportRangeLogs": "Export range sessions",
+      "exportEverything": "Export everything",
+      "invalidFile": "Could not read the JSON file. Make sure it is a valid export.",
       "importSuccess": "Import complete: {created} created, {updated} updated.",
       "importFailed": "Import failed: {error}",
-      "noData": "No inventory items found in the file."
+      "noData": "No records found in the file."
     }
   },
   "errors": {
