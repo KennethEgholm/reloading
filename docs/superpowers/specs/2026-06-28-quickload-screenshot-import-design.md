@@ -16,10 +16,6 @@ not replace it.
 
 ## Non-goals
 
-- Replacing or fixing the existing `.dat`-file import (`QuickLoadImport.tsx`,
-  `parseQuickLoadDat.ts`). That is a separate, parallel feature. (Note: its
-  JSX currently references `editable.calculatedV0`/`fillRate`/`calcV0` fields
-  that don't exist in its state — out of scope here.)
 - Storing the uploaded screenshot. The image is sent to the LLM in-memory and
   discarded; nothing is written to disk or the database.
 - Supporting non-OpenAI-compatible providers (current infra assumes
@@ -75,8 +71,10 @@ messages: [
   read it from the form, persist in `create`/`update` upsert.
 - `app/settings/SettingsForm.tsx`: add a "Vision model" text input
   (placeholder e.g. `grok-2-vision-1212`) with a short hint.
-- Extraction uses `settings.visionModel ?? settings.model` so an unset vision
-  model falls back to the main model.
+- Extraction uses `settings.visionModel` and does NOT fall back to the main
+  `model`. If `visionModel` is unset, the action throws a clear translated
+  error telling the user to configure a vision model in settings (the main
+  text model may not accept images).
 
 ### 3. Server action — `app/recipes/actions.ts`
 
@@ -87,8 +85,9 @@ messages: [
   detection (reuse the approach in `app/range/actions.ts` —
   `getImageMimeType`; extract to a shared `lib/` helper or duplicate the small
   function). Throw translated errors otherwise.
-- Load `AiSettings`; require `apiKey` and a vision model (`visionModel ??
-  model`), else throw `errors.configureAi`-style message.
+- Load `AiSettings`; require `apiKey` (else `errors.configureAi`-style
+  message) and require `visionModel` specifically (else a translated
+  "configure a vision model" error — no fallback to the text `model`).
 - Base64-encode the buffer, call `visionCompletion` with `responseFormat:
   'json_object'`.
 - `parseJsonFromModel` → map into `ParsedQuickLoad`; coerce numerics safely
@@ -116,6 +115,25 @@ fillRate: number | null
 The `.dat` parser sets both to `null` (QuickLoad `.dat` doesn't carry them in
 the current parse). The existing `importRecipeFromQuickLoad` /
 `QuickLoadImportData` already accept `calculatedV0` and `fillRate`.
+
+### 4b. Fix the broken `.dat` import — `app/recipes/QuickLoadImport.tsx`
+
+In scope for this work because it currently won't compile (breaking `tsc`/
+build for everything here). Its JSX references `editable.calculatedV0` and
+`editable.fillRate`, and shows a `qlImport.calcV0` / `qlImport.fillRate`
+field, but the `editable` state object only has `name, caliber, chargeGr,
+coal, measuredV0, notes` — and `handleSave` omits the now-required
+`calculatedV0` / `fillRate` from the `QuickLoadImportData` it builds. Fix:
+
+- Add `calculatedV0` and `fillRate` to the `editable` state shape, its
+  initializer, and the on-close reset.
+- Populate them from `parsed` in `handleFile` (`String(result.calculatedV0 ||
+  '')`, `String(result.fillRate || '')`) — both `null` for `.dat`, so the
+  fields render empty, which is correct.
+- Include `calculatedV0` / `fillRate` in the `QuickLoadImportData` built in
+  `handleSave`.
+- Confirm `qlImport.calcV0` and `qlImport.fillRate` i18n keys exist in
+  `en.json` / `da.json`; add them if missing.
 
 ### 5. Component — `app/recipes/QuickLoadImageImport.tsx` (new)
 
@@ -149,7 +167,11 @@ in `messages/en.json` and `messages/da.json`.
 - `extractQuickLoadFromImage` (`app/recipes/actions.test.ts`): rejects
   oversized and non-image input; maps a well-formed model JSON response to a
   correct `ParsedQuickLoad`; throws a friendly error on unparseable model
-  output and on missing AI config. Mock settings + `fetch`/vision.
+  output, on missing AI config, and specifically when `visionModel` is unset
+  (no fallback to the text model). Mock settings + `fetch`/vision.
+- `parseQuickLoadDat` (`lib/parseQuickLoadDat.test.ts`): the new
+  `calculatedV0` / `fillRate` fields are present and `null` for a parsed
+  `.dat` file (guards the format extension).
 
 ## Open decisions resolved
 
