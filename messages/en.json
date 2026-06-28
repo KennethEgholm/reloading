@@ -10,7 +10,7 @@
     "range": "Range Sessions",
     "settings": "Settings",
     "personalInventory": "Personal Inventory",
-    "materials": "Materials",
+    "materials": "Personal Inventory",
     "primers": "Primers",
     "projectiles": "Projectiles",
     "propellants": "Propellants",
@@ -62,7 +62,7 @@
         "possible": "Possible"
       },
       "noRecipes": "No recipes saved yet.",
-      "materials": "Materials",
+      "materials": "Personal Inventory",
       "materialsSummary": "({primers} primers • {projectiles} projectiles • {propellants} propellants • {cartridges} cartridges)",
       "primers": "Primers",
       "primerSummary": "({count} types • {pieces} pieces)",
@@ -686,6 +686,27 @@
       "baseUrlInvalid": "Base URL must be a valid URL",
       "temperatureRange": "Temperature must be between 0 and 2",
       "maxTokensPositive": "Max tokens must be a positive integer"
+    },
+    "data": {
+      "title": "Data",
+      "export": "Export inventory",
+      "exportHint": "Download all your inventory items (primers, projectiles, propellants, cartridges) as a JSON file.",
+      "import": "Import inventory",
+      "importHint": "Upload a previously exported JSON file to merge items into your inventory.",
+      "preview": "Preview",
+      "confirm": "Confirm import",
+      "cancel": "Cancel",
+      "created": "{count} new",
+      "updated": "{count} updated",
+      "total": "{count} items",
+      "primers": "Primers",
+      "projectiles": "Projectiles",
+      "propellants": "Propellants",
+      "cartridges": "Cartridges",
+      "invalidFile": "Could not read the JSON file. Make sure it is a valid inventory export.",
+      "importSuccess": "Import complete: {created} created, {updated} updated.",
+      "importFailed": "Import failed: {error}",
+      "noData": "No inventory items found in the file."
     }
   },
   "errors": {

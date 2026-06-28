@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 import Image from "next/image";
 import Link from "next/link";
 import { Settings } from "lucide-react";
-import { MaterialsMenu } from "./MaterialsMenu";
+import { InventoryMenu } from "./InventoryMenu";
 import { ThemeApplier } from "./ThemeApplier";
 import { ThemeScriptRegistry } from "./ThemeScriptRegistry";
 
@@ -85,7 +85,7 @@ export default async function RootLayout({
                     <span className="font-semibold text-lg tracking-tight">{t('home')}</span>
                   </Link>
                   <div className="flex items-center gap-1 text-sm">
-                    <MaterialsMenu />
+                    <InventoryMenu />
                     <Link
                       href="/recipes"
                       className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"

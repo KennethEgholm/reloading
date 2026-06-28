@@ -13,7 +13,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), caliber, amount, description.
   - Propellants: brand, type, amount (grams, displayed to 1 decimal), description.
   - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
-  - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then materials/inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
+  - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
 
 - **Recipes**
   - Link one projectile + propellant + primer.
@@ -54,6 +54,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.
   - **Test connection** button validates the key against the provider (xAI is OpenAI-compatible: `GET /models` with a bearer token) and reports success/failure via a toast.
   - Settings (including the API key) are stored in Postgres as a singleton row. The key is write-only in the UI: it is never sent back to the browser, only a masked `••••last4` placeholder; leave the field blank to keep the existing key. Note: the app has no authentication, so anyone who can reach it can change these.
+  - **Data**: Export all inventory items (primers, projectiles, propellants, cartridges) as a JSON file. Import a previously exported JSON file — shows a preview (how many will be created vs updated) before merging by brand+type (or brand+caliber). Non-destructive: existing items not in the file are left untouched.
 
 - **Consistent UX across the app**
   - Click any row to edit (or view for range sessions).
@@ -111,7 +112,7 @@ pnpm dev
 ## Project Structure (key parts)
 
 - `app/` – Next.js App Router
-  - `page.tsx` – Overview dashboard (Range Sessions + Load Logs first in cards + sections, then Recipes, then materials inventory tables; reuses *Row components for previews)
+  - `page.tsx` – Overview dashboard (Range Sessions + Load Logs first in cards + sections, then Recipes, then inventory tables; reuses *Row components for previews)
   - `primers/`, `projectiles/`, `propellants/`, `cartridges/` – inventory sections (table + form + actions)
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)

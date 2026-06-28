@@ -5,12 +5,12 @@ import Image from 'next/image'
 import { Boxes, ChevronDown } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-export function MaterialsMenu() {
+export function InventoryMenu() {
   const t = useTranslations('nav')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  const materials = [
+  const items = [
     { href: '/primers', label: t('primers'), icon: '/images/primer.svg' },
     { href: '/projectiles', label: t('projectiles'), icon: '/images/projectile.svg' },
     { href: '/propellants', label: t('propellants'), icon: '/images/propellant.svg' },
@@ -44,7 +44,7 @@ export function MaterialsMenu() {
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       >
         <Boxes size={20} aria-hidden="true" />
-        {t('materials')}
+        {t('personalInventory')}
         <ChevronDown size={16} aria-hidden="true" className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -53,7 +53,7 @@ export function MaterialsMenu() {
           role="menu"
           className="absolute left-0 top-full mt-1 z-50 min-w-[12rem] rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-lg p-1"
         >
-          {materials.map((m) => (
+          {items.map((m) => (
             <a
               key={m.href}
               href={m.href}

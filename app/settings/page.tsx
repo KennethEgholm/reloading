@@ -4,6 +4,7 @@ import { SettingsForm } from './SettingsForm'
 import { ThemeToggle } from './ThemeToggle'
 import { ThemePicker } from './ThemePicker'
 import { LocaleSwitcher } from './LocaleSwitcher'
+import { DataCard } from './DataCard'
 
 export default async function SettingsPage() {
   const t = await getTranslations('settings')
@@ -45,6 +46,8 @@ export default async function SettingsPage() {
         </p>
         <ThemePicker />
       </div>
+
+      <DataCard />
 
       <SettingsForm
         initialData={{

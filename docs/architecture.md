@@ -15,7 +15,7 @@ graph TB
         direction TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
         I18N["i18n/request.ts · messages/{en,da}.json<br/>14 namespaces · t() / getTranslations()"]
-        SC["Server Components<br/>(pages: /, /recipes, /range,<br/>/logs, materials, /settings)"]
+        SC["Server Components<br/>(pages: /, /recipes, /range,<br/>/logs, inventory, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
         subgraph Lib["lib/"]

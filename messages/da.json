@@ -10,7 +10,7 @@
     "range": "Skydning",
     "settings": "Indstillinger",
     "personalInventory": "Personligt Lager",
-    "materials": "Materialer",
+    "materials": "Personligt Lager",
     "primers": "Fænghætter",
     "projectiles": "Projektiler",
     "propellants": "Krudt",
@@ -62,7 +62,7 @@
         "possible": "Mulige"
       },
       "noRecipes": "Ingen ladninger gemt endnu.",
-      "materials": "Materialer",
+      "materials": "Personligt Lager",
       "materialsSummary": "({primers} fænghætter • {projectiles} projektiler • {propellants} krudttyper • {cartridges} hylstre)",
       "primers": "Fænghætter",
       "primerSummary": "({count} typer • {pieces} stk.)",
@@ -686,6 +686,27 @@
       "baseUrlInvalid": "Basis-URL skal være en gyldig URL",
       "temperatureRange": "Temperatur skal være mellem 0 og 2",
       "maxTokensPositive": "Max tokens skal være et positivt heltal"
+    },
+    "data": {
+      "title": "Data",
+      "export": "Eksportér lager",
+      "exportHint": "Download alle dine lagervarer (fænghætter, projektiler, krudt, hylstre) som en JSON-fil.",
+      "import": "Importér lager",
+      "importHint": "Upload en tidligere eksporteret JSON-fil for at flette varer ind i dit lager.",
+      "preview": "Forhåndsvisning",
+      "confirm": "Bekræft import",
+      "cancel": "Annullér",
+      "created": "{count} nye",
+      "updated": "{count} opdaterede",
+      "total": "{count} varer",
+      "primers": "Fænghætter",
+      "projectiles": "Projektiler",
+      "propellants": "Krudt",
+      "cartridges": "Hylstre",
+      "invalidFile": "Kunne ikke læse JSON-filen. Sikr at det er en gyldig lager-eksport.",
+      "importSuccess": "Import fuldført: {created} oprettet, {updated} opdateret.",
+      "importFailed": "Import mislykkedes: {error}",
+      "noData": "Ingen lagervarer fundet i filen."
     }
   },
   "errors": {
