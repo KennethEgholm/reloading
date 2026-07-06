@@ -248,6 +248,9 @@
       "csvHeader": "Ikke en genkendt kronograf-eksport (mangler forventet header).",
       "csvNoShots": "Ingen skud fundet i CSV-filen (kræver mindst 2).",
       "csvParse": "Kunne ikke analysere CSV-filen.",
+      "xlsxHeader": "Ikke en genkendt Garmin-kronograf-eksport (mangler forventet header i alle ark).",
+      "xlsxNoShots": "Ingen skud fundet på tværs af ark (kræver mindst 2).",
+      "xlsxParse": "Kunne ikke analysere Garmin .xlsx-filen.",
       "csvShotsInvalid": "Ugyldige skuddata.",
       "groupsInvalid": "Ugyldige gruppedata.",
       "validation": {

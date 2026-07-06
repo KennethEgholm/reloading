@@ -248,6 +248,9 @@
       "csvHeader": "Not a recognized chronograph export (missing expected header).",
       "csvNoShots": "No shots found in the CSV (at least 2 required).",
       "csvParse": "Could not parse the CSV.",
+      "xlsxHeader": "Not a recognized Garmin chronograph export (missing expected header in any sheet).",
+      "xlsxNoShots": "No shots found across sheets (at least 2 required).",
+      "xlsxParse": "Could not parse the Garmin .xlsx file.",
       "csvShotsInvalid": "Invalid shot data.",
       "groupsInvalid": "Invalid accuracy group data.",
       "validation": {
