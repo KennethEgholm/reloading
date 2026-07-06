@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
+import readExcelFile from 'read-excel-file/browser'
 import {
   parseChronographCsv,
   ChronoCsvError,
@@ -10,6 +11,11 @@ import {
   type ParsedShot,
   type ParsedChronograph,
 } from '@/lib/parseChronographCsv'
+import {
+  extractShotsFromSheets,
+  ChronoXlsxError,
+  type GarminSheet,
+} from '@/lib/parseGarminXlsx'
 
 interface ChronographImportProps {
   onParsed: (shots: ParsedShot[], aggregates: ParsedChronograph) => void
@@ -36,9 +42,22 @@ export function ChronographImport({
   const handleFile = async (file: File | null) => {
     if (!file) return
     setErrorHint(null)
+    const name = file.name.toLowerCase()
+    const isXlsx = name.endsWith('.xlsx')
+    const isCsv = name.endsWith('.csv')
     try {
-      const text = await file.text()
-      const result = parseChronographCsv(text)
+      let result: ParsedChronograph
+      if (isXlsx) {
+        const sheets = (await readExcelFile(file)) as GarminSheet[]
+        result = computeAggregates(extractShotsFromSheets(sheets))
+      } else if (isCsv) {
+        const text = await file.text()
+        result = parseChronographCsv(text)
+      } else {
+        toast.error(t('errors.csvParse'))
+        setErrorHint(t('errors.csvParse'))
+        return
+      }
       setParsed(result)
       onParsed(result.shots, result)
     } catch (e) {
@@ -47,9 +66,14 @@ export function ChronographImport({
         const key = `errors.${e.kind === 'header' ? 'csvHeader' : e.kind === 'noShots' ? 'csvNoShots' : 'csvParse'}`
         toast.error(t(key))
         setErrorHint(t(key))
+      } else if (e instanceof ChronoXlsxError) {
+        const key = `errors.${e.kind === 'header' ? 'xlsxHeader' : e.kind === 'noShots' ? 'xlsxNoShots' : 'xlsxParse'}`
+        toast.error(t(key))
+        setErrorHint(t(key))
       } else {
-        toast.error(t('errors.csvParse'))
-        setErrorHint(t('errors.csvParse'))
+        const key = isXlsx ? 'errors.xlsxParse' : 'errors.csvParse'
+        toast.error(t(key))
+        setErrorHint(t(key))
       }
     }
   }
@@ -72,7 +96,7 @@ export function ChronographImport({
             id="chrono-csv"
             ref={fileInputRef}
             type="file"
-            accept=".csv,text/csv"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             autoComplete="off"
             onChange={(e) => handleFile(e.target.files?.[0] || null)}
             disabled={isReadOnly}
