@@ -12,7 +12,7 @@ import {
   type ParsedChronograph,
 } from '@/lib/parseChronographCsv'
 import {
-  extractShotsFromSheets,
+  parseGarminXlsxResult,
   ChronoXlsxError,
   type GarminSheet,
 } from '@/lib/parseGarminXlsx'
@@ -49,7 +49,7 @@ export function ChronographImport({
       let result: ParsedChronograph
       if (isXlsx) {
         const sheets = (await readExcelFile(file)) as GarminSheet[]
-        result = computeAggregates(extractShotsFromSheets(sheets))
+        result = parseGarminXlsxResult(sheets)
       } else if (isCsv) {
         const text = await file.text()
         result = parseChronographCsv(text)
