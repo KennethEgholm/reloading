@@ -59,7 +59,7 @@ export function RecipeAiCheck({
       {!hasResult ? (
         <p className="text-sm text-zinc-500">
           {t.rich('aiCheck.noAssessment', {
-            0: (chunks) => <span className="font-medium">{chunks}</span>,
+            runCheck: (chunks) => <span className="font-medium">{chunks}</span>,
           })}
         </p>
       ) : (
