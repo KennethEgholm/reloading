@@ -145,7 +145,11 @@
       "projectile": "Projektil",
       "propellant": "Krudt",
       "primer": "Tændhætte",
-      "cartridge": "Hylster / Patron"
+      "cartridge": "Hylster / Patron",
+      "groups": {
+        "title": "Præcisionsgrupper",
+        "sessionAvg": "Gns. for skydning: {value} MOA"
+      }
     },
     "edit": {
       "title": "Rediger skydning",
@@ -194,6 +198,18 @@
         "title": "Skud-for-skud",
         "header": "#",
         "velocity": "Hastighed (m/s)"
+      },
+      "groups": {
+        "title": "Præcisionsgrupper",
+        "hint": "Registrér hver skivegruppe: afstand (m), antal skud og spredning (mm). MOA beregnes automatisk.",
+        "add": "+ Tilføj gruppe",
+        "remove": "×",
+        "empty": "Ingen præcisionsgrupper registreret for denne skydning.",
+        "distance": "Afstand (m)",
+        "shots": "Skud",
+        "size": "Spredning (mm)",
+        "notes": "Noter",
+        "notesPlaceholder": "Gruppenoter (f.eks. \"indskydnings-skud\", \"koldt løb\")"
       }
     },
     "row": {
@@ -233,6 +249,7 @@
       "csvNoShots": "Ingen skud fundet i CSV-filen (kræver mindst 2).",
       "csvParse": "Kunne ikke analysere CSV-filen.",
       "csvShotsInvalid": "Ugyldige skuddata.",
+      "groupsInvalid": "Ugyldige gruppedata.",
       "validation": {
         "dateRequired": "Dato er påkrævet",
         "recipeRequired": "Recept er påkrævet",
@@ -334,14 +351,25 @@
       "noLoadLogs": "Ingen ladninger logget for denne recept endnu.",
       "logNewLoad": "Log ny ladning →",
       "rounds": "{count} skud",
-      "notFound": "Recept ikke fundet."
+      "notFound": "Recept ikke fundet.",
+      "accuracy": {
+        "title": "Præcision",
+        "noGroups": "Ingen præcisionsgrupper registreret for denne recept endnu.",
+        "unit": "MOA gns.",
+        "groupCount": "{count, plural, one {{count} gruppe} other {{count} grupper}}",
+        "date": "Dato",
+        "distance": "Afstand",
+        "shots": "Skud",
+        "size": "Spredning",
+        "showingRecent": "Viser {shown} af {total} grupper."
+      }
     },
     "aiCheck": {
       "title": "AI-sikkerhedstjek",
       "run": "Kør tjek",
       "reRun": "Kør tjek igen",
       "checking": "Tjekker…",
-      "noAssessment": "Ingen vurdering endnu. Klik på <0>Kør tjek</0> for at bede den konfigurerede AI-model om at gennemgå denne recept for åbenlyse fejl eller farer.",
+      "noAssessment": "Ingen vurdering endnu. Klik på <runCheck>Kør tjek</runCheck> for at bede den konfigurerede AI-model om at gennemgå denne recept for åbenlyse fejl eller farer.",
       "unsavedHint": "Tjekker de værdier, der aktuelt er indtastet ovenfor — inklusive ikke-gemte ændringer.",
       "unsavedResult": "Denne vurdering afspejler de aktuelle (ikke-gemte) værdier og blev ikke gemt. Gem recepten, og kør tjekket fra dens detaljeside for at gemme det.",
       "lastChecked": "Sidst tjekket {date}"

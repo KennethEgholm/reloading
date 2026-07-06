@@ -465,6 +465,14 @@ export interface RangeLogShotExport {
   velocity: number
 }
 
+export interface RangeGroupExport {
+  distanceM: number
+  shotCount: number
+  groupSizeMm: number
+  moa: number
+  notes: string | null
+}
+
 export interface RangeLogExportItem {
   date: string
   location: string | null
@@ -494,6 +502,7 @@ export interface RangeLogExportItem {
   measuredV0: number | null
   fillRate: number | null
   shots: RangeLogShotExport[]
+  groups: RangeGroupExport[]
 }
 
 export interface RangeLogsExport {
@@ -504,7 +513,10 @@ export interface RangeLogsExport {
 
 export async function exportRangeLogs(): Promise<string> {
   const logs = await prisma.rangeLog.findMany({
-    include: { shots: { orderBy: { shotIndex: 'asc' } } },
+    include: {
+      shots: { orderBy: { shotIndex: 'asc' } },
+      groups: { orderBy: { createdAt: 'asc' } },
+    },
     orderBy: { date: 'asc' },
   })
 
@@ -540,6 +552,13 @@ export async function exportRangeLogs(): Promise<string> {
       measuredV0: l.measuredV0,
       fillRate: l.fillRate,
       shots: l.shots.map((s) => ({ shotIndex: s.shotIndex, velocity: s.velocity })),
+      groups: l.groups.map((g) => ({
+        distanceM: g.distanceM,
+        shotCount: g.shotCount,
+        groupSizeMm: g.groupSizeMm,
+        moa: g.moa,
+        notes: g.notes,
+      })),
     })),
   }
 
@@ -614,12 +633,16 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
 
     const existing = logMap.get(key)
     if (existing) {
-      // Replace shots on update: delete existing, insert imported.
+      // Replace shots + groups on update: delete existing, insert imported.
       await prisma.$transaction([
         prisma.rangeLogShot.deleteMany({ where: { rangeLogId: existing.id } }),
+        prisma.rangeGroup.deleteMany({ where: { rangeLogId: existing.id } }),
         prisma.rangeLog.update({ where: { id: existing.id }, data: baseData }),
         ...(item.shots.length > 0
           ? [prisma.rangeLogShot.createMany({ data: item.shots.map((s) => ({ ...s, rangeLogId: existing.id })) })]
+          : []),
+        ...(item.groups.length > 0
+          ? [prisma.rangeGroup.createMany({ data: item.groups.map((g) => ({ ...g, rangeLogId: existing.id })) })]
           : []),
       ])
       updated++
@@ -628,6 +651,11 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
       if (item.shots.length > 0) {
         await prisma.rangeLogShot.createMany({
           data: item.shots.map((s) => ({ ...s, rangeLogId: createdLog.id })),
+        })
+      }
+      if (item.groups.length > 0) {
+        await prisma.rangeGroup.createMany({
+          data: item.groups.map((g) => ({ ...g, rangeLogId: createdLog.id })),
         })
       }
       created++

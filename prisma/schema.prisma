@@ -227,6 +227,27 @@ model RangeLog {
   mainImageId   String?  @unique
   mainImage     RangeLogImage?    @relation("MainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
   shots         RangeLogShot[]    @relation("RangeLogShots")
+  groups        RangeGroup[]      @relation("RangeLogGroups")
+}
+
+// One measured target group from a range session. The user records the
+// distance (meters), the number of shots in the group, and the extreme
+// spread (millimeters, center-to-center of the two widest holes). MOA is
+// computed by the server action on save via lib/moa.ts. Cascade-deleted
+// with the parent RangeLog.
+model RangeGroup {
+  id          String   @id @default(cuid())
+  rangeLogId  String
+  distanceM   Float
+  shotCount   Int
+  groupSizeMm Float
+  moa         Float
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  rangeLog RangeLog @relation("RangeLogGroups", fields: [rangeLogId], references: [id], onDelete: Cascade)
+
+  @@index([rangeLogId])
 }
 
 model RangeLogImage {

@@ -339,9 +339,25 @@ export async function getRecipeById(id: string) {
           images: {
             take: 1,
           },
+          groups: true,
         },
       },
     },
+  })
+}
+
+/**
+ * All accuracy groups measured across range sessions linked to this recipe,
+ * newest session first. Used to render the recipe's aggregate accuracy card
+ * (average MOA + count + recent groups list). Groups belonging to sessions
+ * whose recipeId was nulled (recipe deleted from the session) are excluded —
+ * the FK link is what ties a group to a recipe.
+ */
+export async function getRecipeAccuracyGroups(recipeId: string) {
+  return prisma.rangeGroup.findMany({
+    where: { rangeLog: { recipeId } },
+    include: { rangeLog: { select: { date: true } } },
+    orderBy: { rangeLog: { date: 'desc' } },
   })
 }
 

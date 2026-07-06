@@ -139,3 +139,21 @@ export const shotsSchema = z
     }),
   )
   .min(2)
+
+/**
+ * Validates the JSON `groups` array sent from the accuracy-groups section of
+ * RangeLogForm. Each entry is one measured target group: distance in meters,
+ * shot count, and extreme spread in millimeters. The server action recomputes
+ * MOA from the validated values (never trusts a client-submitted `moa`).
+ *
+ * Unlike `shotsSchema`, an empty array IS allowed — accuracy groups are
+ * optional; a session can have zero groups (e.g. a chronograph-only session).
+ */
+export const groupsSchema = z.array(
+  z.object({
+    distanceM: z.number().finite().positive(),
+    shotCount: z.number().int().positive(),
+    groupSizeMm: z.number().finite().min(0),
+    notes: z.string().nullish().transform((v) => v?.trim() || null),
+  }),
+)

@@ -7,8 +7,9 @@ import { prisma } from '@/lib/prisma'
 import { writeFile, mkdir, unlink } from 'fs/promises'
 import path from 'path'
 import { randomUUID } from 'crypto'
-import { createRangeLogInputSchema, createRangeLogUpdateInputSchema, shotsSchema } from '@/lib/schemas'
+import { createRangeLogInputSchema, createRangeLogUpdateInputSchema, shotsSchema, groupsSchema } from '@/lib/schemas'
 import { computeAggregates } from '@/lib/parseChronographCsv'
+import { computeMoa } from '@/lib/moa'
 import { getImageMimeType } from '@/lib/imageType'
 import type { DeleteResult } from '@/lib/types'
 import type { Prisma } from '@prisma/client'
@@ -144,6 +145,7 @@ export async function getRangeLogById(id: string) {
       },
       images: true,
       shots: { orderBy: { shotIndex: 'asc' } },
+      groups: { orderBy: { createdAt: 'asc' } },
     },
   })
 }
@@ -205,6 +207,30 @@ export async function createRangeLog(formData: FormData) {
       throw new Error(t('errors.csvShotsInvalid'))
     }
     validShots = shotResult.data
+  }
+
+  // Accuracy groups: optional JSON array of { distanceM, shotCount, groupSizeMm, notes }.
+  // MOA is recomputed by the server from the validated values.
+  const rawGroups = formData.get('groups')
+  let validGroups: { distanceM: number; shotCount: number; groupSizeMm: number; notes: string | null; moa: number }[] | null = null
+  if (rawGroups && typeof rawGroups === 'string') {
+    let parsedGroups: unknown
+    try {
+      parsedGroups = JSON.parse(rawGroups)
+    } catch {
+      throw new Error(t('errors.groupsInvalid'))
+    }
+    const groupResult = groupsSchema.safeParse(parsedGroups)
+    if (!groupResult.success) {
+      throw new Error(t('errors.groupsInvalid'))
+    }
+    validGroups = groupResult.data.map((g) => ({
+      distanceM: g.distanceM,
+      shotCount: g.shotCount,
+      groupSizeMm: g.groupSizeMm,
+      notes: g.notes,
+      moa: computeMoa(g.groupSizeMm, g.distanceM),
+    }))
   }
 
   const effectiveAggregates = validShots ? computeAggregates(validShots) : null
@@ -280,6 +306,12 @@ export async function createRangeLog(formData: FormData) {
       if (validShots) {
         await tx.rangeLogShot.createMany({
           data: validShots.map((s) => ({ ...s, rangeLogId: rangeLog.id })),
+        })
+      }
+
+      if (validGroups) {
+        await tx.rangeGroup.createMany({
+          data: validGroups.map((g) => ({ ...g, rangeLogId: rangeLog.id })),
         })
       }
     })
@@ -431,6 +463,33 @@ export async function updateRangeLog(id: string, formData: FormData) {
     validShots = shotResult.data
   }
 
+  // Accuracy groups: optional JSON array. On update we always REPLACE the set
+  // (deleteMany + createMany) — groups are derived from the latest measurement,
+  // not append-only like snapshots. An empty array clears all groups; a missing
+  // `groups` FormData key means "leave existing groups untouched".
+  const rawGroups = formData.get('groups')
+  const replaceGroups = formData.get('replaceGroups') === 'true'
+  let validGroups: { distanceM: number; shotCount: number; groupSizeMm: number; notes: string | null; moa: number }[] | null = null
+  if (rawGroups && typeof rawGroups === 'string') {
+    let parsedGroups: unknown
+    try {
+      parsedGroups = JSON.parse(rawGroups)
+    } catch {
+      throw new Error(t('errors.groupsInvalid'))
+    }
+    const groupResult = groupsSchema.safeParse(parsedGroups)
+    if (!groupResult.success) {
+      throw new Error(t('errors.groupsInvalid'))
+    }
+    validGroups = groupResult.data.map((g) => ({
+      distanceM: g.distanceM,
+      shotCount: g.shotCount,
+      groupSizeMm: g.groupSizeMm,
+      notes: g.notes,
+      moa: computeMoa(g.groupSizeMm, g.distanceM),
+    }))
+  }
+
   const effectiveAggregates = validShots ? computeAggregates(validShots) : null
 
   // Re-snapshot the recipe only when the link actually changes; otherwise leave
@@ -541,6 +600,15 @@ export async function updateRangeLog(id: string, formData: FormData) {
         if (validShots) {
           await tx.rangeLogShot.createMany({
             data: validShots.map((s) => ({ ...s, rangeLogId: id })),
+          })
+        }
+      }
+
+      if (replaceGroups) {
+        await tx.rangeGroup.deleteMany({ where: { rangeLogId: id } })
+        if (validGroups) {
+          await tx.rangeGroup.createMany({
+            data: validGroups.map((g) => ({ ...g, rangeLogId: id })),
           })
         }
       }

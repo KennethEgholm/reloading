@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { getLocale, getTranslations } from 'next-intl/server'
-import { getRecipeById } from '../actions'
+import { getRecipeById, getRecipeAccuracyGroups } from '../actions'
 import { RecipeAiCheck } from './RecipeAiCheck'
 import { formatDate } from '@/lib/format'
+import { averageMoa } from '@/lib/moa'
 
 export default async function RecipeDetailPage({
   params,
@@ -17,6 +18,9 @@ export default async function RecipeDetailPage({
   if (!recipe) {
     return <div className="max-w-4xl mx-auto px-6 py-10">{t('detail.notFound')}</div>
   }
+
+  const accuracyGroups = await getRecipeAccuracyGroups(id)
+  const accuracyAvg = averageMoa(accuracyGroups.map((g) => g.moa))
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
@@ -120,6 +124,53 @@ export default async function RecipeDetailPage({
         aiModel={recipe.aiModel}
         aiCheckedAt={recipe.aiCheckedAt}
       />
+
+      {/* Accuracy (MOA) */}
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 mb-8">
+        <h2 className="text-lg font-semibold mb-4">{t('detail.accuracy.title')}</h2>
+        {accuracyAvg === null ? (
+          <p className="text-sm text-zinc-500">{t('detail.accuracy.noGroups')}</p>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-3 mb-4">
+              <span className="font-mono tabular-nums text-3xl font-semibold text-accent">{accuracyAvg.toFixed(2)}</span>
+              <span className="text-sm text-zinc-500">{t('detail.accuracy.unit')}</span>
+              <span className="text-sm text-zinc-500 ml-auto">
+                {t('detail.accuracy.groupCount', { count: accuracyGroups.length })}
+              </span>
+            </div>
+            <div className="border border-zinc-200 dark:border-zinc-700 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-zinc-50 dark:bg-zinc-800/50 text-zinc-600 dark:text-zinc-400">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">{t('detail.accuracy.date')}</th>
+                    <th className="text-left px-3 py-2 font-medium">{t('detail.accuracy.distance')}</th>
+                    <th className="text-left px-3 py-2 font-medium">{t('detail.accuracy.shots')}</th>
+                    <th className="text-left px-3 py-2 font-medium">{t('detail.accuracy.size')}</th>
+                    <th className="text-right px-3 py-2 font-medium">MOA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {accuracyGroups.slice(0, 10).map((g) => (
+                    <tr key={g.id} className="border-t border-zinc-100 dark:border-zinc-800">
+                      <td className="px-3 py-2">{formatDate(g.rangeLog.date, locale)}</td>
+                      <td className="px-3 py-2 font-mono">{g.distanceM} m</td>
+                      <td className="px-3 py-2 font-mono">{g.shotCount}</td>
+                      <td className="px-3 py-2 font-mono">{g.groupSizeMm} mm</td>
+                      <td className="px-3 py-2 text-right font-mono tabular-nums font-medium">{g.moa.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {accuracyGroups.length > 10 && (
+              <p className="text-xs text-zinc-500 mt-2">
+                {t('detail.accuracy.showingRecent', { shown: 10, total: accuracyGroups.length })}
+              </p>
+            )}
+          </>
+        )}
+      </div>
 
       {/* Recent Range Sessions */}
       <div className="mb-8">

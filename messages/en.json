@@ -145,7 +145,11 @@
       "projectile": "Projectile",
       "propellant": "Propellant",
       "primer": "Primer",
-      "cartridge": "Cartridge / Case"
+      "cartridge": "Cartridge / Case",
+      "groups": {
+        "title": "Accuracy Groups",
+        "sessionAvg": "Session avg: {value} MOA"
+      }
     },
     "edit": {
       "title": "Edit Range Session",
@@ -194,6 +198,18 @@
         "title": "Shot-by-shot",
         "header": "#",
         "velocity": "Velocity (m/s)"
+      },
+      "groups": {
+        "title": "Accuracy Groups",
+        "hint": "Record each target group: distance (m), shot count, and extreme spread (mm). MOA is computed automatically.",
+        "add": "+ Add group",
+        "remove": "×",
+        "empty": "No accuracy groups recorded for this session.",
+        "distance": "Distance (m)",
+        "shots": "Shots",
+        "size": "Spread (mm)",
+        "notes": "Notes",
+        "notesPlaceholder": "Group notes (e.g. \"fouling shot\", \"cold bore\")"
       }
     },
     "row": {
@@ -233,6 +249,7 @@
       "csvNoShots": "No shots found in the CSV (at least 2 required).",
       "csvParse": "Could not parse the CSV.",
       "csvShotsInvalid": "Invalid shot data.",
+      "groupsInvalid": "Invalid accuracy group data.",
       "validation": {
         "dateRequired": "Date is required",
         "recipeRequired": "Recipe is required",
@@ -334,14 +351,25 @@
       "noLoadLogs": "No loads logged for this recipe yet.",
       "logNewLoad": "Log new load →",
       "rounds": "{count} rounds",
-      "notFound": "Recipe not found."
+      "notFound": "Recipe not found.",
+      "accuracy": {
+        "title": "Accuracy",
+        "noGroups": "No accuracy groups recorded for this recipe yet.",
+        "unit": "MOA avg",
+        "groupCount": "{count, plural, one {{count} group} other {{count} groups}}",
+        "date": "Date",
+        "distance": "Distance",
+        "shots": "Shots",
+        "size": "Spread",
+        "showingRecent": "Showing {shown} of {total} groups."
+      }
     },
     "aiCheck": {
       "title": "AI Safety Check",
       "run": "Run check",
       "reRun": "Re-run check",
       "checking": "Checking…",
-      "noAssessment": "No assessment yet. Click <0>Run check</0> to ask the configured AI model to review this recipe for obvious errors or dangers.",
+      "noAssessment": "No assessment yet. Click <runCheck>Run check</runCheck> to ask the configured AI model to review this recipe for obvious errors or dangers.",
       "unsavedHint": "Checks the values currently entered above — including unsaved changes.",
       "unsavedResult": "This assessment reflects the current (unsaved) values and was not saved. Save the recipe, then run the check from its detail page to store it.",
       "lastChecked": "Last checked {date}"

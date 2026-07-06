@@ -73,6 +73,7 @@ erDiagram
     RangeLog ||--o{ RangeLogImage : "images"
     RangeLog |o--o| RangeLogImage : "mainImage"
     RangeLog ||--o{ RangeLogShot : "shots (cascade)"
+    RangeLog ||--o{ RangeGroup : "groups (cascade)"
 
     Recipe {
         string id PK
@@ -118,6 +119,16 @@ erDiagram
         string rangeLogId FK
         int shotIndex "1-based from CSV"
         float velocity "m/s"
+    }
+
+    RangeGroup {
+        string id PK
+        string rangeLogId FK
+        float distanceM "meters, user-entered"
+        int shotCount "shots in group"
+        float groupSizeMm "extreme spread, mm"
+        float moa "server-computed"
+        string notes
     }
 ```
 

@@ -34,6 +34,7 @@ const { prismaMock } = vi.hoisted(() => {
       rangeLog: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
       rangeLogImage: { create: vi.fn(), update: vi.fn(), findUnique: vi.fn(), delete: vi.fn() },
       rangeLogShot: { createMany: vi.fn(), deleteMany: vi.fn() },
+      rangeGroup: { createMany: vi.fn(), deleteMany: vi.fn() },
       // $transaction(fn) runs the callback with the same mock acting as `tx`,
       // mirroring Prisma's interactive-transaction API.
       $transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prismaMock)),

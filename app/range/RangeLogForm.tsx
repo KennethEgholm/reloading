@@ -10,6 +10,7 @@ import type { RangeLogWithImages } from '@/lib/types'
 import { useFocusTrap } from '@/lib/useFocusTrap'
 import { ChronographImport } from './ChronographImport'
 import type { ParsedShot, ParsedChronograph } from '@/lib/parseChronographCsv'
+import { computeMoa } from '@/lib/moa'
 
 interface RecipeOption {
   id: string
@@ -29,6 +30,18 @@ interface RangeLogFormProps {
 interface ImageInput {
   file: File | null
   description: string
+}
+
+// Editable view-model for an accuracy group row. `id` is set only for groups
+// loaded from the saved session (edit mode); new rows added in the form have
+// no id. `distanceM`/`shotCount`/`groupSizeMm` are strings because the input
+// values are text — converted to numbers on submit.
+interface GroupInput {
+  id?: string
+  distanceM: string
+  shotCount: string
+  groupSizeMm: string
+  notes: string
 }
 
 // Editable view-model for an already-saved image while the form is open.
@@ -73,6 +86,23 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
       : null,
   )
   const [replaceShots, setReplaceShots] = useState(false)
+
+  // Accuracy groups. On edit, hydrate from initialData; on create, start with
+  // one empty row. `groupsTouched` flips true the first time the user edits a
+  // group — only then do we send `replaceGroups` so an untouched edit doesn't
+  // wipe existing groups.
+  const [groups, setGroups] = useState<GroupInput[]>(
+    initialData?.groups && initialData.groups.length > 0
+      ? initialData.groups.map((g) => ({
+          id: g.id,
+          distanceM: String(g.distanceM),
+          shotCount: String(g.shotCount),
+          groupSizeMm: String(g.groupSizeMm),
+          notes: g.notes || '',
+        }))
+      : [{ distanceM: '', shotCount: '', groupSizeMm: '', notes: '' }],
+  )
+  const [groupsTouched, setGroupsTouched] = useState(false)
 
   // Refs to the velocity + roundsFired inputs so a CSV parse can auto-fill them.
   const velocityMinRef = useRef<HTMLInputElement>(null)
@@ -131,6 +161,31 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const handleChronoRemove = () => {
     setShots(null)
     setReplaceShots(true)
+  }
+
+  // --- Accuracy groups ---
+  const updateGroup = (index: number, field: keyof Omit<GroupInput, 'id'>, value: string) => {
+    setGroups((prev) => prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)))
+    setGroupsTouched(true)
+  }
+  const addGroup = () => {
+    setGroups((prev) => [...prev, { distanceM: '', shotCount: '', groupSizeMm: '', notes: '' }])
+    setGroupsTouched(true)
+  }
+  const removeGroup = (index: number) => {
+    setGroups((prev) => prev.filter((_, i) => i !== index))
+    setGroupsTouched(true)
+  }
+  // Live MOA preview for a row, or null if inputs are incomplete/invalid.
+  const previewMoa = (g: GroupInput): number | null => {
+    const d = parseFloat(g.distanceM)
+    const s = parseFloat(g.groupSizeMm)
+    if (!Number.isFinite(d) || d <= 0 || !Number.isFinite(s) || s < 0) return null
+    try {
+      return computeMoa(s, d)
+    } catch {
+      return null
+    }
   }
 
   // Keyboard support for photo overlay
@@ -218,6 +273,24 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
     }
     if (replaceShots) {
       formData.append('replaceShots', 'true')
+    }
+
+    // Accuracy groups: send only rows with at least distance + size filled.
+    // On edit, send `replaceGroups` only if the user touched the groups —
+    // otherwise leave existing DB rows alone.
+    if (groupsTouched || !isEdit) {
+      const filled = groups
+        .filter((g) => g.distanceM.trim() !== '' && g.groupSizeMm.trim() !== '')
+        .map((g) => ({
+          distanceM: parseFloat(g.distanceM),
+          shotCount: parseInt(g.shotCount, 10) || 1,
+          groupSizeMm: parseFloat(g.groupSizeMm),
+          notes: g.notes.trim() || null,
+        }))
+      formData.append('groups', JSON.stringify(filled))
+      if (isEdit) {
+        formData.append('replaceGroups', 'true')
+      }
     }
 
     try {
@@ -382,6 +455,107 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
           disabled={isReadOnly}
           className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
         />
+      </div>
+
+      {/* Accuracy groups (MOA) */}
+      <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="block text-sm font-medium">{t('form.groups.title')}</label>
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={addGroup}
+              className="text-sm text-accent hover:text-accent-hover hover:underline"
+            >
+              {t('form.groups.add')}
+            </button>
+          )}
+        </div>
+        <p className="text-xs text-zinc-500 mb-3">{t('form.groups.hint')}</p>
+
+        {isReadOnly && groups.every((g) => !g.distanceM && !g.groupSizeMm) ? (
+          <p className="text-sm text-zinc-500">{t('form.groups.empty')}</p>
+        ) : (
+          <div className="space-y-2">
+            {groups.map((g, i) => {
+              const moa = previewMoa(g)
+              return (
+                <div key={i} className="grid grid-cols-1 md:grid-cols-[8rem_6rem_8rem_1fr_5rem_auto] gap-2 items-start border border-zinc-200 dark:border-zinc-700 rounded-xl p-3">
+                  <div>
+                    <label className="block text-[11px] font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.groups.distance')}</label>
+                    <input
+                      type="number"
+                      step="1"
+                      min="0"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={g.distanceM}
+                      onChange={(e) => updateGroup(i, 'distanceM', e.target.value)}
+                      disabled={isReadOnly}
+                      className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.groups.shots')}</label>
+                    <input
+                      type="number"
+                      step="1"
+                      min="1"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      value={g.shotCount}
+                      onChange={(e) => updateGroup(i, 'shotCount', e.target.value)}
+                      disabled={isReadOnly}
+                      className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.groups.size')}</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      value={g.groupSizeMm}
+                      onChange={(e) => updateGroup(i, 'groupSizeMm', e.target.value)}
+                      disabled={isReadOnly}
+                      className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium mb-1 text-zinc-600 dark:text-zinc-400">{t('form.groups.notes')}</label>
+                    <input
+                      type="text"
+                      autoComplete="off"
+                      value={g.notes}
+                      onChange={(e) => updateGroup(i, 'notes', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder={t('form.groups.notesPlaceholder')}
+                      className="w-full border border-zinc-300 dark:border-zinc-700 rounded px-2 py-1.5 text-sm bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium mb-1 text-zinc-600 dark:text-zinc-400">MOA</label>
+                    <div className="px-2 py-1.5 text-sm font-mono tabular-nums text-zinc-700 dark:text-zinc-300">
+                      {moa !== null ? moa.toFixed(2) : '—'}
+                    </div>
+                  </div>
+                  {!isReadOnly && groups.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeGroup(i)}
+                      className="self-end text-red-500 px-2 py-1.5 text-sm"
+                      aria-label={t('form.groups.remove')}
+                    >
+                      {t('form.groups.remove')}
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Existing Photos */}
