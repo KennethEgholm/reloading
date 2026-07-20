@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { PrimerType } from '@prisma/client'
+import { PrimerType, WeightUnit } from '@prisma/client'
 
 type Translator = (key: string) => string
 
@@ -157,3 +157,49 @@ export const groupsSchema = z.array(
     notes: z.string().nullish().transform((v) => v?.trim() || null),
   }),
 )
+
+// ──────────────────────────────────────────────────────────────────────────
+// Factory ammo schemas
+//
+// Factory ammo is a parallel domain to range sessions for store-bought ammo.
+// The parent has no recipe/components (no snapshot machinery), and its `amount`
+// is hand-edited (no transactional deduction). Sessions reuse shotsSchema +
+// groupsSchema (above) and the same aggregate-recompute path as range logs.
+// ──────────────────────────────────────────────────────────────────────────
+
+export function createFactoryAmmoSchema(t: Translator) {
+  return z.object({
+    brand: z.string().trim().min(1, t('form.validation.brandRequired')),
+    model: z.string().trim().min(1, t('form.validation.modelRequired')),
+    caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
+    amount: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(0, t('form.validation.amountNegative')).default(0),
+    ),
+    projectileWeight: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(0, t('form.validation.weightNegative')).optional(),
+    ).transform((v) => v ?? null),
+    projectileWeightUnit: z.nativeEnum(WeightUnit, { message: t('form.validation.unitRequired') }).default(WeightUnit.GR),
+    notes: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export type FactoryAmmoInput = z.infer<ReturnType<typeof createFactoryAmmoSchema>>
+
+export function createFactoryAmmoSessionSchema(t: (key: string) => string) {
+  return z.object({
+    date: z.string().min(1, t('errors.validation.dateRequired')),
+    location: z.string().nullish(),
+    conditions: z.string().nullish(),
+    roundsFired: z.coerce.number().int().min(1, t('errors.validation.roundsFiredMin')),
+    velocityMin: z.coerce.number().min(0, t('errors.validation.velocityMinPositive')).nullish(),
+    velocityMax: z.coerce.number().min(0, t('errors.validation.velocityMaxPositive')).nullish(),
+    velocityAvg: z.coerce.number().min(0, t('errors.validation.velocityAvgPositive')).nullish(),
+    extremeSpread: z.coerce.number().min(0, t('errors.validation.extremeSpreadPositive')).nullish(),
+    stdDev: z.coerce.number().min(0, t('errors.validation.stdDevPositive')).nullish(),
+    notes: z.string().nullish(),
+  })
+}
+
+export type FactoryAmmoSessionInput = z.infer<ReturnType<typeof createFactoryAmmoSessionSchema>>

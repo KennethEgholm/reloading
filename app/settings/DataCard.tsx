@@ -17,20 +17,25 @@ import {
   exportRangeLogs,
   previewRangeLogsImport,
   executeRangeLogsImport,
+  exportFactoryAmmo,
+  previewFactoryAmmoImport,
+  executeFactoryAmmoImport,
   exportEverything,
   type ImportPreview,
   type RecipesImportPreview,
   type LoadLogsImportPreview,
   type RangeLogsImportPreview,
+  type FactoryAmmoImportPreview,
 } from './dataActions'
 
-type DataType = 'inventory' | 'recipes' | 'loadLogs' | 'rangeLogs' | 'everything'
+type DataType = 'inventory' | 'recipes' | 'loadLogs' | 'rangeLogs' | 'factoryAmmo' | 'everything'
 
 const EXPORTERS: Record<Exclude<DataType, 'everything'>, () => Promise<string>> = {
   inventory: exportInventory,
   recipes: exportRecipes,
   loadLogs: exportLoadLogs,
   rangeLogs: exportRangeLogs,
+  factoryAmmo: exportFactoryAmmo,
 }
 
 const FILE_PREFIX: Record<Exclude<DataType, 'everything'>, string> = {
@@ -38,6 +43,7 @@ const FILE_PREFIX: Record<Exclude<DataType, 'everything'>, string> = {
   recipes: 'reloading-recipes',
   loadLogs: 'reloading-loadlogs',
   rangeLogs: 'reloading-rangelogs',
+  factoryAmmo: 'reloading-factoryammo',
 }
 
 const PREVIEWERS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise<unknown>> = {
@@ -45,6 +51,7 @@ const PREVIEWERS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise
   recipes: previewRecipesImport,
   loadLogs: previewLoadLogsImport,
   rangeLogs: previewRangeLogsImport,
+  factoryAmmo: previewFactoryAmmoImport,
 }
 
 const EXECUTORS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise<unknown>> = {
@@ -52,6 +59,7 @@ const EXECUTORS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise<
   recipes: executeRecipesImport,
   loadLogs: executeLoadLogsImport,
   rangeLogs: executeRangeLogsImport,
+  factoryAmmo: executeFactoryAmmoImport,
 }
 
 export function DataCard() {
@@ -61,7 +69,7 @@ export function DataCard() {
   const [isImporting, setIsImporting] = useState(false)
   const [importType, setImportType] = useState<Exclude<DataType, 'everything'> | null>(null)
   const [jsonString, setJsonString] = useState<string | null>(null)
-  const [preview, setPreview] = useState<ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | null>(null)
+  const [preview, setPreview] = useState<ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleExport = async (type: DataType) => {
@@ -101,7 +109,7 @@ export function DataCard() {
       const result = await PREVIEWERS[detected](text)
       setImportType(detected)
       setJsonString(text)
-      setPreview(result as ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview)
+      setPreview(result as ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'INVALID_JSON'
       const key = msg === 'NO_DATA' ? 'data.noData' : 'data.invalidFile'
@@ -150,6 +158,7 @@ export function DataCard() {
             <ExportButton label={t('data.exportRecipes')} onClick={() => handleExport('recipes')} disabled={isExporting} />
             <ExportButton label={t('data.exportLoadLogs')} onClick={() => handleExport('loadLogs')} disabled={isExporting} />
             <ExportButton label={t('data.exportRangeLogs')} onClick={() => handleExport('rangeLogs')} disabled={isExporting} />
+            <ExportButton label={t('data.exportFactoryAmmo')} onClick={() => handleExport('factoryAmmo')} disabled={isExporting} />
             <ExportButton label={t('data.exportEverything')} onClick={() => handleExport('everything')} disabled={isExporting} />
           </div>
         </div>
@@ -173,7 +182,7 @@ export function DataCard() {
           {preview && importType && (
             <div className="mt-3 space-y-2" aria-live="polite">
               <p className="text-sm font-medium">
-                {t('data.preview')} — {t(`data.${importType === 'loadLogs' ? 'loadLogs' : importType === 'rangeLogs' ? 'rangeLogs' : importType}`)}
+                {t('data.preview')} — {t(`data.${importType === 'loadLogs' ? 'loadLogs' : importType === 'rangeLogs' ? 'rangeLogs' : importType === 'factoryAmmo' ? 'factoryAmmo' : importType}`)}
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {previewRows(preview, t)}
@@ -217,7 +226,7 @@ function ExportButton({ label, onClick, disabled }: { label: string; onClick: ()
 }
 
 function previewRows(
-  preview: ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview,
+  preview: ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview,
   t: (k: string, opts?: TranslationValues) => string,
 ) {
   const rows: React.ReactNode[] = []
@@ -232,6 +241,8 @@ function previewRows(
     rows.push(<PreviewRow key="ll" label={t('data.loadLogs')} created={preview.loadLogs.created} updated={preview.loadLogs.updated} t={t} />)
   } else if ('rangeLogs' in preview) {
     rows.push(<PreviewRow key="rl" label={t('data.rangeLogs')} created={preview.rangeLogs.created} updated={preview.rangeLogs.updated} t={t} />)
+  } else if ('factoryAmmo' in preview) {
+    rows.push(<PreviewRow key="fa" label={t('data.factoryAmmo')} created={preview.factoryAmmo.created} updated={preview.factoryAmmo.updated} t={t} />)
   }
   return rows
 }
@@ -252,6 +263,7 @@ function detectType(text: string): Exclude<DataType, 'everything'> | null {
     if (Array.isArray(parsed.recipes)) return 'recipes'
     if (Array.isArray(parsed.loadLogs)) return 'loadLogs'
     if (Array.isArray(parsed.rangeLogs)) return 'rangeLogs'
+    if (Array.isArray(parsed.factoryAmmo)) return 'factoryAmmo'
     if (Array.isArray(parsed.primers) || Array.isArray(parsed.projectiles) || Array.isArray(parsed.propellants) || Array.isArray(parsed.cartridges)) return 'inventory'
     return null
   } catch {

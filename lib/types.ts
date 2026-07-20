@@ -17,6 +17,10 @@ export type {
   LoadLog,
   RangeLog,
   RangeLogImage,
+  FactoryAmmo,
+  FactoryAmmoSession,
+  FactoryAmmoShot,
+  FactoryAmmoGroup,
 } from '@prisma/client'
 
 // A Cartridge with its caliber relation resolved — the shape returned by the
@@ -61,5 +65,23 @@ export type RangeLogWithImages = Prisma.RangeLogGetPayload<{
     images: true
     shots: { orderBy: { shotIndex: 'asc' } }
     groups: { orderBy: { createdAt: 'asc' } }
+  }
+}>
+
+// A FactoryAmmo row with its caliber resolved — the shape returned by the
+// factory-ammo list query and consumed by FactoryAmmoTable / FactoryAmmoForm.
+// Sessions are included (with shots + groups) so the detail view and the
+// "latest session" aggregates on the list can render without a second round-trip.
+export type FactoryAmmoWithCaliber = Prisma.FactoryAmmoGetPayload<{
+  include: { caliber: true }
+}>
+
+// A FactoryAmmoSession as returned by the detail query: shots + groups included
+// and ordered. Consumed as the `initialData` of FactoryAmmoSessionForm.
+export type FactoryAmmoSessionWithChildren = Prisma.FactoryAmmoSessionGetPayload<{
+  include: {
+    shots: { orderBy: { shotIndex: 'asc' } }
+    groups: { orderBy: { createdAt: 'asc' } }
+    factoryAmmo: { select: { id: true; brand: true; model: true; caliber: { select: { name: true } } } }
   }
 }>

@@ -15,7 +15,8 @@
     "projectiles": "Projectiles",
     "propellants": "Propellants",
     "cartridges": "Cartridges",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "factoryAmmo": "Factory Ammo"
   },
   "overview": {
     "title": "Overview",
@@ -36,7 +37,9 @@
       "saved": "{count, plural, one {{count} saved} other {{count} saved}}",
       "types": "{count, plural, one {{count} type} other {{count} types}}",
       "pieces": "{count, plural, one {{count} piece} other {{count} pieces}}",
-      "cases": "{count, plural, one {{count} case} other {{count} cases}}"
+      "cases": "{count, plural, one {{count} case} other {{count} cases}}",
+      "factoryAmmo": "Factory Ammo",
+      "roundsOnHand": "{count, plural, one {{count} round on hand} other {{count} rounds on hand}}"
     },
     "sections": {
       "rangeSessions": "Range Sessions",
@@ -103,7 +106,17 @@
         "amount": "Amount",
         "description": "Description"
       },
-      "noCartridges": "No cartridges added yet."
+      "noCartridges": "No cartridges added yet.",
+      "factoryAmmo": "Factory Ammo",
+      "factoryAmmoSummary": "{count, plural, one {{count} type} other {{count} types}} • {rounds, plural, one {{rounds} round} other {{rounds} rounds}}",
+      "noFactoryAmmo": "No factory ammo added yet.",
+      "addFirstFactoryAmmo": "Add your first ammo",
+      "factoryAmmoTable": {
+        "brand": "Brand",
+        "model": "Model",
+        "caliber": "Caliber",
+        "amount": "Rounds"
+      }
     }
   },
   "common": {
@@ -791,7 +804,9 @@
       "invalidFile": "Could not read the JSON file. Make sure it is a valid export.",
       "importSuccess": "Import complete: {created} created, {updated} updated.",
       "importFailed": "Import failed: {error}",
-      "noData": "No records found in the file."
+      "noData": "No records found in the file.",
+      "exportFactoryAmmo": "Export factory ammo",
+      "factoryAmmo": "Factory Ammo"
     }
   },
   "errors": {
@@ -806,5 +821,169 @@
     "addNew": "+ Add new caliber…",
     "addPlaceholder": "e.g. .308 Win",
     "chooseExisting": "Choose existing"
+  },
+  "factoryAmmo": {
+    "page": {
+      "title": "Factory Ammo",
+      "subtitle": "Verify muzzle velocity of factory ammunition",
+      "addButton": "+ Add ammo",
+      "listTitle": "Factory Ammo",
+      "empty": "No factory ammo added yet.",
+      "addFirst": "Add your first ammo",
+      "addFirstSuffix": "."
+    },
+    "new": {
+      "title": "Add Factory Ammo",
+      "subtitle": "Record a factory load you want to verify.",
+      "back": "← Back to Factory Ammo"
+    },
+    "edit": {
+      "title": "Edit Factory Ammo",
+      "subtitle": "Update the details for this ammo.",
+      "back": "← Back to ammo"
+    },
+    "detail": {
+      "back": "← Back to Factory Ammo",
+      "edit": "Edit",
+      "newSession": "+ Log velocity session",
+      "roundsOnHand": "{count, plural, one {{count} round on hand} other {{count} rounds on hand}}",
+      "sessionsTitle": "Velocity Sessions",
+      "noSessions": "No sessions logged yet.",
+      "logFirst": "Log the first session",
+      "rounds": "{count, plural, one {{count} round} other {{count} rounds}}",
+      "avgV0": "avg {value} m/s",
+      "shotsCount": "{count, plural, one {{count} shot} other {{count} shots}}",
+      "groupsCount": "{count, plural, one {{count} group} other {{count} groups}}",
+      "groups": {
+        "title": "Accuracy Groups",
+        "sessionAvg": "Session avg: {value} MOA"
+      },
+      "projectileWeight": "{value} {unit}"
+    },
+    "session": {
+      "new": {
+        "title": "Log Velocity Session",
+        "subtitle": "{brand} {model}",
+        "back": "← Back to ammo",
+        "ammoLabel": "Caliber: {caliber}"
+      },
+      "edit": {
+        "title": "Edit Velocity Session",
+        "subtitle": "{brand} {model}",
+        "back": "← Back to session"
+      },
+      "detail": {
+        "back": "← Back to ammo"
+      }
+    },
+    "form": {
+      "brand": "Brand",
+      "brandPlaceholder": "e.g. Federal",
+      "model": "Model",
+      "modelPlaceholder": "e.g. Gold Medal Sierra MatchKing",
+      "caliber": "Caliber",
+      "amount": "Rounds on hand",
+      "notes": "Notes",
+      "notesPlaceholder": "Lot number, advertised V0, observations...",
+      "boxPhoto": "Box photo",
+      "roundPhoto": "Single round photo",
+      "photoHint": "Max 10 MB. JPG, PNG, GIF, WebP, HEIC, AVIF.",
+      "removePhoto": "Remove this photo",
+      "submit": "Save Factory Ammo",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "date": "Date",
+      "location": "Location",
+      "locationPlaceholder": "Local range, 100m bay...",
+      "roundsFired": "Rounds Fired",
+      "conditions": "Conditions / Weather",
+      "conditionsPlaceholder": "Sunny, 18°C, light crosswind...",
+      "velocityMin": "Min (m/s)",
+      "velocityMax": "Max (m/s)",
+      "velocityAvg": "Avg (m/s)",
+      "velocityES": "ES",
+      "velocitySD": "SD",
+      "importCsv": "Import from chronograph",
+      "csvParsed": "{count} shots parsed",
+      "removeCsv": "Remove import",
+      "editSession": "Edit this session",
+      "shotTable": {
+        "title": "Shot-by-shot",
+        "header": "#",
+        "velocity": "Velocity (m/s)"
+      },
+      "groups": {
+        "title": "Accuracy Groups",
+        "hint": "Record each target group: distance (m), shot count, and extreme spread (mm). MOA is computed automatically.",
+        "add": "+ Add group",
+        "remove": "×",
+        "empty": "No accuracy groups recorded for this session.",
+        "distance": "Distance (m)",
+        "shots": "Shots",
+        "size": "Spread (mm)",
+        "notes": "Notes",
+        "notesPlaceholder": "Group notes (e.g. \"fouling shot\", \"cold bore\")"
+      },
+      "validation": {
+        "brandRequired": "Brand is required",
+        "modelRequired": "Model is required",
+        "caliberRequired": "Caliber is required",
+        "amountNegative": "Amount cannot be negative",
+        "weightNegative": "Weight cannot be negative",
+        "unitRequired": "Unit is required"
+      },
+      "projectileWeight": "Projectile weight",
+      "projectileWeightPlaceholder": "e.g. 175",
+      "weightUnit": "Unit",
+      "unitGr": "grains (gr)",
+      "unitG": "grams (g)"
+    },
+    "table": {
+      "brand": "Brand",
+      "model": "Model",
+      "caliber": "Caliber",
+      "amount": "Rounds",
+      "sessions": "Sessions",
+      "latestV0": "Latest V0",
+      "avgMps": "avg {value} m/s",
+      "weight": "Weight"
+    },
+    "toast": {
+      "created": "Factory ammo added!",
+      "updated": "Factory ammo updated!",
+      "deleted": "Factory ammo deleted",
+      "deleteFailed": "Failed to delete factory ammo",
+      "saveFailed": "Failed to save",
+      "photoTooLarge": "Photo \"{name}\" is too large. Maximum size is 10 MB.",
+      "photoInvalid": "File \"{name}\" is not a recognized image.",
+      "sessionSaved": "Session logged!",
+      "sessionUpdated": "Session updated!",
+      "sessionDeleted": "Session deleted",
+      "fillRequired": "Please fill in all required fields."
+    },
+    "delete": {
+      "confirm": "Delete this factory ammo and all its sessions?",
+      "sessionConfirm": "Delete this velocity session?",
+      "button": "Delete"
+    },
+    "errors": {
+      "notFound": "Factory ammo not found",
+      "ammoNotFound": "Factory ammo not found",
+      "sessionNotFound": "Session not found",
+      "csvHeader": "Not a recognized chronograph export (missing expected header).",
+      "csvNoShots": "No shots found in the CSV (at least 2 required).",
+      "csvParse": "Could not parse the CSV.",
+      "csvShotsInvalid": "Invalid shot data.",
+      "groupsInvalid": "Invalid accuracy group data.",
+      "validation": {
+        "dateRequired": "Date is required",
+        "roundsFiredMin": "Rounds fired must be at least 1",
+        "velocityMinPositive": "Minimum velocity cannot be negative",
+        "velocityMaxPositive": "Maximum velocity cannot be negative",
+        "velocityAvgPositive": "Average velocity cannot be negative",
+        "extremeSpreadPositive": "Extreme spread cannot be negative",
+        "stdDevPositive": "Standard deviation cannot be negative"
+      }
+    }
   }
 }

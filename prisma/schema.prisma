@@ -17,6 +17,14 @@ enum PrimerType {
   LARGE_PISTOL
 }
 
+// Projectile weight unit for factory ammo. Rifle/pistol rounds are typically
+// listed in grains (GR); shotgun shells in grams (G). The user picks the unit
+// per ammo so the stored value is always displayed in its native unit.
+enum WeightUnit {
+  GR
+  G
+}
+
 // Singleton row holding AI model configuration (always id = "singleton").
 // Provider is switchable; "grok" (xAI) is the first supported provider.
 model AiSettings {
@@ -41,8 +49,9 @@ model Caliber {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  recipes    Recipe[]
-  cartridges Cartridge[]
+  recipes      Recipe[]
+  cartridges   Cartridge[]
+  factoryAmmo  FactoryAmmo[]
 }
 
 model Propellant {
@@ -269,4 +278,84 @@ model RangeLogShot {
   rangeLog   RangeLog @relation("RangeLogShots", fields: [rangeLogId], references: [id], onDelete: Cascade)
 
   @@index([rangeLogId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Factory ammunition
+//
+// A parallel domain to range sessions for factory (store-bought) ammo. The
+// parent row holds the identifying info (brand/model/caliber), an inventory
+// count (hand-edited — sessions never deduct from it), and two photos (box +
+// single round). Each FactoryAmmoSession is one chronograph/accuracy
+// verification outing and reuses the same shot-list + MOA-group machinery as
+// RangeLog (parseChronographCsv, computeMoa) but without the recipe snapshot
+// (factory ammo has no reload data to freeze). Cascade-deleting the parent
+// wipes its sessions/shots/groups.
+// ──────────────────────────────────────────────────────────────────────────
+
+model FactoryAmmo {
+  id                 String   @id @default(cuid())
+  brand              String
+  model              String
+  caliberId          String
+  amount             Int      @default(0) // rounds on hand, hand-edited only
+  projectileWeight   Float? // per-round projectile weight (unit in projectileWeightUnit)
+  projectileWeightUnit WeightUnit @default(GR)
+  notes              String?
+  boxImageFilename   String? // photo of the ammo box
+  roundImageFilename String? // photo of a single round
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  caliber  Caliber              @relation(fields: [caliberId], references: [id])
+  sessions FactoryAmmoSession[]
+
+  @@index([caliberId])
+}
+
+model FactoryAmmoSession {
+  id            String   @id @default(cuid())
+  factoryAmmoId String
+  date          DateTime
+  location      String?
+  conditions    String?
+  roundsFired   Int
+  velocityMin   Float?
+  velocityMax   Float?
+  velocityAvg   Float?
+  extremeSpread Float?
+  stdDev        Float?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  factoryAmmo FactoryAmmo          @relation(fields: [factoryAmmoId], references: [id], onDelete: Cascade)
+  shots       FactoryAmmoShot[]    @relation("FactoryAmmoSessionShots")
+  groups      FactoryAmmoGroup[]   @relation("FactoryAmmoSessionGroups")
+
+  @@index([factoryAmmoId])
+}
+
+model FactoryAmmoShot {
+  id        String @id @default(cuid())
+  sessionId String
+  shotIndex Int
+  velocity  Float
+  session   FactoryAmmoSession @relation("FactoryAmmoSessionShots", fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+model FactoryAmmoGroup {
+  id          String  @id @default(cuid())
+  sessionId   String
+  distanceM   Float
+  shotCount   Int
+  groupSizeMm Float
+  moa         Float
+  notes       String?
+  createdAt   DateTime @default(now())
+  session     FactoryAmmoSession @relation("FactoryAmmoSessionGroups", fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
 }

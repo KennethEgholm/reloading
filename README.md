@@ -32,6 +32,15 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Delete a log (with confirmation) and the components are restored to inventory (again via transaction using the snapshots).
   - Recent load logs are shown on the Overview (after Range Sessions).
 
+- **Factory Ammo** (`/factory-ammo`)
+  - Track store-bought ammunition as a unit (not its components): brand, model, caliber, and a hand-edited round count (`amount`). `amount` is **not** deducted when you log a session — it's manual inventory, like counting boxes on a shelf.
+  - Two photos per ammo: a picture of the ammo box and a picture of a single round. Stored locally (`public/uploads/factory-ammo`).
+  - **Velocity sessions**: each ammo can have any number of verification sessions over time. A session records date, location, conditions, rounds fired, notes, and full chronograph data (Min/Max/Avg/ES/SD). Import per-shot velocities from a **Xero C1 CSV** right inside the session form (reuses the range-session chronograph importer); the server stores `FactoryAmmoShot` rows and recomputes aggregates from the validated shots.
+  - **Accuracy groups (MOA, optional)**: a session can record target groups (distance, shot count, extreme spread → MOA computed by `lib/moa.ts`), same as range sessions. Session detail shows a groups table + session average.
+  - List view with brand/model/caliber/rounds/sessions count/latest V0. Detail page shows the ammo info + photos + all sessions. Overview shows a Factory Ammo summary card + recent-ammo table (after Range Sessions and Load Logs, before Recipes).
+  - Deleting a factory ammo cascade-removes its sessions, shots, and groups (and unlinks the photo files). No restore-on-delete logic — factory ammo has no transactional inventory to put back.
+  - Export/import added to Settings → Data (match by brand+model+caliber; sessions matched by date+location+roundsFired; shots/groups replaced wholesale on update; photos dropped on export, like range sessions; no inventory adjustments on import).
+
 - **Range Sessions** (`/range` – bullseye icon)
   - Full session logging: date, location, linked recipe, rounds fired, weather/conditions, notes.
   - **Historical snapshots**: each session freezes a copy of the linked recipe at creation (name, caliber, charge, COAL, projectile/propellant/primer, linked **cartridge** (brand, caliber, water capacity), calculated/measured V0, fill rate), so later recipe edits or deletion never change or erase the session's record. The detail view shows the snapshot; switching the session's recipe re-snapshots, while editing other fields preserves the frozen values.
@@ -55,7 +64,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.
   - **Test connection** button validates the key against the provider (xAI is OpenAI-compatible: `GET /models` with a bearer token) and reports success/failure via a toast.
   - Settings (including the API key) are stored in Postgres as a singleton row. The key is write-only in the UI: it is never sent back to the browser, only a masked `••••last4` placeholder; leave the field blank to keep the existing key. Note: the app has no authentication, so anyone who can reach it can change these.
-  - **Data**: Export inventory, recipes, load logs, or range sessions as JSON (separately or as a combined "everything" file). Import a previously exported file — the file type is detected automatically and a preview (how many will be created vs updated) is shown before merging. Inventory matches by brand+type (or brand+caliber); recipes by name+caliber (component refs resolved by natural key, with stub inventory rows created if missing); load logs by date+recipeName+quantity; range logs by date+location+recipeName. Range log photos are not exported (sessions import imageless). Load/range logs preserve their frozen recipe snapshots; recipe re-linking is informational only (no inventory adjustments on import). Non-destructive: records not in the file are left untouched.
+  - **Data**: Export inventory, recipes, load logs, range sessions, or factory ammo as JSON (separately or as a combined "everything" file). Import a previously exported file — the file type is detected automatically and a preview (how many will be created vs updated) is shown before merging. Inventory matches by brand+type (or brand+caliber); recipes by name+caliber (component refs resolved by natural key, with stub inventory rows created if missing); load logs by date+recipeName+quantity; range logs by date+location+recipeName; factory ammo by brand+model+caliber (sessions by date+location+roundsFired). Range log and factory ammo photos are not exported (sessions import imageless). Load/range/factory-ammo logs preserve their frozen recipe snapshots where applicable; recipe re-linking is informational only (no inventory adjustments on import). Non-destructive: records not in the file are left untouched.
 
 - **Consistent UX across the app**
   - Click any row to edit (or view for range sessions).
@@ -118,6 +127,7 @@ pnpm dev
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
+  - `factory-ammo/` – factory ammo (list, new, [id], [id]/edit) + nested `sessions/` subdomain (new, [sessionId], [sessionId]/edit) — reuses `ChronographImport` (via a `namespace` prop) and `lib/moa.ts`
   - `settings/` – AI model configuration (singleton `AiSettings` row) + `SettingsForm` + `Test connection`
 - `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test and the recipe AI safety check
 - `i18n/routing.ts` + `i18n/request.ts` – next-intl routing (`locales: ['en','da']`, `localePrefix: 'never'`) and request config (loads `messages/<locale>.json`, `timeZone: 'Europe/Copenhagen'`)
@@ -126,6 +136,7 @@ pnpm dev
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
+- `public/uploads/factory-ammo/` – user-uploaded factory-ammo photos (created at runtime)
 - `docker-compose.yml` / `Dockerfile` – the canonical dev environment
 
 ## Development Notes

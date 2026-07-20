@@ -669,6 +669,246 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// Factory ammo export / import
+//
+// Bundles FactoryAmmo rows with their sessions, shots, and groups. Photos
+// (boxImageFilename / roundImageFilename) are dropped on export — sessions
+// import imageless, mirroring the range-log rule. Match by brand+model+caliber
+// (case-insensitive); sessions matched by date+location+roundsFired. Shots and
+// groups are replaced wholesale on update (same transaction pattern as range
+// logs). No inventory adjustments on import — `amount` is overwritten from the
+// file (it's hand-edited, not transactional), but no deductions happen.
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface FactoryAmmoShotExport { shotIndex: number; velocity: number }
+export interface FactoryAmmoGroupExport {
+  distanceM: number; shotCount: number; groupSizeMm: number; moa: number; notes: string | null
+}
+export interface FactoryAmmoSessionExport {
+  date: string
+  location: string | null
+  conditions: string | null
+  roundsFired: number
+  velocityMin: number | null
+  velocityMax: number | null
+  velocityAvg: number | null
+  extremeSpread: number | null
+  stdDev: number | null
+  notes: string | null
+  shots: FactoryAmmoShotExport[]
+  groups: FactoryAmmoGroupExport[]
+}
+export interface FactoryAmmoExportItem {
+  brand: string
+  model: string
+  caliber: string
+  amount: number
+  projectileWeight: number | null
+  projectileWeightUnit: 'GR' | 'G'
+  notes: string | null
+  sessions: FactoryAmmoSessionExport[]
+}
+export interface FactoryAmmoExport {
+  version: number
+  exportedAt: string
+  factoryAmmo: FactoryAmmoExportItem[]
+}
+
+export async function exportFactoryAmmo(): Promise<string> {
+  const ammos = await prisma.factoryAmmo.findMany({
+    include: {
+      caliber: true,
+      sessions: {
+        include: {
+          shots: { orderBy: { shotIndex: 'asc' } },
+          groups: { orderBy: { createdAt: 'asc' } },
+        },
+        orderBy: { date: 'asc' },
+      },
+    },
+    orderBy: { createdAt: 'asc' },
+  })
+
+  const data: FactoryAmmoExport = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    factoryAmmo: ammos.map((a) => ({
+      brand: a.brand,
+      model: a.model,
+      caliber: a.caliber.name,
+      amount: a.amount,
+      projectileWeight: a.projectileWeight,
+      projectileWeightUnit: a.projectileWeightUnit,
+      notes: a.notes,
+      sessions: a.sessions.map((s) => ({
+        date: s.date.toISOString(),
+        location: s.location,
+        conditions: s.conditions,
+        roundsFired: s.roundsFired,
+        velocityMin: s.velocityMin,
+        velocityMax: s.velocityMax,
+        velocityAvg: s.velocityAvg,
+        extremeSpread: s.extremeSpread,
+        stdDev: s.stdDev,
+        notes: s.notes,
+        shots: s.shots.map((sh) => ({ shotIndex: sh.shotIndex, velocity: sh.velocity })),
+        groups: s.groups.map((g) => ({
+          distanceM: g.distanceM, shotCount: g.shotCount, groupSizeMm: g.groupSizeMm,
+          moa: g.moa, notes: g.notes,
+        })),
+      })),
+    })),
+  }
+  return JSON.stringify(data, null, 2)
+}
+
+export interface FactoryAmmoImportPreview {
+  factoryAmmo: { created: number; updated: number }
+}
+
+function factoryAmmoKey(brand: string, model: string, caliber: string): string {
+  return `${brand.trim().toLowerCase()}|${model.trim().toLowerCase()}|${caliber.trim().toLowerCase()}`
+}
+
+function factoryAmmoSessionKey(date: Date, location: string | null, roundsFired: number): string {
+  return `${date.getTime()}|${(location ?? '').trim().toLowerCase()}|${roundsFired}`
+}
+
+export async function previewFactoryAmmoImport(jsonString: string): Promise<FactoryAmmoImportPreview> {
+  const data = parseExport(jsonString, ['factoryAmmo']) as FactoryAmmoExport
+  const existing = await prisma.factoryAmmo.findMany({ include: { caliber: true } })
+  const existingKeys = new Set(existing.map((a) => factoryAmmoKey(a.brand, a.model, a.caliber.name)))
+  let created = 0, updated = 0
+  for (const a of data.factoryAmmo) {
+    if (existingKeys.has(factoryAmmoKey(a.brand, a.model, a.caliber))) updated++
+    else created++
+  }
+  return { factoryAmmo: { created, updated } }
+}
+
+export async function executeFactoryAmmoImport(jsonString: string): Promise<FactoryAmmoImportPreview> {
+  const data = parseExport(jsonString, ['factoryAmmo']) as FactoryAmmoExport
+
+  const existingAmmos = await prisma.factoryAmmo.findMany({
+    include: { caliber: true, sessions: true },
+  })
+  const ammoMap = new Map(
+    existingAmmos.map((a) => [factoryAmmoKey(a.brand, a.model, a.caliber.name), a]),
+  )
+
+  let created = 0, updated = 0
+
+  for (const item of data.factoryAmmo) {
+    const key = factoryAmmoKey(item.brand, item.model, item.caliber)
+    const caliberId = await resolveCaliberId(item.caliber)
+    const existing = ammoMap.get(key)
+
+    if (existing) {
+      // Update the parent row, then replace sessions wholesale.
+      await prisma.$transaction([
+        prisma.factoryAmmo.update({
+          where: { id: existing.id },
+          data: {
+            brand: item.brand,
+            model: item.model,
+            caliberId,
+            amount: item.amount,
+            projectileWeight: item.projectileWeight,
+            projectileWeightUnit: item.projectileWeightUnit,
+            notes: item.notes,
+          },
+        }),
+        // Cascade-deleting sessions would also wipe shots/groups; do it
+        // explicitly via deleteMany on each child to keep one batched tx.
+        prisma.factoryAmmoShot.deleteMany({
+          where: { session: { factoryAmmoId: existing.id } },
+        }),
+        prisma.factoryAmmoGroup.deleteMany({
+          where: { session: { factoryAmmoId: existing.id } },
+        }),
+        prisma.factoryAmmoSession.deleteMany({ where: { factoryAmmoId: existing.id } }),
+      ])
+
+      for (const s of item.sessions) {
+        const date = new Date(s.date)
+        const createdSession = await prisma.factoryAmmoSession.create({
+          data: {
+            factoryAmmoId: existing.id,
+            date,
+            location: s.location,
+            conditions: s.conditions,
+            roundsFired: s.roundsFired,
+            velocityMin: s.velocityMin,
+            velocityMax: s.velocityMax,
+            velocityAvg: s.velocityAvg,
+            extremeSpread: s.extremeSpread,
+            stdDev: s.stdDev,
+            notes: s.notes,
+          },
+        })
+        if (s.shots.length > 0) {
+          await prisma.factoryAmmoShot.createMany({
+            data: s.shots.map((sh) => ({ ...sh, sessionId: createdSession.id })),
+          })
+        }
+        if (s.groups.length > 0) {
+          await prisma.factoryAmmoGroup.createMany({
+            data: s.groups.map((g) => ({ ...g, sessionId: createdSession.id })),
+          })
+        }
+      }
+      updated++
+    } else {
+      const createdAmmo = await prisma.factoryAmmo.create({
+        data: {
+          brand: item.brand,
+          model: item.model,
+          caliberId,
+          amount: item.amount,
+          projectileWeight: item.projectileWeight,
+          projectileWeightUnit: item.projectileWeightUnit,
+          notes: item.notes,
+        },
+      })
+      for (const s of item.sessions) {
+        const date = new Date(s.date)
+        const createdSession = await prisma.factoryAmmoSession.create({
+          data: {
+            factoryAmmoId: createdAmmo.id,
+            date,
+            location: s.location,
+            conditions: s.conditions,
+            roundsFired: s.roundsFired,
+            velocityMin: s.velocityMin,
+            velocityMax: s.velocityMax,
+            velocityAvg: s.velocityAvg,
+            extremeSpread: s.extremeSpread,
+            stdDev: s.stdDev,
+            notes: s.notes,
+          },
+        })
+        if (s.shots.length > 0) {
+          await prisma.factoryAmmoShot.createMany({
+            data: s.shots.map((sh) => ({ ...sh, sessionId: createdSession.id })),
+          })
+        }
+        if (s.groups.length > 0) {
+          await prisma.factoryAmmoGroup.createMany({
+            data: s.groups.map((g) => ({ ...g, sessionId: createdSession.id })),
+          })
+        }
+      }
+      created++
+    }
+  }
+
+  revalidatePath('/factory-ammo')
+  revalidatePath('/')
+
+  return { factoryAmmo: { created, updated } }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // Combined "everything" export
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -679,19 +919,22 @@ export interface FullExport {
   recipes: RecipesExport
   loadLogs: LoadLogsExport
   rangeLogs: RangeLogsExport
+  factoryAmmo: FactoryAmmoExport
 }
 
 export async function exportEverything(): Promise<string> {
-  const [inventoryJson, recipesJson, loadLogsJson, rangeLogsJson] = await Promise.all([
+  const [inventoryJson, recipesJson, loadLogsJson, rangeLogsJson, factoryAmmoJson] = await Promise.all([
     exportInventory(),
     exportRecipes(),
     exportLoadLogs(),
     exportRangeLogs(),
+    exportFactoryAmmo(),
   ])
   const inventory = JSON.parse(inventoryJson) as InventoryExport
   const recipes = JSON.parse(recipesJson) as RecipesExport
   const loadLogs = JSON.parse(loadLogsJson) as LoadLogsExport
   const rangeLogs = JSON.parse(rangeLogsJson) as RangeLogsExport
+  const factoryAmmo = JSON.parse(factoryAmmoJson) as FactoryAmmoExport
   const full: FullExport = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -699,6 +942,7 @@ export async function exportEverything(): Promise<string> {
     recipes,
     loadLogs,
     rangeLogs,
+    factoryAmmo,
   }
   return JSON.stringify(full, null, 2)
 }

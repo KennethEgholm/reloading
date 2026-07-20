@@ -22,12 +22,15 @@ export class ChronoCsvError extends Error {
   }
 }
 
-const HEADER_PREFIX = '# Shot,Speed (mps),'
-
 export function parseChronographCsv(text: string): ParsedChronograph {
   const lines = text.split(/\r?\n/).map((l) => l.trim())
 
-  const headerIdx = lines.findIndex((l) => l.startsWith(HEADER_PREFIX))
+  // Recognize both Xero C1 variants:
+  //   Original C1:  `# Shot,Speed (mps),...`
+  //   Garmin Xero:  `#,SPEED (MPS),...`
+  // Match case-insensitively on the first two cells: the first must be `#` or
+  // `# Shot`, the second must start with `speed` and contain `mps`.
+  const headerIdx = lines.findIndex((l) => isHeaderRow(l))
   if (headerIdx === -1) {
     throw new ChronoCsvError('header', 'Not a recognized chronograph export (missing expected header).')
   }
@@ -53,6 +56,13 @@ export function parseChronographCsv(text: string): ParsedChronograph {
   }
 
   return computeAggregates(shots)
+}
+
+function isHeaderRow(line: string): boolean {
+  const cells = line.split(',').map((c) => c.trim().toLowerCase())
+  const first = cells[0]
+  const second = cells[1] ?? ''
+  return (first === '#' || first === '# shot') && second.startsWith('speed') && second.includes('mps')
 }
 
 export function computeAggregates(shots: ParsedShot[]): ParsedChronograph {

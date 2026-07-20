@@ -15,7 +15,8 @@
     "projectiles": "Projektiler",
     "propellants": "Krudt",
     "cartridges": "Hylstre",
-    "skipToContent": "Gå til indhold"
+    "skipToContent": "Gå til indhold",
+    "factoryAmmo": "Fabriksammunition"
   },
   "overview": {
     "title": "Oversigt",
@@ -36,7 +37,9 @@
       "saved": "{count, plural, one {{count} gemt} other {{count} gemt}}",
       "types": "{count, plural, one {{count} type} other {{count} typer}}",
       "pieces": "{count, plural, one {{count} stk.} other {{count} stk.}}",
-      "cases": "{count, plural, one {{count} hylster} other {{count} hylstre}}"
+      "cases": "{count, plural, one {{count} hylster} other {{count} hylstre}}",
+      "factoryAmmo": "Fabriksammunition",
+      "roundsOnHand": "{count, plural, one {{count} patron på lager} other {{count} patroner på lager}}"
     },
     "sections": {
       "rangeSessions": "Skydning",
@@ -103,7 +106,17 @@
         "amount": "Antal",
         "description": "Beskrivelse"
       },
-      "noCartridges": "Ingen hylstre tilføjet endnu."
+      "noCartridges": "Ingen hylstre tilføjet endnu.",
+      "factoryAmmo": "Fabriksammunition",
+      "factoryAmmoSummary": "{count, plural, one {{count} type} other {{count} typer}} • {rounds, plural, one {{rounds} patron} other {{rounds} patroner}}",
+      "noFactoryAmmo": "Ingen fabriksammunition tilføjet endnu.",
+      "addFirstFactoryAmmo": "Tilføj din første ammunition",
+      "factoryAmmoTable": {
+        "brand": "Mærke",
+        "model": "Model",
+        "caliber": "Kaliber",
+        "amount": "Patroner"
+      }
     }
   },
   "common": {
@@ -791,7 +804,9 @@
       "invalidFile": "Kunne ikke læse JSON-filen. Sikr at det er en gyldig eksport.",
       "importSuccess": "Import fuldført: {created} oprettet, {updated} opdateret.",
       "importFailed": "Import mislykkedes: {error}",
-      "noData": "Ingen poster fundet i filen."
+      "noData": "Ingen poster fundet i filen.",
+      "exportFactoryAmmo": "Eksportér fabriksammunition",
+      "factoryAmmo": "Fabriksammunition"
     }
   },
   "errors": {
@@ -806,5 +821,169 @@
     "addNew": "+ Tilføj ny kaliber…",
     "addPlaceholder": "f.eks. .308 Win",
     "chooseExisting": "Vælg eksisterende"
+  },
+  "factoryAmmo": {
+    "page": {
+      "title": "Fabriksammunition",
+      "subtitle": "Verificér mundingshastighed på fabriksammunition",
+      "addButton": "+ Tilføj ammunition",
+      "listTitle": "Fabriksammunition",
+      "empty": "Ingen fabriksammunition tilføjet endnu.",
+      "addFirst": "Tilføj din første ammunition",
+      "addFirstSuffix": "."
+    },
+    "new": {
+      "title": "Tilføj Fabriksammunition",
+      "subtitle": "Registrer en fabrikslæsning du vil verificere.",
+      "back": "← Tilbage til Fabriksammunition"
+    },
+    "edit": {
+      "title": "Rediger Fabriksammunition",
+      "subtitle": "Opdater detaljerne for denne ammunition.",
+      "back": "← Tilbage til ammunition"
+    },
+    "detail": {
+      "back": "← Tilbage til Fabriksammunition",
+      "edit": "Rediger",
+      "newSession": "+ Log hastighedssession",
+      "roundsOnHand": "{count, plural, one {{count} patron på lager} other {{count} patroner på lager}}",
+      "sessionsTitle": "Hastighedssessioner",
+      "noSessions": "Ingen sessioner logget endnu.",
+      "logFirst": "Log den første session",
+      "rounds": "{count, plural, one {{count} patron} other {{count} patroner}}",
+      "avgV0": "gns. {value} m/s",
+      "shotsCount": "{count, plural, one {{count} skud} other {{count} skud}}",
+      "groupsCount": "{count, plural, one {{count} gruppe} other {{count} grupper}}",
+      "groups": {
+        "title": "Præcisionsgrupper",
+        "sessionAvg": "Sessionens gns.: {value} MOA"
+      },
+      "projectileWeight": "{value} {unit}"
+    },
+    "session": {
+      "new": {
+        "title": "Log Hastighedssession",
+        "subtitle": "{brand} {model}",
+        "back": "← Tilbage til ammunition",
+        "ammoLabel": "Kaliber: {caliber}"
+      },
+      "edit": {
+        "title": "Rediger Hastighedssession",
+        "subtitle": "{brand} {model}",
+        "back": "← Tilbage til session"
+      },
+      "detail": {
+        "back": "← Tilbage til ammunition"
+      }
+    },
+    "form": {
+      "brand": "Mærke",
+      "brandPlaceholder": "f.eks. Federal",
+      "model": "Model",
+      "modelPlaceholder": "f.eks. Gold Medal Sierra MatchKing",
+      "caliber": "Kaliber",
+      "amount": "Patroner på lager",
+      "notes": "Noter",
+      "notesPlaceholder": "Lot-nummer, opgivet V0, observationer...",
+      "boxPhoto": "Billede af æske",
+      "roundPhoto": "Billede af enkelt patron",
+      "photoHint": "Maks 10 MB. JPG, PNG, GIF, WebP, HEIC, AVIF.",
+      "removePhoto": "Fjern dette billede",
+      "submit": "Gem Fabriksammunition",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "date": "Dato",
+      "location": "Sted",
+      "locationPlaceholder": "Lokal bane, 100m stand...",
+      "roundsFired": "Patroner affyret",
+      "conditions": "Forhold / Vejr",
+      "conditionsPlaceholder": "Sol, 18°C, let sidevind...",
+      "velocityMin": "Min (m/s)",
+      "velocityMax": "Max (m/s)",
+      "velocityAvg": "Gns. (m/s)",
+      "velocityES": "ES",
+      "velocitySD": "SD",
+      "importCsv": "Importér fra kronograf",
+      "csvParsed": "{count} skud parset",
+      "removeCsv": "Fjern import",
+      "editSession": "Rediger denne session",
+      "shotTable": {
+        "title": "Skud-for-skud",
+        "header": "#",
+        "velocity": "Hastighed (m/s)"
+      },
+      "groups": {
+        "title": "Præcisionsgrupper",
+        "hint": "Registrer hver målgruppe: afstand (m), antal skud og spredning (mm). MOA beregnes automatisk.",
+        "add": "+ Tilføj gruppe",
+        "remove": "×",
+        "empty": "Ingen præcisionsgrupper registreret for denne session.",
+        "distance": "Afstand (m)",
+        "shots": "Skud",
+        "size": "Spredning (mm)",
+        "notes": "Noter",
+        "notesPlaceholder": "Gruppenoter (f.eks. \"fouling shot\", \"kold løb\")"
+      },
+      "validation": {
+        "brandRequired": "Mærke er påkrævet",
+        "modelRequired": "Model er påkrævet",
+        "caliberRequired": "Kaliber er påkrævet",
+        "amountNegative": "Antal kan ikke være negativt",
+        "weightNegative": "Vægt kan ikke være negativ",
+        "unitRequired": "Enhed er påkrævet"
+      },
+      "projectileWeight": "Projektilvægt",
+      "projectileWeightPlaceholder": "f.eks. 175",
+      "weightUnit": "Enhed",
+      "unitGr": "grains (gr)",
+      "unitG": "gram (g)"
+    },
+    "table": {
+      "brand": "Mærke",
+      "model": "Model",
+      "caliber": "Kaliber",
+      "amount": "Patroner",
+      "sessions": "Sessioner",
+      "latestV0": "Seneste V0",
+      "avgMps": "gns. {value} m/s",
+      "weight": "Vægt"
+    },
+    "toast": {
+      "created": "Fabriksammunition tilføjet!",
+      "updated": "Fabriksammunition opdateret!",
+      "deleted": "Fabriksammunition slettet",
+      "deleteFailed": "Kunne ikke slette fabriksammunition",
+      "saveFailed": "Kunne ikke gemme",
+      "photoTooLarge": "Billedet \"{name}\" er for stort. Maks 10 MB.",
+      "photoInvalid": "Filen \"{name}\" er ikke et genkendeligt billede.",
+      "sessionSaved": "Session logget!",
+      "sessionUpdated": "Session opdateret!",
+      "sessionDeleted": "Session slettet",
+      "fillRequired": "Udfyld venligst alle påkrævede felter."
+    },
+    "delete": {
+      "confirm": "Slet denne fabriksammunition og alle dens sessioner?",
+      "sessionConfirm": "Slet denne hastighedssession?",
+      "button": "Slet"
+    },
+    "errors": {
+      "notFound": "Fabriksammunition ikke fundet",
+      "ammoNotFound": "Fabriksammunition ikke fundet",
+      "sessionNotFound": "Session ikke fundet",
+      "csvHeader": "Ikke en genkendt kronograf-eksport (mangler forventet header).",
+      "csvNoShots": "Ingen skud fundet i CSV (mindst 2 kræves).",
+      "csvParse": "Kunne ikke parse CSV.",
+      "csvShotsInvalid": "Ugyldige skuddata.",
+      "groupsInvalid": "Ugyldige data for præcisionsgruppe.",
+      "validation": {
+        "dateRequired": "Dato er påkrævet",
+        "roundsFiredMin": "Antal affyrede patroner skal være mindst 1",
+        "velocityMinPositive": "Minimumshastighed kan ikke være negativ",
+        "velocityMaxPositive": "Maksimumshastighed kan ikke være negativ",
+        "velocityAvgPositive": "Gennemsnitshastighed kan ikke være negativ",
+        "extremeSpreadPositive": "Ekstrem spredning kan ikke være negativ",
+        "stdDevPositive": "Standardafvigelse kan ikke være negativ"
+      }
+    }
   }
 }

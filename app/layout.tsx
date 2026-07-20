@@ -107,6 +107,13 @@ export default async function RootLayout({
                       <Image src="/images/range.svg" alt={t('range')} width={20} height={20} />
                       {t('range')}
                     </Link>
+                    <Link
+                      href="/factory-ammo"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    >
+                      <Image src="/images/factory-ammo.svg" alt={t('factoryAmmo')} width={20} height={20} />
+                      {t('factoryAmmo')}
+                    </Link>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

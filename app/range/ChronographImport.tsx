@@ -22,6 +22,13 @@ interface ChronographImportProps {
   onRemove: () => void
   isReadOnly: boolean
   existingShots?: ParsedShot[] | null
+  /**
+   * next-intl namespace to read labels/errors from. Defaults to 'range' so the
+   * range session form is unchanged; pass 'factoryAmmo' (or any other namespace
+   * that mirrors the `form.importCsv` / `errors.csvParse` keys) to reuse the
+   * component elsewhere without hard-coding range strings.
+   */
+  namespace?: string
 }
 
 export function ChronographImport({
@@ -29,8 +36,9 @@ export function ChronographImport({
   onRemove,
   isReadOnly,
   existingShots,
+  namespace = 'range',
 }: ChronographImportProps) {
-  const t = useTranslations('range')
+  const t = useTranslations(namespace)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [parsed, setParsed] = useState<ParsedChronograph | null>(
     existingShots && existingShots.length >= 2

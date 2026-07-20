@@ -14,8 +14,8 @@ graph TB
     subgraph Next["Next.js 16 App Router (app container)"]
         direction TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
-        I18N["i18n/request.ts · messages/{en,da}.json<br/>14 namespaces · t() / getTranslations()"]
-        SC["Server Components<br/>(pages: /, /recipes, /range,<br/>/logs, inventory, /settings)"]
+        I18N["i18n/request.ts · messages/{en,da}.json<br/>15 namespaces · t() / getTranslations()"]
+        SC["Server Components<br/>(pages: /, /recipes, /range, /factory-ammo,<br/>/logs, inventory, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
         subgraph Lib["lib/"]
@@ -28,7 +28,7 @@ graph TB
 
     subgraph Storage["Persistence"]
         PG[("Postgres 16<br/>postgres_data volume")]
-        FILES[("public/uploads/range-logs/<br/>UUID filenames")]
+        FILES[("public/uploads/range-logs/<br/>public/uploads/factory-ammo/<br/>UUID filenames")]
     end
 
     EXT["External AI provider<br/>(OpenAI-compatible /chat/completions)<br/>xAI Grok etc."]
@@ -74,6 +74,11 @@ erDiagram
     RangeLog |o--o| RangeLogImage : "mainImage"
     RangeLog ||--o{ RangeLogShot : "shots (cascade)"
     RangeLog ||--o{ RangeGroup : "groups (cascade)"
+
+    Caliber ||--o{ FactoryAmmo : "caliberId"
+    FactoryAmmo ||--o{ FactoryAmmoSession : "sessions (cascade)"
+    FactoryAmmoSession ||--o{ FactoryAmmoShot : "shots (cascade)"
+    FactoryAmmoSession ||--o{ FactoryAmmoGroup : "groups (cascade)"
 
     Recipe {
         string id PK
@@ -130,6 +135,43 @@ erDiagram
         float moa "server-computed"
         string notes
     }
+
+    FactoryAmmo {
+        string id PK
+        string brand
+        string model
+        string caliberId FK
+        int amount "hand-edited rounds on hand"
+        string boxImageFilename "optional photo"
+        string roundImageFilename "optional photo"
+    }
+
+    FactoryAmmoSession {
+        string id PK
+        string factoryAmmoId FK
+        datetime date
+        string location
+        int roundsFired
+        float velocityAvg
+        float extremeSpread
+        float stdDev
+    }
+
+    FactoryAmmoShot {
+        string id PK
+        string sessionId FK
+        int shotIndex
+        float velocity "m/s"
+    }
+
+    FactoryAmmoGroup {
+        string id PK
+        string sessionId FK
+        float distanceM
+        int shotCount
+        float groupSizeMm
+        float moa "server-computed"
+    }
 ```
 
 ## Key flows
@@ -175,5 +217,23 @@ sequenceDiagram
     A->>AI: chatCompletion (non-null fields only)
     AI-->>A: JSON verdict (defensive parse)
     A->>DB: persist aiVerdict/Summary/Concerns
+    end
+
+    rect rgb(30,41,59)
+    note over U,FS: FactoryAmmo create — box + round photos
+    U->>A: FormData (brand/model/caliber/amount + boxImage + roundImage)
+    A->>A: createFactoryAmmoSchema.safeParse + resolveCaliberId
+    A->>FS: write UUID files to uploads/factory-ammo/
+    A->>DB: insert FactoryAmmo (filename columns only)
+    A-->>U: redirect to /factory-ammo/[id]
+    end
+
+    rect rgb(30,41,59)
+    note over U,DB: FactoryAmmoSession — chrono import + groups
+    U->>U: select CSV → ChronographImport (namespace=factoryAmmo)
+    U->>A: FormData (shots JSON + groups JSON + replaceShots/replaceGroups)
+    A->>A: shotsSchema + groupsSchema.safeParse; recompute aggregates + MOA
+    A->>DB: TX: upsert FactoryAmmoSession + deleteMany/insertMany shots + groups
+    A-->>U: redirect to session detail
     end
 ```

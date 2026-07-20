@@ -22,6 +22,9 @@ export default async function Overview() {
     recentLoadLogs,
     loadCount,
     loadSum,
+    factoryAmmo,
+    factoryAmmoTotalRounds,
+    factoryAmmoCount,
   ] = await Promise.all([
     prisma.primer.findMany({
       orderBy: { createdAt: 'desc' },
@@ -68,10 +71,18 @@ export default async function Overview() {
     }),
     prisma.loadLog.count(),
     prisma.loadLog.aggregate({ _sum: { quantity: true } }),
+    prisma.factoryAmmo.findMany({
+      include: { caliber: true },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+    }),
+    prisma.factoryAmmo.aggregate({ _sum: { amount: true } }),
+    prisma.factoryAmmo.count(),
   ]);
 
   const totalRounds = rangeSum._sum.roundsFired ?? 0;
   const totalLoaded = loadSum._sum.quantity ?? 0;
+  const totalFactoryAmmoRounds = factoryAmmoTotalRounds._sum.amount ?? 0;
 
   const totalPrimers = primers.reduce((sum, p) => sum + p.amount, 0);
   const totalPropellantGrams = propellants.reduce((sum, p) => sum + p.amountGr, 0);
@@ -91,7 +102,7 @@ export default async function Overview() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-10">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
@@ -102,6 +113,12 @@ export default async function Overview() {
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.loadLogs')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.loads', { count: loadCount })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsLoaded', { count: totalLoaded })}</div>
+        </div>
+
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.factoryAmmo')}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: factoryAmmoCount })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsOnHand', { count: totalFactoryAmmoRounds })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
@@ -187,6 +204,60 @@ export default async function Overview() {
           </div>
         ) : (
           <p className="text-zinc-500">{t('sections.noLoadLogs')}</p>
+        )}
+      </div>
+
+      {/* Factory Ammo Section (recent) */}
+      <div className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <img src="/images/factory-ammo.svg" alt={t('sections.factoryAmmo')} className="w-7 h-7" width={28} height={28} loading="lazy" />
+            <h2 className="font-display text-2xl font-semibold">{t('sections.factoryAmmo')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.factoryAmmoSummary', { count: factoryAmmoCount, rounds: totalFactoryAmmoRounds })}</span>
+          </div>
+          <Link
+            href="/factory-ammo"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
+          >
+            {t('sections.viewFullList')}
+          </Link>
+        </div>
+
+        {factoryAmmo.length > 0 ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                <tr>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.factoryAmmoTable.brand')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.factoryAmmoTable.model')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.factoryAmmoTable.caliber')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.factoryAmmoTable.amount')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {factoryAmmo.map((ammo) => (
+                  <tr key={ammo.id}>
+                    <td className="px-6 py-3 font-medium">
+                      <Link href={`/factory-ammo/${ammo.id}`} className="hover:underline">
+                        {ammo.brand}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{ammo.model}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{ammo.caliber.name}</td>
+                    <td className="px-6 py-3 text-right font-mono">{ammo.amount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-zinc-500">
+            {t('sections.noFactoryAmmo')}{' '}
+            <Link href="/factory-ammo/new" className="text-accent hover:text-accent-hover hover:underline">
+              {t('sections.addFirstFactoryAmmo')}
+            </Link>
+            .
+          </p>
         )}
       </div>
 

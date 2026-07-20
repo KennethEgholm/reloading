@@ -100,4 +100,28 @@ AVERAGE SPEED,955,,,,,,`
       expect((e as ChronoCsvError).kind).toBe('parse')
     }
   })
+
+  it('parses the Garmin Xero CSV variant (#,SPEED (MPS),...) with spaced cells', () => {
+    const csv = `"Other session started at 17:55"
+#,SPEED (MPS),Δ AVG (MPS),KE (J),POWER FACTOR (N⋅S),TIME,CLEAN BORE,COLD BORE,SHOT NOTES
+1, 382.2, -4.1, , , 17.58.32, , , 
+2, 390.4, 4.1, , , 17.59.12, , , 
+3, 386.1, 0.0, , , 18.00.02, , , 
+
+-,,,,,,
+AVERAGE SPEED,386.3,,,,,,,
+STD DEV,4.1,,,,,,,
+SPREAD,8.3,,,,,,,
+DATE, "19 July 2026 at 17.55",,,,,
+All shots included in the calculations,,,,,,,﻿`
+    const r = parseChronographCsv(csv)
+    expect(r.shots).toHaveLength(3)
+    expect(r.shots[0]).toEqual({ shotIndex: 1, velocity: 382.2 })
+    expect(r.shots[2]).toEqual({ shotIndex: 3, velocity: 386.1 })
+    expect(r.velocityMin).toBe(382)
+    expect(r.velocityMax).toBe(390)
+    expect(r.velocityAvg).toBe(386)
+    expect(r.extremeSpread).toBeCloseTo(8.2, 1)
+    expect(r.roundsFired).toBe(3)
+  })
 })
