@@ -1,37 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Single long .30-06 style cartridge, vertically centered for crossing -->
-  <defs>
-    <g id="cartridge">
-      <!-- Long brass case body -->
-      <rect x="43" y="10" width="14" height="65" rx="1" fill="#C5A26F"/>
-      <!-- Case highlight -->
-      <rect x="44" y="11" width="3.5" height="63" rx="0.5" fill="#E2C78F" opacity="0.4"/>
-      <!-- Darker edge for roundness -->
-      <rect x="43" y="10" width="2" height="65" rx="1" fill="#9A7A3A" opacity="0.5"/>
-
-      <!-- Shoulder -->
-      <path d="M43 10 L46.5 4 L53.5 4 L57 10" fill="#A67C52"/>
-      
-      <!-- Neck -->
-      <rect x="46.5" y="0" width="7" height="5" rx="0.5" fill="#C5A26F"/>
-      
-      <!-- Bullet (longer spitzer) -->
-      <path d="M50 0 Q43 4 44 9 L56 9 Q57 4 50 0" fill="#B87333"/>
-      <!-- Bullet highlight -->
-      <path d="M50 1 Q45 4 46 7" fill="none" stroke="#D4A574" stroke-width="1.3" opacity="0.4"/>
-      
-      <!-- Base / rim -->
-      <rect x="41" y="73" width="18" height="6" rx="1" fill="#3D3D3D"/>
-      <rect x="40" y="75" width="20" height="2" fill="#222"/>
-    </g>
-  </defs>
-
-  <!-- Back cartridge -->
-  <use href="#cartridge" transform="rotate(-36 50 50)"/>
-  
-  <!-- Front cartridge (drawn after so it sits on top) -->
-  <use href="#cartridge" transform="rotate(36 50 50)"/>
-  
-  <!-- Crossing shadow for depth -->
-  <ellipse cx="50" cy="52" rx="6" ry="4" fill="#000" opacity="0.12" transform="rotate(-5 50 52)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g transform="rotate(32 50 50)">
+    <rect x="36" y="76" width="28" height="9" rx="1.5" fill="#2C2A27"/>
+    <path d="M40 76 V36 L44 26 V22 H56 V26 L60 36 V76 Z" fill="#C5A26F"/>
+    <path d="M44 22 C44 12 47.5 6 50 4 C52.5 6 56 12 56 22 Z" fill="#B87333"/>
+  </g>
 </svg>
