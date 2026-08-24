@@ -111,7 +111,7 @@ export function createPropellantSchema(t: Translator) {
   return z.object({
     brand: z.string().trim().min(1, t('form.validation.brandRequired')),
     type: z.string().trim().min(1, t('form.validation.typeRequired')),
-    amountGr: z.coerce.number().min(0, t('form.validation.amountNegative')),
+    amountGr: z.coerce.number().min(0, t('form.validation.amountNegative')).transform((n) => Math.round(n)),
     description: z.string().nullish().transform((v) => v?.trim() || null),
   })
 }

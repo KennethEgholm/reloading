@@ -14,7 +14,7 @@ export default async function RangeLogPage({
   const logs = await getRangeLogs()
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="w-full px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="font-display text-3xl font-semibold tracking-tight">{t('page.title')}</h1>

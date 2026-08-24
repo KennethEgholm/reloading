@@ -79,17 +79,18 @@
       },
       "noPrimers": "Ingen fænghætter tilføjet endnu.",
       "projectiles": "Projektiler",
-      "projectileSummary": "({count} typer)",
+      "projectileSummary": "({count} typer • {pieces} stk.)",
       "projectileTable": {
         "brand": "Mærke",
         "type": "Type",
         "weight": "Vægt (gr)",
         "caliber": "Kaliber",
+        "amount": "Antal",
         "description": "Beskrivelse"
       },
       "noProjectiles": "Ingen projektiler tilføjet endnu.",
       "propellants": "Krudt",
-      "propellantSummary": "({count} typer)",
+      "propellantSummary": "({count} typer • {grams} g)",
       "propellantTable": {
         "brand": "Mærke",
         "type": "Type",
@@ -127,7 +128,8 @@
     "cancel": "Annuller",
     "add": "Tilføj",
     "loading": "Indlæser...",
-    "empty": "—"
+    "empty": "—",
+    "total": "I alt"
   },
   "localeSwitcher": {
     "label": "Sprog",
@@ -348,6 +350,7 @@
       "back": "← Tilbage til recepturer",
       "logLoad": "Log en ladning",
       "logRange": "Log skydning",
+      "edit": "Rediger",
       "recipeDetails": "Receptdetaljer",
       "projectile": "Projektil",
       "propellant": "Krudt",

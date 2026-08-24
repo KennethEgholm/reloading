@@ -66,23 +66,23 @@ export default async function LoadLogDetailPage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.charge')}</div>
-              <div className="font-medium mt-1">{log.chargeGr ? `${log.chargeGr} gr` : '—'}</div>
+              <div className="font-medium font-mono mt-1">{log.chargeGr ? `${log.chargeGr} gr` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.coal')}</div>
-              <div className="font-medium mt-1">{log.coal ? `${log.coal} in` : '—'}</div>
+              <div className="font-medium font-mono mt-1">{log.coal ? `${log.coal} in` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.calcV0')}</div>
-              <div className="font-medium mt-1">{log.calculatedV0 ? `${log.calculatedV0} m/s` : '—'}</div>
+              <div className="font-medium font-mono mt-1">{log.calculatedV0 ? `${log.calculatedV0} m/s` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.measV0')}</div>
-              <div className="font-medium mt-1">{log.measuredV0 ? `${log.measuredV0} m/s` : '—'}</div>
+              <div className="font-medium font-mono mt-1">{log.measuredV0 ? `${log.measuredV0} m/s` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.fillRate')}</div>
-              <div className="font-medium mt-1">{log.fillRate ? `${log.fillRate}%` : '—'}</div>
+              <div className="font-medium font-mono mt-1">{log.fillRate ? `${log.fillRate}%` : '—'}</div>
             </div>
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4">
               <div className="text-zinc-500 dark:text-zinc-400">{t('detail.cartridge')}</div>

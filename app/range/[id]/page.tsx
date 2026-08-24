@@ -24,26 +24,27 @@ export default async function RangeLogDetailPage({
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-10">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between flex-wrap gap-4">
         <Link href="/range" className="text-sm text-accent hover:text-accent-hover hover:underline">
           {t('detail.back')}
         </Link>
-
-        {log.recipe && (
+        <div className="flex items-center gap-3">
+          {log.recipe && (
+            <Link
+              href={`/range/new?recipeId=${log.recipe.id}`}
+              className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            >
+              {t('detail.logAnother')}
+            </Link>
+          )}
           <Link
-            href={`/range/new?recipeId=${log.recipe.id}`}
-            className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+            href={`/range/${id}/edit`}
+            className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
-            {t('detail.logAnother')}
+            {t('detail.edit')}
           </Link>
-        )}
-        <Link
-          href={`/range/${id}/edit`}
-          className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-        >
-          {t('detail.edit')}
-        </Link>
-        <DeleteRangeLogButton id={id} redirectTo="/range" />
+          <DeleteRangeLogButton id={id} redirectTo="/range" />
+        </div>
       </div>
 
       {/* Recipe snapshot frozen at the time the session was logged. Survives
@@ -57,23 +58,23 @@ export default async function RangeLogDetailPage({
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm mb-6">
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
             <div className="text-zinc-500 dark:text-zinc-400">{t('detail.charge')}</div>
-            <div className="font-medium mt-1">{log.chargeGr ? `${log.chargeGr} gr` : '—'}</div>
+            <div className="font-medium font-mono mt-1">{log.chargeGr ? `${log.chargeGr} gr` : '—'}</div>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
             <div className="text-zinc-500 dark:text-zinc-400">{t('detail.coal')}</div>
-            <div className="font-medium mt-1">{log.coal ? `${log.coal} in` : '—'}</div>
+            <div className="font-medium font-mono mt-1">{log.coal ? `${log.coal} in` : '—'}</div>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
             <div className="text-zinc-500 dark:text-zinc-400">{t('detail.calcV0')}</div>
-            <div className="font-medium mt-1">{log.calculatedV0 ? `${log.calculatedV0} m/s` : '—'}</div>
+            <div className="font-medium font-mono mt-1">{log.calculatedV0 ? `${log.calculatedV0} m/s` : '—'}</div>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
             <div className="text-zinc-500 dark:text-zinc-400">{t('detail.measV0')}</div>
-            <div className="font-medium mt-1">{log.measuredV0 ? `${log.measuredV0} m/s` : '—'}</div>
+            <div className="font-medium font-mono mt-1">{log.measuredV0 ? `${log.measuredV0} m/s` : '—'}</div>
           </div>
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
             <div className="text-zinc-500 dark:text-zinc-400">{t('detail.fillRate')}</div>
-            <div className="font-medium mt-1">{log.fillRate ? `${log.fillRate}%` : '—'}</div>
+            <div className="font-medium font-mono mt-1">{log.fillRate ? `${log.fillRate}%` : '—'}</div>
           </div>
         </div>
         <div className="space-y-2 text-sm">

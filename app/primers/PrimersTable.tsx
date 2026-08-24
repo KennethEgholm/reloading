@@ -16,7 +16,9 @@ interface PrimersTableProps {
 
 export function PrimersTable({ primers }: PrimersTableProps) {
   const t = useTranslations('primers');
+  const tc = useTranslations('common');
   const [editingPrimer, setEditingPrimer] = useState<Primer | null>(null);
+  const total = primers.reduce((sum, p) => sum + p.amount, 0);
   const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Primer, SortKey>(primers, 'brand');
 
   const handleRowClick = (primer: Primer) => {
@@ -63,7 +65,7 @@ export function PrimersTable({ primers }: PrimersTableProps) {
                 key={primer.id}
                 tabIndex={0}
                 role="button"
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(primer)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -97,6 +99,18 @@ export function PrimersTable({ primers }: PrimersTableProps) {
               </tr>
             ))}
           </tbody>
+          {sorted.length > 0 && (
+            <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+              <tr>
+                <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
+                <td />
+                <td className="px-6 py-3 text-right font-mono font-medium">{total}</td>
+                <td />
+                <td />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

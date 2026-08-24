@@ -11,7 +11,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 - **Inventory Management**
   - Primers: brand, type (Small Rifle / Large Rifle / Small Pistol / Large Pistol), magnum flag, amount, description.
   - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), caliber, amount, description.
-  - Propellants: brand, type, amount (grams, displayed to 1 decimal), description.
+  - Propellants: brand, type, amount (grams, displayed as a whole number), description.
   - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
   - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
 
@@ -101,6 +101,7 @@ docker compose up
 On first start (and after schema changes) the container runs:
 - `pnpm install --ignore-scripts --prefer-offline`
 - `pnpm prisma generate`
+- `pnpm prisma migrate deploy` (applies pending migrations to a fresh or existing DB)
 - native rebuilds for sharp / prisma
 - `pnpm dev`
 
@@ -134,7 +135,7 @@ pnpm dev
 - `middleware.ts` – locale detection (cookie → `Accept-Language` → default `en`), sets `x-next-intl-locale` header
 - `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (14 namespaces)
 - `prisma/schema.prisma` + `migrations/`
-- `public/images/` – nav icons (primer, projectile, etc.) + logo
+- `public/images/` – nav icons (primer, projectile, etc.) + logo (seated round) + favicon (case head)
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
 - `public/uploads/factory-ammo/` – user-uploaded factory-ammo photos (created at runtime)
 - `docker-compose.yml` / `Dockerfile` – the canonical dev environment

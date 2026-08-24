@@ -16,7 +16,9 @@ interface ProjectilesTableProps {
 
 export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
   const t = useTranslations('projectiles');
+  const tc = useTranslations('common');
   const [editingProjectile, setEditingProjectile] = useState<Projectile | null>(null);
+  const total = projectiles.reduce((sum, p) => sum + p.amount, 0);
   const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Projectile, SortKey>(projectiles, 'brand');
 
   const handleRowClick = (projectile: Projectile) => {
@@ -64,7 +66,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
                 key={projectile.id}
                 tabIndex={0}
                 role="button"
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(projectile)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -89,6 +91,19 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
               </tr>
             ))}
           </tbody>
+          {sorted.length > 0 && (
+            <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+              <tr>
+                <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
+                <td />
+                <td />
+                <td className="px-6 py-3 text-right font-mono font-medium">{total}</td>
+                <td />
+                <td />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

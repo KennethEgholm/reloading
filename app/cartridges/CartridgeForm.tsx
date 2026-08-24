@@ -161,7 +161,7 @@ export function CartridgeForm({ action, defaultValues, calibers, title, submitLa
             aria-modal="true"
             aria-labelledby="cartridge-modal-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+            className="bg-white dark:bg-zinc-900 w-full max-w-md max-h-[90vh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
           >
             <h2 id="cartridge-modal-title" className="text-xl font-semibold mb-6">{title}</h2>
 

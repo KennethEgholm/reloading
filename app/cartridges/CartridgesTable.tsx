@@ -17,9 +17,11 @@ interface CartridgesTableProps {
 
 export function CartridgesTable({ cartridges, calibers }: CartridgesTableProps) {
   const t = useTranslations('cartridges');
+  const tc = useTranslations('common');
   const locale = useLocale();
   const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
   const [editingCartridge, setEditingCartridge] = useState<CartridgeWithCaliber | null>(null);
+  const total = cartridges.reduce((sum, c) => sum + c.amount, 0);
   const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<CartridgeWithCaliber, SortKey>(cartridges, 'brand');
 
   const handleRowClick = (cartridge: CartridgeWithCaliber) => {
@@ -66,7 +68,7 @@ export function CartridgesTable({ cartridges, calibers }: CartridgesTableProps) 
                 key={cartridge.id}
                 tabIndex={0}
                 role="button"
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(cartridge)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -90,6 +92,18 @@ export function CartridgesTable({ cartridges, calibers }: CartridgesTableProps) 
               </tr>
             ))}
           </tbody>
+          {sorted.length > 0 && (
+            <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+              <tr>
+                <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
+                <td />
+                <td className="px-6 py-3 text-right font-mono font-medium">{total}</td>
+                <td />
+                <td />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

@@ -79,17 +79,18 @@
       },
       "noPrimers": "No primers added yet.",
       "projectiles": "Projectiles",
-      "projectileSummary": "({count} types)",
+      "projectileSummary": "({count} types • {pieces} pieces)",
       "projectileTable": {
         "brand": "Brand",
         "type": "Type",
         "weight": "Weight (gr)",
         "caliber": "Caliber",
+        "amount": "Amount",
         "description": "Description"
       },
       "noProjectiles": "No projectiles added yet.",
       "propellants": "Propellants",
-      "propellantSummary": "({count} types)",
+      "propellantSummary": "({count} types • {grams} g)",
       "propellantTable": {
         "brand": "Brand",
         "type": "Type",
@@ -127,7 +128,8 @@
     "cancel": "Cancel",
     "add": "Add",
     "loading": "Loading...",
-    "empty": "—"
+    "empty": "—",
+    "total": "Total"
   },
   "localeSwitcher": {
     "label": "Language",
@@ -348,6 +350,7 @@
       "back": "← Back to Recipes",
       "logLoad": "Log a load",
       "logRange": "Log range session",
+      "edit": "Edit",
       "recipeDetails": "Recipe Details",
       "projectile": "Projectile",
       "propellant": "Propellant",

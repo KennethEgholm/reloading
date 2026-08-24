@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t('title'),
     description: t('description'),
     icons: {
-      icon: "/images/logo.svg",
+      icon: "/images/favicon.svg",
     },
   };
 }
@@ -78,7 +78,7 @@ export default async function RootLayout({
           <ThemeApplier />
           <NextIntlClientProvider messages={messages}>
             <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-              <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+              <div className="w-full px-6 h-14 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Link href="/" className="flex items-center gap-2.5">
                     <img src="/images/logo.svg" alt={t('home')} className="w-9 h-9" width={36} height={36} />

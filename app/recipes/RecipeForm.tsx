@@ -269,7 +269,7 @@ export function RecipeForm({
             aria-modal="true"
             aria-labelledby="recipe-modal-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-zinc-900 w-full max-w-2xl rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+            className="bg-white dark:bg-zinc-900 w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
           >
             <h2 id="recipe-modal-title" className="text-xl font-semibold mb-6">{displayTitle}</h2>
 

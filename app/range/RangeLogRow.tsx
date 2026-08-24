@@ -48,7 +48,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
         onClick={goToDetail}
         tabIndex={0}
         role="link"
-        className="block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer focus:outline-none"
+        className="block bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer"
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -64,7 +64,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
                 e.stopPropagation();
                 setShowPhotoOverlay(true);
               }}
-              className="flex-shrink-0 focus:outline-none"
+              className="flex-shrink-0"
               aria-label={t('row.photoCount', { count: 1 })}
             >
               <img

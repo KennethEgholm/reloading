@@ -76,6 +76,22 @@ export type FactoryAmmoWithCaliber = Prisma.FactoryAmmoGetPayload<{
   include: { caliber: true }
 }>
 
+export type FactoryAmmoListItem = Prisma.FactoryAmmoGetPayload<{
+  include: {
+    caliber: true
+    sessions: {
+      select: {
+        id: true
+        date: true
+        velocityAvg: true
+        extremeSpread: true
+        stdDev: true
+        roundsFired: true
+      }
+    }
+  }
+}>
+
 // A FactoryAmmoSession as returned by the detail query: shots + groups included
 // and ordered. Consumed as the `initialData` of FactoryAmmoSessionForm.
 export type FactoryAmmoSessionWithChildren = Prisma.FactoryAmmoSessionGetPayload<{

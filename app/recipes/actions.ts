@@ -317,6 +317,8 @@ export async function updateRecipe(id: string, formData: FormData) {
   })
 
   revalidatePath('/recipes')
+  revalidatePath(`/recipes/${id}`)
+  revalidatePath('/')
 }
 
 export async function getRecipeById(id: string) {

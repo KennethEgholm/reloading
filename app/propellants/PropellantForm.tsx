@@ -13,7 +13,7 @@ function createPropellantSchema(t: (key: string) => string) {
   return z.object({
     brand: z.string().min(1, t('form.validation.brandRequired')),
     type: z.string().min(1, t('form.validation.typeRequired')),
-    amountGr: z.coerce.number().min(0, t('form.validation.amountNegative')),
+    amountGr: z.coerce.number().min(0, t('form.validation.amountNegative')).transform((n) => Math.round(n)),
     description: z.string().optional(),
   });
 }
@@ -55,7 +55,7 @@ export function PropellantForm({ action, defaultValues, title, submitLabel, open
     defaultValues: {
       brand: defaultValues?.brand || '',
       type: defaultValues?.type || '',
-      amountGr: defaultValues?.amountGr ?? 0,
+      amountGr: Math.round(defaultValues?.amountGr ?? 0),
       description: defaultValues?.description || '',
     },
   });
@@ -120,7 +120,7 @@ export function PropellantForm({ action, defaultValues, title, submitLabel, open
       reset({
         brand: defaultValues.brand || '',
         type: defaultValues.type || '',
-        amountGr: defaultValues.amountGr ?? 0,
+        amountGr: Math.round(defaultValues.amountGr ?? 0),
         description: defaultValues.description || '',
       });
     }
@@ -145,7 +145,7 @@ export function PropellantForm({ action, defaultValues, title, submitLabel, open
             aria-modal="true"
             aria-labelledby="propellant-modal-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+            className="bg-white dark:bg-zinc-900 w-full max-w-md max-h-[90vh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
           >
             <h2 id="propellant-modal-title" className="text-xl font-semibold mb-6">{title}</h2>
 
@@ -186,8 +186,8 @@ export function PropellantForm({ action, defaultValues, title, submitLabel, open
                 <input
                   id="propellant-amount"
                   type="number"
-                  step="0.1"
-                  inputMode="decimal"
+                  step="1"
+                  inputMode="numeric"
                   autoComplete="off"
                   aria-describedby="propellant-amount-error"
                   {...register('amountGr')}

@@ -128,6 +128,9 @@ describe('createPropellantSchema', () => {
     const schema = createPropellantSchema(t)
     expect(schema.safeParse({ brand: 'Vihtavuori', type: 'N140', amountGr: '-1' }).success).toBe(false)
     expect(schema.safeParse({ brand: 'Vihtavuori', type: 'N140', amountGr: '0' }).success).toBe(true)
+    const rounded = schema.safeParse({ brand: 'Vihtavuori', type: 'N140', amountGr: '247.399999999' })
+    expect(rounded.success).toBe(true)
+    if (rounded.success) expect(rounded.data.amountGr).toBe(247)
   })
 })
 

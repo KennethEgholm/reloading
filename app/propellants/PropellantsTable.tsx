@@ -16,9 +16,11 @@ interface PropellantsTableProps {
 
 export function PropellantsTable({ propellants }: PropellantsTableProps) {
   const t = useTranslations('propellants');
+  const tc = useTranslations('common');
   const locale = useLocale();
-  const fmt1 = useMemo(() => new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), [locale]);
+  const fmt0 = useMemo(() => new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }), [locale]);
   const [editingPropellant, setEditingPropellant] = useState<Propellant | null>(null);
+  const total = propellants.reduce((sum, p) => sum + p.amountGr, 0);
   const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<Propellant, SortKey>(propellants, 'brand');
 
   const handleRowClick = (propellant: Propellant) => {
@@ -64,7 +66,7 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
                 key={propellant.id}
                 tabIndex={0}
                 role="button"
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(propellant)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -76,7 +78,7 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
                 <td className="px-6 py-4 font-medium">{propellant.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{propellant.type}</td>
                 <td className="px-6 py-4 text-right font-mono font-medium">
-                  {fmt1.format(propellant.amountGr)}
+                  {fmt0.format(propellant.amountGr)}
                 </td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400 text-sm max-w-xs truncate">
                   {propellant.description || '—'}
@@ -87,6 +89,17 @@ export function PropellantsTable({ propellants }: PropellantsTableProps) {
               </tr>
             ))}
           </tbody>
+          {sorted.length > 0 && (
+            <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+              <tr>
+                <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
+                <td className="px-6 py-3 text-right font-mono font-medium">{fmt0.format(total)}</td>
+                <td />
+                <td />
+              </tr>
+            </tfoot>
+          )}
         </table>
       </div>
 

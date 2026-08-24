@@ -1,7 +1,9 @@
 import Link from 'next/link'
 import { getLocale, getTranslations } from 'next-intl/server'
+import { prisma } from '@/lib/prisma'
 import { getRecipeById, getRecipeAccuracyGroups } from '../actions'
 import { RecipeAiCheck } from './RecipeAiCheck'
+import { RecipeEditButton } from './RecipeEditButton'
 import { formatDate } from '@/lib/format'
 import { averageMoa } from '@/lib/moa'
 
@@ -19,7 +21,14 @@ export default async function RecipeDetailPage({
     return <div className="max-w-4xl mx-auto px-6 py-10">{t('detail.notFound')}</div>
   }
 
-  const accuracyGroups = await getRecipeAccuracyGroups(id)
+  const [accuracyGroups, projectiles, propellants, primers, cartridges, calibers] = await Promise.all([
+    getRecipeAccuracyGroups(id),
+    prisma.projectile.findMany({ orderBy: { brand: 'asc' } }),
+    prisma.propellant.findMany({ orderBy: { brand: 'asc' } }),
+    prisma.primer.findMany({ orderBy: { brand: 'asc' } }),
+    prisma.cartridge.findMany({ include: { caliber: true }, orderBy: { brand: 'asc' } }),
+    prisma.caliber.findMany({ orderBy: { name: 'asc' } }),
+  ])
   const accuracyAvg = averageMoa(accuracyGroups.map((g) => g.moa))
 
   return (
@@ -49,6 +58,14 @@ export default async function RecipeDetailPage({
           >
             {t('detail.logRange')}
           </Link>
+          <RecipeEditButton
+            recipe={recipe}
+            projectiles={projectiles}
+            propellants={propellants}
+            primers={primers}
+            cartridges={cartridges}
+            calibers={calibers}
+          />
         </div>
       </div>
 
@@ -86,24 +103,24 @@ export default async function RecipeDetailPage({
 
           <div>
             <div className="text-zinc-500">{t('detail.charge')}</div>
-            <div className="font-medium">{recipe.chargeGr ? `${recipe.chargeGr} gr` : t('detail.none')}</div>
+            <div className="font-medium font-mono">{recipe.chargeGr ? `${recipe.chargeGr} gr` : t('detail.none')}</div>
           </div>
           <div>
             <div className="text-zinc-500">{t('detail.coal')}</div>
-            <div className="font-medium">{recipe.coal ? `${recipe.coal}"` : t('detail.none')}</div>
+            <div className="font-medium font-mono">{recipe.coal ? `${recipe.coal}"` : t('detail.none')}</div>
           </div>
           <div>
             <div className="text-zinc-500">{t('detail.fillRate')}</div>
-            <div className="font-medium">{recipe.fillRate ? `${recipe.fillRate}%` : t('detail.none')}</div>
+            <div className="font-medium font-mono">{recipe.fillRate ? `${recipe.fillRate}%` : t('detail.none')}</div>
           </div>
 
           <div>
             <div className="text-zinc-500">{t('detail.calcV0')}</div>
-            <div className="font-medium">{recipe.calculatedV0 ? `${recipe.calculatedV0} m/s` : t('detail.none')}</div>
+            <div className="font-medium font-mono">{recipe.calculatedV0 ? `${recipe.calculatedV0} m/s` : t('detail.none')}</div>
           </div>
           <div>
             <div className="text-zinc-500">{t('detail.measV0')}</div>
-            <div className="font-medium">{recipe.measuredV0 ? `${recipe.measuredV0} m/s` : t('detail.none')}</div>
+            <div className="font-medium font-mono">{recipe.measuredV0 ? `${recipe.measuredV0} m/s` : t('detail.none')}</div>
           </div>
         </div>
 

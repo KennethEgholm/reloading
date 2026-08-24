@@ -63,21 +63,21 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
-              <th className="text-left px-6 py-3 font-medium">{t('table.name')}</th>
-              <th className="text-left px-6 py-3 font-medium">{t('table.caliber')}</th>
-              <th className="text-left px-6 py-3 font-medium">{t('table.projectile')}</th>
-              <th className="text-left px-6 py-3 font-medium">{t('table.powder')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.charge')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.coal')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.calcV0')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.measV0')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.fill')}</th>
-              <th className="text-center px-6 py-3 font-medium">{t('table.check')}</th>
-              <th className="text-right px-6 py-3 font-medium">{t('table.possible')}</th>
+              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.name')}</th>
+              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.caliber')}</th>
+              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.projectile')}</th>
+              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.powder')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.charge')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.coal')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.calcV0')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.measV0')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.fill')}</th>
+              <th className="text-center px-3 py-3 font-medium whitespace-nowrap">{t('table.check')}</th>
+              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.possible')}</th>
               <th className="w-12"></th>
             </tr>
           </thead>
@@ -87,7 +87,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                 key={recipe.id}
                 tabIndex={0}
                 role="link"
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer focus:outline-none"
+                className="hover:bg-zinc-50 dark:hover:bg-zinc-950/50 cursor-pointer"
                 onClick={() => handleRowClick(recipe)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -96,39 +96,39 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                   }
                 }}
               >
-                <td className="px-6 py-4 font-medium">{recipe.name}</td>
-                <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
-                <td className="px-6 py-4">
+                <td className="px-3 py-4 font-medium whitespace-nowrap">{recipe.name}</td>
+                <td className="px-3 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">{recipe.caliber.name}</td>
+                <td className="px-3 py-4 whitespace-nowrap">
                   {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-3 py-4 whitespace-nowrap">
                   {recipe.propellant.brand} – {recipe.propellant.type}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
+                <td className="px-3 py-4 text-right font-mono whitespace-nowrap">
                   {recipe.chargeGr ? `${recipe.chargeGr} gr` : '—'}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
+                <td className="px-3 py-4 text-right font-mono whitespace-nowrap">
                   {recipe.coal ? `${recipe.coal}"` : '—'}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
+                <td className="px-3 py-4 text-right font-mono whitespace-nowrap">
                   {recipe.calculatedV0 ? `${recipe.calculatedV0}` : '—'}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
+                <td className="px-3 py-4 text-right font-mono whitespace-nowrap">
                   {recipe.measuredV0 ? `${recipe.measuredV0}` : '—'}
                 </td>
-                <td className="px-6 py-4 text-right font-mono">
+                <td className="px-3 py-4 text-right font-mono whitespace-nowrap">
                   {recipe.fillRate ? `${recipe.fillRate}` : '—'}
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-3 py-4 text-center">
                   <VerdictBadge verdict={recipe.aiVerdict} />
                 </td>
-                <td className="px-6 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                <td className="px-3 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                   {(() => {
                     const possible = getPossibleLoads(recipe);
                     return possible !== null ? `${possible}×` : '—';
                   })()}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                <td className="px-3 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setEditingRecipe(recipe)}
                     className="text-sm text-accent hover:text-accent-hover hover:underline mr-3"

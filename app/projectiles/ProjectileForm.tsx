@@ -153,7 +153,7 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
             aria-modal="true"
             aria-labelledby="projectile-modal-title"
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
+            className="bg-white dark:bg-zinc-900 w-full max-w-md max-h-[90vh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-xl border border-zinc-200 dark:border-zinc-800"
           >
             <h2 id="projectile-modal-title" className="text-xl font-semibold mb-6">{title}</h2>
 

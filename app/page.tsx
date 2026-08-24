@@ -7,6 +7,7 @@ import { getPossibleLoads } from '@/lib/inventory';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
+  const tCommon = await getTranslations('common');
   const locale = await getLocale();
   const fmt1 = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
@@ -85,11 +86,12 @@ export default async function Overview() {
   const totalFactoryAmmoRounds = factoryAmmoTotalRounds._sum.amount ?? 0;
 
   const totalPrimers = primers.reduce((sum, p) => sum + p.amount, 0);
+  const totalProjectiles = projectiles.reduce((sum, p) => sum + p.amount, 0);
   const totalPropellantGrams = propellants.reduce((sum, p) => sum + p.amountGr, 0);
   const totalCases = cartridges.reduce((sum, c) => sum + c.amount, 0);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
+    <div className="w-full px-6 py-10">
       {/* Header */}
       <div className="mb-10">
         <div className="flex items-center gap-4 mb-2">
@@ -134,11 +136,12 @@ export default async function Overview() {
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.projectiles')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: projectiles.length })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.pieces', { count: totalProjectiles })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: fmt1.format(totalPropellantGrams) })}</div>
+          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: Math.round(totalPropellantGrams) })}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
@@ -278,7 +281,7 @@ export default async function Overview() {
         </div>
 
         {recipes.length > 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
@@ -408,6 +411,15 @@ export default async function Overview() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <tr>
+                  <td className="px-6 py-3 font-medium">{tCommon('total')}</td>
+                  <td />
+                  <td />
+                  <td className="px-6 py-3 text-right font-mono font-medium">{totalPrimers}</td>
+                  <td />
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (
@@ -421,7 +433,7 @@ export default async function Overview() {
           <div className="flex items-center gap-3">
             <img src="/images/projectile.svg" alt={t('sections.projectiles')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.projectiles')}</h2>
-            <span className="text-sm text-zinc-500">{t('sections.projectileSummary', { count: projectiles.length })}</span>
+            <span className="text-sm text-zinc-500">{t('sections.projectileSummary', { count: projectiles.length, pieces: totalProjectiles })}</span>
           </div>
           <Link
             href="/projectiles"
@@ -440,6 +452,7 @@ export default async function Overview() {
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.type')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.weight')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.caliber')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.amount')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.description')}</th>
                 </tr>
               </thead>
@@ -450,12 +463,23 @@ export default async function Overview() {
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{proj.type || '—'}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.weightGr}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{proj.caliber}</td>
+                    <td className="px-6 py-3 text-right font-mono">{proj.amount}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
                       {proj.description || '—'}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <tr>
+                  <td className="px-6 py-3 font-medium">{tCommon('total')}</td>
+                  <td />
+                  <td />
+                  <td />
+                  <td className="px-6 py-3 text-right font-mono font-medium">{totalProjectiles}</td>
+                  <td />
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (
@@ -469,7 +493,7 @@ export default async function Overview() {
           <div className="flex items-center gap-3">
             <img src="/images/propellant.svg" alt={t('sections.propellants')} className="w-7 h-7" width={28} height={28} loading="lazy" />
             <h2 className="font-display text-2xl font-semibold">{t('sections.propellants')}</h2>
-            <span className="text-sm text-zinc-500">{t('sections.propellantSummary', { count: propellants.length })}</span>
+            <span className="text-sm text-zinc-500">{t('sections.propellantSummary', { count: propellants.length, grams: Math.round(totalPropellantGrams) })}</span>
           </div>
           <Link
             href="/propellants"
@@ -495,13 +519,21 @@ export default async function Overview() {
                   <tr key={prop.id}>
                     <td className="px-6 py-3 font-medium">{prop.brand}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{prop.type}</td>
-                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(prop.amountGr)}</td>
+                    <td className="px-6 py-3 text-right font-mono">{Math.round(prop.amountGr)}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
                       {prop.description || '—'}
                     </td>
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <tr>
+                  <td className="px-6 py-3 font-medium">{tCommon('total')}</td>
+                  <td />
+                  <td className="px-6 py-3 text-right font-mono font-medium">{Math.round(totalPropellantGrams)}</td>
+                  <td />
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (
@@ -552,6 +584,15 @@ export default async function Overview() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
+                <tr>
+                  <td className="px-6 py-3 font-medium">{tCommon('total')}</td>
+                  <td />
+                  <td />
+                  <td className="px-6 py-3 text-right font-mono font-medium">{totalCases}</td>
+                  <td />
+                </tr>
+              </tfoot>
             </table>
           </div>
         ) : (
