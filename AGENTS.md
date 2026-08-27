@@ -61,7 +61,7 @@ The app is **fully bilingual** (English / Danish). This touches nearly every fil
 - Stack: `db` + `app` + `cloudflared` + `github-runner`. Named volumes `postgres_data` and `uploads` (`/app/public/uploads`). No published ports — Cloudflare Tunnel reaches `http://app:3000` on the compose network. Cloudflare Access is the auth gate; the app itself has no login.
 - CI: `.github/workflows/deploy.yml`. GitHub-hosted `test` job (lint/test/build); `deploy` job on `[self-hosted, reloading]` only for `main` / `workflow_dispatch`. Deploy builds `app`, `up -d db`, `docker rm -f reloading-app`, `up -d app`, then `docker system prune -a -f`. **Never recreate `db`, `cloudflared`, or `github-runner`.** Runner registration (`.runner`) lives in the container writable layer and dies on `docker rm`; tokens expire in ~1 hour.
 - Entrypoint: `prisma migrate deploy` then `pnpm start`. `.dockerignore` must **not** exclude `prisma/migrations`.
-- SSH: `ssh reloading` (LXC 110 at `192.168.100.230`, root, Bitwarden SSH agent) or `ssh proxmox "pct exec 110 -- …"`. Do not add this guest to the nightly `vzdump` job until backups are off-host.
+- SSH: `ssh reloading` (LXC 110 at `192.168.100.230`, root). Bitwarden signs the **Nefarious Proxmox VM** ed25519 key (that pubkey is in the LXC `authorized_keys`). The laptop `~/.ssh/id_ed25519` is passphrase-protected and fails in BatchMode. Fallback: `ssh proxmox "pct exec 110 -- …"`. Do not add this guest to the nightly `vzdump` job until backups are off-host.
 - After a production change that affects topology, update this section, README, and `docs/architecture.md` in the same change.
 
 ## Dev Workflow
