@@ -5,6 +5,7 @@ import { RecipesTable } from './RecipesTable'
 import { RecipeForm } from './RecipeForm'
 import { QuickLoadImport } from './QuickLoadImport'
 import { QuickLoadImageImport } from './QuickLoadImageImport'
+import { EmptyState } from '../EmptyState'
 
 export default async function RecipesPage() {
   const t = await getTranslations('recipes')
@@ -54,9 +55,7 @@ export default async function RecipesPage() {
 
       {/* Recipes List */}
       {recipes.length === 0 ? (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-500">
-          {t('page.empty')}
-        </div>
+        <EmptyState>{t('page.empty')}</EmptyState>
       ) : (
         <RecipesTable
           recipes={recipes}

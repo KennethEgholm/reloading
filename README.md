@@ -17,7 +17,8 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Recipes**
   - Link one projectile + propellant + primer.
-  - Charge weight (grains), COAL, calculated/measured V0, fill rate, notes.
+  - Charge weight (grains), COAL, calculated/measured V0, optional zero distance (m), fill rate, notes.
+  - **Ballistics** on the recipe detail: remaining velocity, energy, and drop (MOA clicks) at 50–800 m when measured V0 and a projectile G1/G7 BC are set (`lib/ballistics.ts`, ICAO sea-level, G7 preferred). Zero distance is saved on the recipe.
   - "Possible" loads column: how many cartridges you can currently make based on on-hand inventory (min of projectile count, primer count, and propellant grains ÷ charge).
   - Quick links from recipes to "Log load" or "Log range" (prefills the recipe).
   - **AI Safety Check**: a button sends the recipe's data to the AI model configured in `/settings` and asks for an advisory assessment. Returns a structured verdict (`OK` / `CAUTION` / `STOP` / `UNKNOWN`) with a summary and specific concerns, rendered as a colored banner. A persistent disclaimer makes clear this is **advisory only** — always cross-check against published manufacturer load data; never rely on it for safety.

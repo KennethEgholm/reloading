@@ -34,7 +34,7 @@ export type CaliberOption = { id: string; name: string }
 
 // A Recipe with its component relations resolved — the shape returned by the
 // recipe list/detail queries (which `include` projectile/propellant/primer/
-// cartridge) and consumed by RecipeRow / RecipesTable / RecipeForm.
+// cartridge) and consumed by RecipesTable / RecipeForm.
 export type RecipeWithRelations = Prisma.RecipeGetPayload<{
   include: {
     caliber: true

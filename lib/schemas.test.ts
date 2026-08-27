@@ -63,6 +63,30 @@ describe('createProjectileSchema', () => {
     })
     expect(r.success && r.data.amount).toBe(0)
   })
+
+  it('coerces empty optional BCs to null', () => {
+    const r = schema().safeParse({
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '', bcG7: '',
+    })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data.bcG1).toBeNull()
+      expect(r.data.bcG7).toBeNull()
+    }
+  })
+
+  it('keeps provided BCs and rejects a negative one', () => {
+    const ok = schema().safeParse({
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '0.462', bcG7: '0.237',
+    })
+    expect(ok.success && ok.data.bcG1).toBe(0.462)
+    expect(ok.success && ok.data.bcG7).toBe(0.237)
+
+    const bad = schema().safeParse({
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '-0.1',
+    })
+    expect(bad.success).toBe(false)
+  })
 })
 
 describe('createCartridgeSchema', () => {

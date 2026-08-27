@@ -14,6 +14,14 @@ function createProjectileSchema(t: (key: string) => string) {
     brand: z.string().min(1, t('form.validation.brandRequired')),
     type: z.string().min(1, t('form.validation.typeRequired')),
     weightGr: z.coerce.number().positive(t('form.validation.weightPositive')),
+    bcG1: z.preprocess(
+      (v) => (v === '' || v == null ? undefined : v),
+      z.coerce.number().min(0, t('form.validation.bcNegative')).optional(),
+    ),
+    bcG7: z.preprocess(
+      (v) => (v === '' || v == null ? undefined : v),
+      z.coerce.number().min(0, t('form.validation.bcNegative')).optional(),
+    ),
     caliber: z.string().min(1, t('form.validation.caliberRequired')),
     amount: z.coerce.number().int().min(0).default(0),
     description: z.string().optional(),
@@ -58,6 +66,8 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
       brand: defaultValues?.brand || '',
       type: defaultValues?.type || '',
       weightGr: defaultValues?.weightGr ?? 0,
+      bcG1: defaultValues?.bcG1 ?? undefined,
+      bcG7: defaultValues?.bcG7 ?? undefined,
       caliber: defaultValues?.caliber || '',
       amount: defaultValues?.amount ?? 0,
       description: defaultValues?.description || '',
@@ -69,6 +79,8 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
     formData.append('brand', data.brand);
     formData.append('type', data.type);
     formData.append('weightGr', String(data.weightGr));
+    formData.append('bcG1', data.bcG1 !== undefined && !isNaN(data.bcG1) ? String(data.bcG1) : '');
+    formData.append('bcG7', data.bcG7 !== undefined && !isNaN(data.bcG7) ? String(data.bcG7) : '');
     formData.append('caliber', data.caliber);
     formData.append('amount', String(data.amount));
     if (data.description) formData.append('description', data.description);
@@ -127,6 +139,8 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
         brand: defaultValues.brand || '',
         type: defaultValues.type || '',
         weightGr: defaultValues.weightGr ?? 0,
+        bcG1: defaultValues.bcG1 ?? undefined,
+        bcG7: defaultValues.bcG7 ?? undefined,
         caliber: defaultValues.caliber || '',
         amount: defaultValues.amount ?? 0,
         description: defaultValues.description || '',
@@ -202,6 +216,41 @@ export function ProjectileForm({ action, defaultValues, title, submitLabel, open
                   className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
                 />
                 {errors.weightGr && <p id="projectile-weight-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.weightGr.message}</p>}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="projectile-bc-g1" className="block text-sm font-medium mb-1.5">{t('form.bcG1')}</label>
+                  <input
+                    id="projectile-bc-g1"
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    aria-describedby="projectile-bc-g1-error"
+                    {...register('bcG1')}
+                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                    placeholder={t('form.bcG1Placeholder')}
+                  />
+                  {errors.bcG1 && <p id="projectile-bc-g1-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.bcG1.message}</p>}
+                </div>
+                <div>
+                  <label htmlFor="projectile-bc-g7" className="block text-sm font-medium mb-1.5">{t('form.bcG7')}</label>
+                  <input
+                    id="projectile-bc-g7"
+                    type="number"
+                    step="0.001"
+                    min="0"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    aria-describedby="projectile-bc-g7-error"
+                    {...register('bcG7')}
+                    className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                    placeholder={t('form.bcG7Placeholder')}
+                  />
+                  {errors.bcG7 && <p id="projectile-bc-g7-error" aria-live="polite" className="text-red-600 text-xs mt-1">{errors.bcG7.message}</p>}
+                </div>
               </div>
 
               <div>

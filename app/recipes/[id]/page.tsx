@@ -3,9 +3,11 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { prisma } from '@/lib/prisma'
 import { getRecipeById, getRecipeAccuracyGroups } from '../actions'
 import { RecipeAiCheck } from './RecipeAiCheck'
+import { RecipeBallistics } from './RecipeBallistics'
 import { RecipeEditButton } from './RecipeEditButton'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatBcSuffix } from '@/lib/format'
 import { averageMoa } from '@/lib/moa'
+import { EmptyState } from '../../EmptyState'
 
 export default async function RecipeDetailPage({
   params,
@@ -76,7 +78,7 @@ export default async function RecipeDetailPage({
           <div>
             <div className="text-zinc-500">{t('detail.projectile')}</div>
             <div className="font-medium">
-              {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
+              {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
             </div>
           </div>
           <div>
@@ -131,6 +133,15 @@ export default async function RecipeDetailPage({
           </div>
         )}
       </div>
+
+      <RecipeBallistics
+        recipeId={recipe.id}
+        measuredV0={recipe.measuredV0}
+        weightGr={recipe.projectile.weightGr}
+        bcG1={recipe.projectile.bcG1}
+        bcG7={recipe.projectile.bcG7}
+        zeroDistanceM={recipe.zeroDistanceM}
+      />
 
       {/* AI Safety Check */}
       <RecipeAiCheck
@@ -199,9 +210,7 @@ export default async function RecipeDetailPage({
         </div>
 
         {recipe.rangeLogs.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center text-zinc-500">
-            {t('detail.noRangeSessions')}
-          </div>
+          <EmptyState>{t('detail.noRangeSessions')}</EmptyState>
         ) : (
           <div className="space-y-3">
             {recipe.rangeLogs.map((session) => (
@@ -246,9 +255,7 @@ export default async function RecipeDetailPage({
         </div>
 
         {recipe.loadLogs.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 text-center text-zinc-500">
-            {t('detail.noLoadLogs')}
-          </div>
+          <EmptyState>{t('detail.noLoadLogs')}</EmptyState>
         ) : (
           <div className="space-y-3">
             {recipe.loadLogs.map((load) => (

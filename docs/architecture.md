@@ -97,6 +97,7 @@ erDiagram
         float coal
         float calculatedV0
         float measuredV0
+        float zeroDistanceM "optional, meters"
         string aiVerdict "advisory only"
         string aiSummary
         string aiConcerns

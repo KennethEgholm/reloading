@@ -37,6 +37,7 @@ services:
       sh -c "
         pnpm install --ignore-scripts --prefer-offline || true &&
         pnpm prisma generate &&
+        rm -rf .next/dev/node_modules/@prisma &&
         pnpm prisma migrate deploy &&
         pnpm rebuild sharp unrs-resolver @prisma/engines prisma --silent || true &&
         pnpm dev

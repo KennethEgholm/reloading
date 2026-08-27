@@ -88,6 +88,14 @@ export function createProjectileSchema(t: Translator) {
     brand: z.string().trim().min(1, t('form.validation.brandRequired')),
     type: z.string().trim().min(1, t('form.validation.typeRequired')),
     weightGr: z.coerce.number().positive(t('form.validation.weightPositive')),
+    bcG1: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(0, t('form.validation.bcNegative')).optional(),
+    ).transform((v) => v ?? null),
+    bcG7: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(0, t('form.validation.bcNegative')).optional(),
+    ).transform((v) => v ?? null),
     caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
     amount: z.preprocess(
       emptyToUndefined,

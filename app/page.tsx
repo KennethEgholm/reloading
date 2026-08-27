@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
 import { getPossibleLoads } from '@/lib/inventory';
+import { EmptyState } from './EmptyState';
+import { formatBcSuffix } from '@/lib/format';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
@@ -173,13 +175,13 @@ export default async function Overview() {
             ))}
           </div>
         ) : (
-          <p className="text-zinc-500">
+          <EmptyState>
             {t('sections.noRangeSessions')}{' '}
             <Link href="/range/new" className="text-accent hover:text-accent-hover hover:underline">
               {t('sections.logFirstSession')}
             </Link>
             .
-          </p>
+          </EmptyState>
         )}
       </div>
 
@@ -206,7 +208,7 @@ export default async function Overview() {
             ))}
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noLoadLogs')}</p>
+          <EmptyState>{t('sections.noLoadLogs')}</EmptyState>
         )}
       </div>
 
@@ -254,13 +256,13 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">
+          <EmptyState>
             {t('sections.noFactoryAmmo')}{' '}
             <Link href="/factory-ammo/new" className="text-accent hover:text-accent-hover hover:underline">
               {t('sections.addFirstFactoryAmmo')}
             </Link>
             .
-          </p>
+          </EmptyState>
         )}
       </div>
 
@@ -303,7 +305,7 @@ export default async function Overview() {
                     <td className="px-6 py-3 font-medium">{recipe.name}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">
-                      {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
+                      {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
                     </td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">
                       {recipe.propellant.brand} – {recipe.propellant.type}
@@ -335,7 +337,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noRecipes')}</p>
+          <EmptyState>{t('sections.noRecipes')}</EmptyState>
         )}
       </div>
 
@@ -423,7 +425,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noPrimers')}</p>
+          <EmptyState>{t('sections.noPrimers')}</EmptyState>
         )}
       </div>
 
@@ -451,6 +453,8 @@ export default async function Overview() {
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.brand')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.type')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.weight')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.bcG1')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.bcG7')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.caliber')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.amount')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.description')}</th>
@@ -462,6 +466,8 @@ export default async function Overview() {
                     <td className="px-6 py-3 font-medium">{proj.brand}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{proj.type || '—'}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.weightGr}</td>
+                    <td className="px-6 py-3 text-right font-mono">{proj.bcG1 != null ? proj.bcG1 : '—'}</td>
+                    <td className="px-6 py-3 text-right font-mono">{proj.bcG7 != null ? proj.bcG7 : '—'}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{proj.caliber}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.amount}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
@@ -476,6 +482,8 @@ export default async function Overview() {
                   <td />
                   <td />
                   <td />
+                  <td />
+                  <td />
                   <td className="px-6 py-3 text-right font-mono font-medium">{totalProjectiles}</td>
                   <td />
                 </tr>
@@ -483,7 +491,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noProjectiles')}</p>
+          <EmptyState>{t('sections.noProjectiles')}</EmptyState>
         )}
       </div>
 
@@ -537,7 +545,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noPropellants')}</p>
+          <EmptyState>{t('sections.noPropellants')}</EmptyState>
         )}
       </div>
 
@@ -596,7 +604,7 @@ export default async function Overview() {
             </table>
           </div>
         ) : (
-          <p className="text-zinc-500">{t('sections.noCartridges')}</p>
+          <EmptyState>{t('sections.noCartridges')}</EmptyState>
         )}
       </div>
         </div>

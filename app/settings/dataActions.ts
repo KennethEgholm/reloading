@@ -13,7 +13,7 @@ export interface InventoryExport {
   version: number
   exportedAt: string
   primers: { brand: string; type: string; magnum: boolean; amount: number; description: string | null }[]
-  projectiles: { brand: string; type: string | null; weightGr: number; caliber: string; amount: number; description: string | null }[]
+  projectiles: { brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null; caliber: string; amount: number; description: string | null }[]
   propellants: { brand: string; type: string; amountGr: number; description: string | null }[]
   cartridges: { brand: string; caliber: string; waterCapacityGr: number | null; amount: number; description: string | null }[]
 }
@@ -40,6 +40,8 @@ export async function exportInventory(): Promise<string> {
       brand: p.brand,
       type: p.type,
       weightGr: p.weightGr,
+      bcG1: p.bcG1,
+      bcG7: p.bcG7,
       caliber: p.caliber,
       amount: p.amount,
       description: p.description,
@@ -124,10 +126,10 @@ export async function executeInventoryImport(jsonString: string): Promise<Import
     const key = item.brand + '|' + item.caliber
     const existing = projectileMap.get(key)
     if (existing) {
-      await prisma.projectile.update({ where: { id: existing.id }, data: { type: item.type, weightGr: item.weightGr, amount: item.amount, description: item.description } })
+      await prisma.projectile.update({ where: { id: existing.id }, data: { type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, amount: item.amount, description: item.description } })
       projectileUpdated++
     } else {
-      await prisma.projectile.create({ data: { brand: item.brand, type: item.type, weightGr: item.weightGr, caliber: item.caliber, amount: item.amount, description: item.description } })
+      await prisma.projectile.create({ data: { brand: item.brand, type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, caliber: item.caliber, amount: item.amount, description: item.description } })
       projectileCreated++
     }
   }
@@ -182,10 +184,11 @@ export interface RecipeExportItem {
   coal: number | null
   calculatedV0: number | null
   measuredV0: number | null
+  zeroDistanceM: number | null
   fillRate: number | null
   notes: string | null
   primer: { brand: string; type: string; magnum: boolean } | null
-  projectile: { brand: string; caliber: string; type: string | null; weightGr: number }
+  projectile: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null }
   propellant: { brand: string; type: string }
   cartridge: { brand: string; caliber: string; waterCapacityGr: number | null } | null
 }
@@ -218,10 +221,11 @@ export async function exportRecipes(): Promise<string> {
       coal: r.coal,
       calculatedV0: r.calculatedV0,
       measuredV0: r.measuredV0,
+      zeroDistanceM: r.zeroDistanceM,
       fillRate: r.fillRate,
       notes: r.notes,
       primer: r.primer ? { brand: r.primer.brand, type: r.primer.type, magnum: r.primer.magnum } : null,
-      projectile: { brand: r.projectile.brand, caliber: r.projectile.caliber, type: r.projectile.type, weightGr: r.projectile.weightGr },
+      projectile: { brand: r.projectile.brand, caliber: r.projectile.caliber, type: r.projectile.type, weightGr: r.projectile.weightGr, bcG1: r.projectile.bcG1, bcG7: r.projectile.bcG7 },
       propellant: { brand: r.propellant.brand, type: r.propellant.type },
       cartridge: r.cartridge ? { brand: r.cartridge.brand, caliber: r.cartridge.caliber.name, waterCapacityGr: r.cartridge.waterCapacityGr } : null,
     })),
@@ -278,6 +282,7 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
       coal: item.coal,
       calculatedV0: item.calculatedV0,
       measuredV0: item.measuredV0,
+      zeroDistanceM: item.zeroDistanceM ?? null,
       fillRate: item.fillRate,
       notes: item.notes,
     }
@@ -475,6 +480,12 @@ export interface RangeGroupExport {
   notes: string | null
 }
 
+export interface RangeLogImageExport {
+  filename: string
+  description: string | null
+  isMain: boolean
+}
+
 export interface RangeLogExportItem {
   date: string
   location: string | null
@@ -506,12 +517,6 @@ export interface RangeLogExportItem {
   shots: RangeLogShotExport[]
   groups: RangeGroupExport[]
   images?: RangeLogImageExport[]
-}
-
-export interface RangeLogImageExport {
-  filename: string
-  description: string | null
-  isMain: boolean
 }
 
 export interface RangeLogsExport {
@@ -1053,13 +1058,13 @@ async function resolvePrimer(
 }
 
 async function resolveProjectile(
-  ref: { brand: string; caliber: string; type: string | null; weightGr: number },
+  ref: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1?: number | null; bcG7?: number | null },
   existing: { id: string; brand: string; caliber: string }[],
 ): Promise<string> {
   const match = existing.find((p) => p.brand === ref.brand && p.caliber === ref.caliber)
   if (match) return match.id
   const created = await prisma.projectile.create({
-    data: { brand: ref.brand, caliber: ref.caliber, type: ref.type, weightGr: ref.weightGr, amount: 0, description: null },
+    data: { brand: ref.brand, caliber: ref.caliber, type: ref.type, weightGr: ref.weightGr, bcG1: ref.bcG1 ?? null, bcG7: ref.bcG7 ?? null, amount: 0, description: null },
   })
   return created.id
 }

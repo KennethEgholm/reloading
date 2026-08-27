@@ -1,11 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { RecipeForm } from './RecipeForm';
 import { DeleteRecipeButton } from './DeleteRecipeButton';
+import { SortIndicator } from '../SortIndicator';
+import { useSortBy } from '@/lib/useSortBy';
 import { getPossibleLoads } from '@/lib/inventory';
+import { formatBcSuffix } from '@/lib/format';
 import type {
   RecipeWithRelations,
   Projectile,
@@ -15,7 +18,6 @@ import type {
   CaliberOption,
 } from '@/lib/types';
 
-// Compact verdict badge for the list. Renders nothing until a check has run.
 function VerdictBadge({ verdict }: { verdict: string | null }) {
   const t = useTranslations('recipes')
   if (!verdict) return <span className="text-zinc-300 dark:text-zinc-600">—</span>;
@@ -42,6 +44,19 @@ function VerdictBadge({ verdict }: { verdict: string | null }) {
   );
 }
 
+type SortKey =
+  | 'name'
+  | 'caliber.name'
+  | 'projectileLabel'
+  | 'powderLabel'
+  | 'chargeGr'
+  | 'coal'
+  | 'calculatedV0'
+  | 'measuredV0'
+  | 'fillRate'
+  | 'aiVerdict'
+  | 'possible';
+
 interface RecipesTableProps {
   recipes: RecipeWithRelations[];
   projectiles: Projectile[];
@@ -56,10 +71,34 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
   const router = useRouter();
   const [editingRecipe, setEditingRecipe] = useState<RecipeWithRelations | null>(null);
 
-  // Row click opens the readonly detail view; the Edit action opens the form.
+  const rows = useMemo(
+    () =>
+      recipes.map((recipe) => ({
+        ...recipe,
+        projectileLabel: `${recipe.projectile.brand} ${recipe.projectile.type ?? ''} ${recipe.projectile.weightGr}${formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}`,
+        powderLabel: `${recipe.propellant.brand} ${recipe.propellant.type}`,
+        possible: getPossibleLoads(recipe) ?? -1,
+      })),
+    [recipes],
+  );
+
+  const { sorted, sortKey, sortDirection, toggleSort } = useSortBy<typeof rows[number], SortKey>(rows, 'name');
+
   const handleRowClick = (recipe: RecipeWithRelations) => {
     router.push(`/recipes/${recipe.id}`);
   };
+
+  const sortableHeader = (key: SortKey, label: string, align: 'left' | 'right' | 'center' = 'left') => (
+    <th
+      className={`px-3 py-3 font-medium whitespace-nowrap cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-200 text-${align}`}
+      onClick={() => toggleSort(key)}
+    >
+      <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''} ${align === 'center' ? 'justify-center w-full' : ''}`}>
+        {label}
+        <SortIndicator active={sortKey === key} direction={sortKey === key ? sortDirection : null} />
+      </span>
+    </th>
+  );
 
   return (
     <>
@@ -67,22 +106,22 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
-              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.name')}</th>
-              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.caliber')}</th>
-              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.projectile')}</th>
-              <th className="text-left px-3 py-3 font-medium whitespace-nowrap">{t('table.powder')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.charge')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.coal')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.calcV0')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.measV0')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.fill')}</th>
-              <th className="text-center px-3 py-3 font-medium whitespace-nowrap">{t('table.check')}</th>
-              <th className="text-right px-3 py-3 font-medium whitespace-nowrap">{t('table.possible')}</th>
+              {sortableHeader('name', t('table.name'))}
+              {sortableHeader('caliber.name', t('table.caliber'))}
+              {sortableHeader('projectileLabel', t('table.projectile'))}
+              {sortableHeader('powderLabel', t('table.powder'))}
+              {sortableHeader('chargeGr', t('table.charge'), 'right')}
+              {sortableHeader('coal', t('table.coal'), 'right')}
+              {sortableHeader('calculatedV0', t('table.calcV0'), 'right')}
+              {sortableHeader('measuredV0', t('table.measV0'), 'right')}
+              {sortableHeader('fillRate', t('table.fill'), 'right')}
+              {sortableHeader('aiVerdict', t('table.check'), 'center')}
+              {sortableHeader('possible', t('table.possible'), 'right')}
               <th className="w-12"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {recipes.map((recipe) => (
+            {sorted.map((recipe) => (
               <tr
                 key={recipe.id}
                 tabIndex={0}
@@ -99,7 +138,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                 <td className="px-3 py-4 font-medium whitespace-nowrap">{recipe.name}</td>
                 <td className="px-3 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">{recipe.caliber.name}</td>
                 <td className="px-3 py-4 whitespace-nowrap">
-                  {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr)
+                  {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
                   {recipe.propellant.brand} – {recipe.propellant.type}
@@ -123,10 +162,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                   <VerdictBadge verdict={recipe.aiVerdict} />
                 </td>
                 <td className="px-3 py-4 text-right font-medium text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
-                  {(() => {
-                    const possible = getPossibleLoads(recipe);
-                    return possible !== null ? `${possible}×` : '—';
-                  })()}
+                  {recipe.possible >= 0 ? `${recipe.possible}×` : '—'}
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                   <button
@@ -143,7 +179,6 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
         </table>
       </div>
 
-      {/* Single controlled edit modal at the root of the table */}
       <RecipeForm
         updateAction={async (id, formData) => {
           const { updateRecipe } = await import('./actions');

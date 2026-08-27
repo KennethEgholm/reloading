@@ -71,6 +71,8 @@ model Projectile {
   brand       String
   type        String? // e.g. "Game King", "MatchKing", "Tipped"
   weightGr    Float // Weight in grains (industry standard)
+  bcG1        Float? // G1 ballistic coefficient (optional)
+  bcG7        Float? // G7 ballistic coefficient (optional)
   caliber     String
   amount      Int      @default(0) // Number of projectiles in stock
   description String?
@@ -119,9 +121,10 @@ model Recipe {
   cartridgeId  String?
   chargeGr     Float? // Powder charge in grains
   coal         Float? // Cartridge Overall Length (inches)
-  calculatedV0 Float? // Calculated muzzle velocity (m/s)
-  measuredV0   Float? // Measured muzzle velocity (m/s)
-  fillRate     Float? // Powder fill rate (%)
+  calculatedV0   Float? // Calculated muzzle velocity (m/s)
+  measuredV0     Float? // Measured muzzle velocity (m/s)
+  zeroDistanceM  Float? // Zero distance in meters (optional)
+  fillRate       Float? // Powder fill rate (%)
   notes        String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

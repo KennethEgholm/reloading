@@ -10,7 +10,7 @@ export function DeleteButton({ id }: { id: string }) {
   return (
     <button
       type="button"
-      className="text-red-600 hover:text-red-700 px-2 py-1 text-xs"
+      className="text-red-600 hover:text-red-700 text-sm font-medium"
       onClick={async () => {
         if (confirm(t('delete.confirm'))) {
           try {

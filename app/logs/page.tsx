@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 import { LoadLogForm } from './LoadLogForm'
 import { getLoadLogs, getRecipesForLog } from './actions'
 import { LoadLogRow } from './LoadLogRow'
+import { EmptyState } from '../EmptyState'
 
 export default async function ReloadingLogPage({
   searchParams,
@@ -41,9 +42,7 @@ export default async function ReloadingLogPage({
           <h2 className="text-xl font-semibold mb-4">{t('page.historyTitle')}</h2>
 
           {logs.length === 0 ? (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-500">
-              {t('page.empty')}
-            </div>
+            <EmptyState>{t('page.empty')}</EmptyState>
           ) : (
             <div className="space-y-3">
               {logs.map((log) => (

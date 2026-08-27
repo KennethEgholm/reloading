@@ -10,6 +10,7 @@ import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
 import type { RecipeWithRelations, CaliberOption } from '@/lib/types';
 import { useFocusTrap } from '@/lib/useFocusTrap';
+import { formatBcSuffix } from '@/lib/format';
 import { CaliberField } from '../CaliberField';
 
 function createRecipeSchema(t: (key: string) => string) {
@@ -37,7 +38,7 @@ interface RecipeFormProps {
   action?: (formData: FormData) => Promise<void>;
   updateAction?: (id: string, formData: FormData) => Promise<void>;
   defaultValues?: RecipeWithRelations | null;
-  projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number }>;
+  projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null }>;
   propellants: Array<{ id: string; brand: string; type: string }>;
   primers: Array<{ id: string; brand: string; type: string; magnum: boolean }>;
   cartridges: Array<{ id: string; brand: string; caliber: { name: string } }>;
@@ -320,7 +321,7 @@ export function RecipeForm({
                     <option value="">{t('form.projectilePlaceholder')}</option>
                     {projectiles.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.brand} {p.type ? `– ${p.type}` : ''} ({p.weightGr} gr)
+                        {p.brand} {p.type ? `– ${p.type}` : ''} ({p.weightGr} gr{formatBcSuffix(p.bcG1, p.bcG7)})
                       </option>
                     ))}
                   </select>

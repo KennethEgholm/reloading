@@ -10,7 +10,7 @@ export function DeleteRecipeButton({ id }: { id: string }) {
   return (
     <button
       type="button"
-      className="text-red-600 hover:text-red-700 text-xs"
+      className="text-red-600 hover:text-red-700 text-sm font-medium"
       onClick={async () => {
         if (confirm(t('delete.confirm'))) {
           try {

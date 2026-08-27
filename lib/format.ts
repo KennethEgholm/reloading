@@ -40,3 +40,17 @@ export function formatDateTime(
 ): string {
   return new Date(value).toLocaleString(resolveLocale(locale))
 }
+
+/** Compact G1/G7 label, e.g. "G1 0.462 / G7 0.237". Empty string when both are unset. */
+export function formatBc(bcG1?: number | null, bcG7?: number | null): string {
+  const parts: string[] = []
+  if (bcG1 != null) parts.push(`G1 ${bcG1}`)
+  if (bcG7 != null) parts.push(`G7 ${bcG7}`)
+  return parts.join(' / ')
+}
+
+/** Leading-comma suffix for inline labels, e.g. ", G1 0.462". Empty when both unset. */
+export function formatBcSuffix(bcG1?: number | null, bcG7?: number | null): string {
+  const bc = formatBc(bcG1, bcG7)
+  return bc ? `, ${bc}` : ''
+}

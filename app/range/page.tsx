@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { getRangeLogs } from './actions'
 import { RangeLogRow } from './RangeLogRow'
+import { EmptyState } from '../EmptyState'
 
 export default async function RangeLogPage({
   searchParams,
@@ -31,26 +32,21 @@ export default async function RangeLogPage({
         </Link>
       </div>
 
-      {/* Range Sessions */}
-      <div>
-        <h2 className="text-xl font-semibold mb-4">{t('page.listTitle')}</h2>
-
-        {logs.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-500">
-            {t('page.empty')}{' '}
-            <Link href="/range/new" className="text-accent hover:text-accent-hover hover:underline">
-              {t('page.logFirstSession')}
-            </Link>
-            {t('page.logFirstSuffix')}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {logs.map((log) => (
-              <RangeLogRow key={log.id} log={log} />
-            ))}
-          </div>
-        )}
-      </div>
+      {logs.length === 0 ? (
+        <EmptyState>
+          {t('page.empty')}{' '}
+          <Link href="/range/new" className="text-accent hover:text-accent-hover hover:underline">
+            {t('page.logFirstSession')}
+          </Link>
+          {t('page.logFirstSuffix')}
+        </EmptyState>
+      ) : (
+        <div className="space-y-4">
+          {logs.map((log) => (
+            <RangeLogRow key={log.id} log={log} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -11,6 +11,8 @@ function parseProjectileForm(formData: FormData, t: (key: string) => string) {
     brand: formData.get('brand'),
     type: formData.get('type'),
     weightGr: formData.get('weightGr'),
+    bcG1: formData.get('bcG1'),
+    bcG7: formData.get('bcG7'),
     caliber: formData.get('caliber'),
     amount: formData.get('amount'),
     description: formData.get('description'),

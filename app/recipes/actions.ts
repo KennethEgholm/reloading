@@ -23,6 +23,7 @@ export async function createRecipe(formData: FormData) {
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
   const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
   const measuredV0 = formData.get('measuredV0') ? parseFloat(formData.get('measuredV0') as string) : null
+  const zeroDistanceM = formData.get('zeroDistanceM') ? parseFloat(formData.get('zeroDistanceM') as string) : null
   const fillRate = formData.get('fillRate') ? parseFloat(formData.get('fillRate') as string) : null
   const notes = (formData.get('notes') as string) || null
 
@@ -44,6 +45,7 @@ export async function createRecipe(formData: FormData) {
       coal,
       calculatedV0,
       measuredV0,
+      zeroDistanceM,
       fillRate,
       notes,
     },
@@ -321,6 +323,17 @@ export async function updateRecipe(id: string, formData: FormData) {
   revalidatePath('/')
 }
 
+export async function updateRecipeZeroDistance(id: string, zeroDistanceM: number | null) {
+  if (zeroDistanceM != null && (!Number.isFinite(zeroDistanceM) || zeroDistanceM <= 0)) {
+    return
+  }
+  await prisma.recipe.update({
+    where: { id },
+    data: { zeroDistanceM },
+  })
+  revalidatePath(`/recipes/${id}`)
+}
+
 export async function getRecipeById(id: string) {
   return prisma.recipe.findUnique({
     where: { id },
@@ -388,6 +401,8 @@ interface RecipeAssessmentInput {
   projectileBrand: string
   projectileType: string | null
   projectileWeightGr: number
+  projectileBcG1?: number | null
+  projectileBcG7?: number | null
   propellantBrand: string
   propellantType: string
   primerBrand?: string | null
@@ -423,7 +438,7 @@ async function assessRecipeData(input: RecipeAssessmentInput, t: Awaited<ReturnT
   const lines: string[] = [
     `Name: ${input.name}`,
     `Caliber: ${input.caliber}`,
-    `Projectile: ${[input.projectileBrand, input.projectileType].filter(Boolean).join(' ')} — ${input.projectileWeightGr} gr`,
+    `Projectile: ${[input.projectileBrand, input.projectileType].filter(Boolean).join(' ')} — ${input.projectileWeightGr} gr${input.projectileBcG1 != null ? `, G1 ${input.projectileBcG1}` : ''}${input.projectileBcG7 != null ? `, G7 ${input.projectileBcG7}` : ''}`,
     `Propellant: ${[input.propellantBrand, input.propellantType].filter(Boolean).join(' ')}`,
   ]
 
@@ -521,6 +536,8 @@ export async function runRecipeAiCheck(recipeId: string) {
     projectileBrand: recipe.projectile.brand,
     projectileType: recipe.projectile.type,
     projectileWeightGr: recipe.projectile.weightGr,
+    projectileBcG1: recipe.projectile.bcG1,
+    projectileBcG7: recipe.projectile.bcG7,
     propellantBrand: recipe.propellant.brand,
     propellantType: recipe.propellant.type,
     primerBrand: recipe.primer?.brand ?? null,
@@ -592,6 +609,8 @@ export async function runRecipeAiCheckOnInput(input: RecipeAiCheckInput): Promis
     projectileBrand: projectile.brand,
     projectileType: projectile.type,
     projectileWeightGr: projectile.weightGr,
+    projectileBcG1: projectile.bcG1,
+    projectileBcG7: projectile.bcG7,
     propellantBrand: propellant.brand,
     propellantType: propellant.type,
     primerBrand: primer?.brand ?? null,

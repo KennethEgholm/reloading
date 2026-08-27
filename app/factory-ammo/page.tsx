@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { getFactoryAmmoList } from './actions'
 import { FactoryAmmoTable } from './FactoryAmmoTable'
+import { EmptyState } from '../EmptyState'
 
 export default async function FactoryAmmoPage() {
   const t = await getTranslations('factoryAmmo')
@@ -25,21 +26,17 @@ export default async function FactoryAmmoPage() {
         </Link>
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-4">{t('page.listTitle')}</h2>
-
-        {ammos.length === 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 text-center text-zinc-500">
-            {t('page.empty')}{' '}
-            <Link href="/factory-ammo/new" className="text-accent hover:text-accent-hover hover:underline">
-              {t('page.addFirst')}
-            </Link>
-            {t('page.addFirstSuffix')}
-          </div>
-        ) : (
-          <FactoryAmmoTable ammos={ammos} />
-        )}
-      </div>
+      {ammos.length === 0 ? (
+        <EmptyState>
+          {t('page.empty')}{' '}
+          <Link href="/factory-ammo/new" className="text-accent hover:text-accent-hover hover:underline">
+            {t('page.addFirst')}
+          </Link>
+          {t('page.addFirstSuffix')}
+        </EmptyState>
+      ) : (
+        <FactoryAmmoTable ammos={ammos} />
+      )}
     </div>
   )
 }

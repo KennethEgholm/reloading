@@ -8,7 +8,7 @@ import { SortIndicator } from '../SortIndicator';
 import { useSortBy } from '@/lib/useSortBy';
 import type { Projectile } from '@/lib/types';
 
-type SortKey = 'brand' | 'type' | 'weightGr' | 'caliber' | 'amount' | 'description';
+type SortKey = 'brand' | 'type' | 'weightGr' | 'bcG1' | 'bcG7' | 'caliber' | 'amount' | 'description';
 
 interface ProjectilesTableProps {
   projectiles: Projectile[];
@@ -46,6 +46,8 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
               {sortableHeader('brand', t('table.brand'))}
               {sortableHeader('type', t('table.type'))}
               {sortableHeader('weightGr', t('table.weight'), 'right')}
+              {sortableHeader('bcG1', t('table.bcG1'), 'right')}
+              {sortableHeader('bcG7', t('table.bcG7'), 'right')}
               {sortableHeader('caliber', t('table.caliber'))}
               {sortableHeader('amount', t('table.amount'), 'right')}
               {sortableHeader('description', t('table.description'))}
@@ -55,7 +57,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={9} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                   {t('table.empty')}
                 </td>
               </tr>
@@ -78,6 +80,8 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
                 <td className="px-6 py-4 font-medium">{projectile.brand}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.type || '—'}</td>
                 <td className="px-6 py-4 text-right font-mono">{projectile.weightGr}</td>
+                <td className="px-6 py-4 text-right font-mono">{projectile.bcG1 != null ? projectile.bcG1 : '—'}</td>
+                <td className="px-6 py-4 text-right font-mono">{projectile.bcG7 != null ? projectile.bcG7 : '—'}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.caliber}</td>
                 <td className="px-6 py-4 text-right font-mono font-medium">
                   {projectile.amount}
@@ -95,6 +99,8 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
             <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
               <tr>
                 <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
+                <td />
                 <td />
                 <td />
                 <td />
