@@ -27,8 +27,10 @@ import {
   type RangeLogsImportPreview,
   type FactoryAmmoImportPreview,
 } from './dataActions'
+import { detectExportType, inventoryHasData, sectionHasData } from '@/lib/detectExportType'
 
 type DataType = 'inventory' | 'recipes' | 'loadLogs' | 'rangeLogs' | 'factoryAmmo' | 'everything'
+type Preview = ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview
 
 const EXPORTERS: Record<Exclude<DataType, 'everything'>, () => Promise<string>> = {
   inventory: exportInventory,
@@ -67,9 +69,9 @@ export function DataCard() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
-  const [importType, setImportType] = useState<Exclude<DataType, 'everything'> | null>(null)
+  const [importType, setImportType] = useState<DataType | null>(null)
   const [jsonString, setJsonString] = useState<string | null>(null)
-  const [preview, setPreview] = useState<ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview | null>(null)
+  const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleExport = async (type: DataType) => {
@@ -101,15 +103,22 @@ export function DataCard() {
     setJsonString(null)
     try {
       const text = await file.text()
-      // Auto-detect type from file content, then route to the right previewer.
-      const detected = detectType(text)
+      const detected = detectExportType(text)
       if (!detected) {
         throw new Error('INVALID_FORMAT')
+      }
+      if (detected === 'everything') {
+        const result = await previewEverything(text)
+        if (!result) throw new Error('NO_DATA')
+        setImportType('everything')
+        setJsonString(text)
+        setPreview(result)
+        return
       }
       const result = await PREVIEWERS[detected](text)
       setImportType(detected)
       setJsonString(text)
-      setPreview(result as ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview)
+      setPreview(result as Preview)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'INVALID_JSON'
       const key = msg === 'NO_DATA' ? 'data.noData' : 'data.invalidFile'
@@ -122,7 +131,10 @@ export function DataCard() {
     if (!jsonString || !importType) return
     setIsImporting(true)
     try {
-      const result = await EXECUTORS[importType](jsonString)
+      const result =
+        importType === 'everything'
+          ? await executeEverything(jsonString)
+          : await EXECUTORS[importType](jsonString)
       const { created, updated } = sumPreview(result as Record<string, { created: number; updated: number }>)
       toast.success(t('data.importSuccess', { created, updated }))
       setJsonString(null)
@@ -182,7 +194,7 @@ export function DataCard() {
           {preview && importType && (
             <div className="mt-3 space-y-2" aria-live="polite">
               <p className="text-sm font-medium">
-                {t('data.preview')} — {t(`data.${importType === 'loadLogs' ? 'loadLogs' : importType === 'rangeLogs' ? 'rangeLogs' : importType === 'factoryAmmo' ? 'factoryAmmo' : importType}`)}
+                {t('data.preview')} — {t(`data.${importType === 'inventory' ? 'inventory' : importType}`)}
               </p>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 {previewRows(preview, t)}
@@ -226,7 +238,7 @@ function ExportButton({ label, onClick, disabled }: { label: string; onClick: ()
 }
 
 function previewRows(
-  preview: ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview,
+  preview: Preview,
   t: (k: string, opts?: TranslationValues) => string,
 ) {
   const rows: React.ReactNode[] = []
@@ -235,13 +247,17 @@ function previewRows(
     rows.push(<PreviewRow key="pj" label={t('data.projectiles')} created={preview.projectiles.created} updated={preview.projectiles.updated} t={t} />)
     rows.push(<PreviewRow key="pp" label={t('data.propellants')} created={preview.propellants.created} updated={preview.propellants.updated} t={t} />)
     rows.push(<PreviewRow key="pc" label={t('data.cartridges')} created={preview.cartridges.created} updated={preview.cartridges.updated} t={t} />)
-  } else if ('recipes' in preview) {
+  }
+  if ('recipes' in preview) {
     rows.push(<PreviewRow key="rc" label={t('data.recipes')} created={preview.recipes.created} updated={preview.recipes.updated} t={t} />)
-  } else if ('loadLogs' in preview) {
+  }
+  if ('loadLogs' in preview) {
     rows.push(<PreviewRow key="ll" label={t('data.loadLogs')} created={preview.loadLogs.created} updated={preview.loadLogs.updated} t={t} />)
-  } else if ('rangeLogs' in preview) {
+  }
+  if ('rangeLogs' in preview) {
     rows.push(<PreviewRow key="rl" label={t('data.rangeLogs')} created={preview.rangeLogs.created} updated={preview.rangeLogs.updated} t={t} />)
-  } else if ('factoryAmmo' in preview) {
+  }
+  if ('factoryAmmo' in preview) {
     rows.push(<PreviewRow key="fa" label={t('data.factoryAmmo')} created={preview.factoryAmmo.created} updated={preview.factoryAmmo.updated} t={t} />)
   }
   return rows
@@ -256,19 +272,48 @@ function sumPreview(p: Record<string, { created: number; updated: number }>): { 
   return { created, updated }
 }
 
-function detectType(text: string): Exclude<DataType, 'everything'> | null {
-  try {
-    const parsed = JSON.parse(text) as Record<string, unknown>
-    if (!parsed || typeof parsed !== 'object') return null
-    if (Array.isArray(parsed.recipes)) return 'recipes'
-    if (Array.isArray(parsed.loadLogs)) return 'loadLogs'
-    if (Array.isArray(parsed.rangeLogs)) return 'rangeLogs'
-    if (Array.isArray(parsed.factoryAmmo)) return 'factoryAmmo'
-    if (Array.isArray(parsed.primers) || Array.isArray(parsed.projectiles) || Array.isArray(parsed.propellants) || Array.isArray(parsed.cartridges)) return 'inventory'
-    return null
-  } catch {
-    return null
+type Counts = { created: number; updated: number }
+
+async function previewEverything(text: string): Promise<Preview | null> {
+  const parsed = JSON.parse(text) as Record<string, unknown>
+  const parts: Record<string, Counts> = {}
+  if (inventoryHasData(parsed.inventory)) {
+    Object.assign(parts, await previewInventoryImport(JSON.stringify(parsed.inventory)))
   }
+  if (sectionHasData(parsed.recipes, 'recipes')) {
+    Object.assign(parts, await previewRecipesImport(JSON.stringify(parsed.recipes)))
+  }
+  if (sectionHasData(parsed.loadLogs, 'loadLogs')) {
+    Object.assign(parts, await previewLoadLogsImport(JSON.stringify(parsed.loadLogs)))
+  }
+  if (sectionHasData(parsed.rangeLogs, 'rangeLogs')) {
+    Object.assign(parts, await previewRangeLogsImport(JSON.stringify(parsed.rangeLogs)))
+  }
+  if (sectionHasData(parsed.factoryAmmo, 'factoryAmmo')) {
+    Object.assign(parts, await previewFactoryAmmoImport(JSON.stringify(parsed.factoryAmmo)))
+  }
+  return Object.keys(parts).length > 0 ? (parts as unknown as Preview) : null
+}
+
+async function executeEverything(text: string): Promise<Record<string, Counts>> {
+  const parsed = JSON.parse(text) as Record<string, unknown>
+  const parts: Record<string, Counts> = {}
+  if (inventoryHasData(parsed.inventory)) {
+    Object.assign(parts, await executeInventoryImport(JSON.stringify(parsed.inventory)))
+  }
+  if (sectionHasData(parsed.recipes, 'recipes')) {
+    Object.assign(parts, await executeRecipesImport(JSON.stringify(parsed.recipes)))
+  }
+  if (sectionHasData(parsed.loadLogs, 'loadLogs')) {
+    Object.assign(parts, await executeLoadLogsImport(JSON.stringify(parsed.loadLogs)))
+  }
+  if (sectionHasData(parsed.rangeLogs, 'rangeLogs')) {
+    Object.assign(parts, await executeRangeLogsImport(JSON.stringify(parsed.rangeLogs)))
+  }
+  if (sectionHasData(parsed.factoryAmmo, 'factoryAmmo')) {
+    Object.assign(parts, await executeFactoryAmmoImport(JSON.stringify(parsed.factoryAmmo)))
+  }
+  return parts
 }
 
 function PreviewRow({ label, created, updated, t }: { label: string; created: number; updated: number; t: (k: string, opts?: TranslationValues) => string }) {

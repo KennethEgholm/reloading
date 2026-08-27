@@ -804,6 +804,8 @@
       "exportLoadLogs": "Export load logs",
       "exportRangeLogs": "Export range sessions",
       "exportEverything": "Export everything",
+      "everything": "Everything",
+      "inventory": "Inventory",
       "invalidFile": "Could not read the JSON file. Make sure it is a valid export.",
       "importSuccess": "Import complete: {created} created, {updated} updated.",
       "importFailed": "Import failed: {error}",

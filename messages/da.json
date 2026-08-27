@@ -804,6 +804,8 @@
       "exportLoadLogs": "Eksportér læsse-log",
       "exportRangeLogs": "Eksportér skydebane-sessions",
       "exportEverything": "Eksportér alt",
+      "everything": "Alt",
+      "inventory": "Lager",
       "invalidFile": "Kunne ikke læse JSON-filen. Sikr at det er en gyldig eksport.",
       "importSuccess": "Import fuldført: {created} oprettet, {updated} opdateret.",
       "importFailed": "Import mislykkedes: {error}",
