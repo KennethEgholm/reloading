@@ -80,6 +80,17 @@ erDiagram
     FactoryAmmoSession ||--o{ FactoryAmmoShot : "shots (cascade)"
     FactoryAmmoSession ||--o{ FactoryAmmoGroup : "groups (cascade)"
 
+    Projectile {
+        string id PK
+        string brand
+        string type
+        float weightGr
+        float bcG1 "optional G1 BC"
+        float bcG7 "optional G7 BC"
+        string caliber
+        int amount
+    }
+
     Recipe {
         string id PK
         float chargeGr
@@ -234,6 +245,43 @@ sequenceDiagram
     U->>A: FormData (shots JSON + groups JSON + replaceShots/replaceGroups)
     A->>A: shotsSchema + groupsSchema.safeParse; recompute aggregates + MOA
     A->>DB: TX: upsert FactoryAmmoSession + deleteMany/insertMany shots + groups
-    A-->>U: redirect to session detail
-    end
+     A-->>U: redirect to session detail
+     end
 ```
+
+## Production deployment
+
+Dev (`docker-compose.yml`) stays on Docker Desktop. Production is a separate compose project (`reloading-prod` / `docker-compose.prod.yml`) on a dedicated Proxmox LXC.
+
+```mermaid
+flowchart LR
+  subgraph internet [Internet]
+    Browser
+  end
+  subgraph cf [Cloudflare]
+    Edge["HTTPS edge"]
+    Access["Zero Trust Access"]
+    Tunnel["Tunnel"]
+  end
+  subgraph lxc ["Proxmox LXC (unprivileged, nesting=1)"]
+    cloudflared
+    app["app :3000  next start"]
+    db["db  Postgres 16"]
+    runner["github-runner"]
+    uploads["volume: uploads"]
+    pgdata["volume: postgres_data"]
+  end
+  GH["GitHub Actions\nubuntu-latest test"]
+
+  Browser --> Edge --> Access --> Tunnel --> cloudflared --> app
+  app --> db
+  app --> uploads
+  db --> pgdata
+  GH -->|"main green"| runner
+  runner -->|"docker.sock"| app
+```
+
+- `Dockerfile.prod` multi-stage: pnpm install → `prisma generate` → `next build` → runtime image. Entrypoint: `prisma migrate deploy` then `pnpm start`.
+- Photos persist on the `uploads` named volume mounted at `/app/public/uploads`. Without it, range/factory-ammo images vanish on every container recreate.
+- Deploy replaces **only** `reloading-app`. `db`, `cloudflared`, and `github-runner` stay up. `docker system prune -a -f` after each deploy to keep the LXC disk alive.
+- No inbound ports on the LXC. TLS terminates at Cloudflare. Access is the login gate; the Next.js app has no authentication of its own.

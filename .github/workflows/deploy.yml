@@ -1,0 +1,89 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Lint, test & build
+    runs-on: ubuntu-latest
+    concurrency:
+      group: test-${{ github.ref }}
+      cancel-in-progress: true
+    env:
+      # The app reads DATABASE_URL at import time (Pg Pool) but never connects
+      # during lint/test/build — tests mock Prisma and every route is dynamic,
+      # so a dummy URL is enough. No Postgres service needed.
+      DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  deploy:
+    name: Build & deploy to Proxmox
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: [self-hosted, reloading]
+    concurrency:
+      group: deploy
+      cancel-in-progress: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write .env
+        run: |
+          # Root .env — vars Docker Compose interpolates at build/up time.
+          # Quoted heredoc so bash does not expand secret values; Actions
+          # interpolates ${{ secrets.* }} first.
+          cat <<'EOF' > .env
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          TUNNEL_TOKEN=${{ secrets.TUNNEL_TOKEN }}
+          ACTIONS_RUNNER_REPO_URL=${{ secrets.ACTIONS_RUNNER_REPO_URL }}
+          ACTIONS_RUNNER_TOKEN=${{ secrets.ACTIONS_RUNNER_TOKEN }}
+          EOF
+
+      - name: Build app
+        # Cache-enabled: reuse unchanged base layers. --no-cache fills the LXC
+        # disk with unreclaimable containerd snapshots.
+        run: docker compose -f docker-compose.prod.yml build --pull app
+
+      - name: Deploy
+        run: |
+          docker compose -f docker-compose.prod.yml up -d db
+          docker rm -f reloading-app || true
+          docker compose -f docker-compose.prod.yml up -d app
+
+      - name: Remove unused images, build cache, and orphaned snapshots
+        run: docker system prune -a -f
+
+      - name: Confirm running containers
+        run: docker compose -f docker-compose.prod.yml ps app

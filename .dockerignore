@@ -6,7 +6,11 @@ node_modules
 *.md
 !README.md
 Dockerfile
+Dockerfile.prod
 docker-compose.yml
+docker-compose.prod.yml
 .dockerignore
 .gitignore
-prisma/migrations
+github-runner
+.github
+public/uploads

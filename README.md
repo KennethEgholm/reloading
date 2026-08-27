@@ -10,7 +10,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Inventory Management**
   - Primers: brand, type (Small Rifle / Large Rifle / Small Pistol / Large Pistol), magnum flag, amount, description.
-  - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), caliber, amount, description.
+  - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), optional G1/G7 ballistic coefficients, caliber, amount, description. BC is shown on recipe dropdowns, tables, and detail.
   - Propellants: brand, type, amount (grams, displayed as a whole number), description.
   - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
   - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
@@ -84,7 +84,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind CSS, Sonner (toasts), React Hook Form + Zod, **next-intl** (i18n, EN/DA)
 - **Backend / Data**: Prisma 7 (client engine) + PostgreSQL via `@prisma/adapter-pg` + `pg` Pool
-- **Dev / Ops**: Docker Compose (Postgres with named volume for true persistence), pnpm 11.5, corepack
+- **Dev / Ops**: Docker Compose (Postgres with named volume for true persistence), pnpm 11.5, corepack. Production is a separate compose file on a Proxmox LXC behind a Cloudflare Tunnel + Access.
 - **Other**: local filesystem photo storage, automatic revalidation, migrations for every schema change
 
 ## Getting Started (Recommended: Docker)
@@ -138,7 +138,8 @@ pnpm dev
 - `public/images/` – nav icons (primer, projectile, etc.) + logo (seated round) + favicon (case head)
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
 - `public/uploads/factory-ammo/` – user-uploaded factory-ammo photos (created at runtime)
-- `docker-compose.yml` / `Dockerfile` – the canonical dev environment
+- `docker-compose.yml` / `Dockerfile` – the canonical **dev** environment (Docker Desktop)
+- `docker-compose.prod.yml` / `Dockerfile.prod` – production image + stack (Proxmox LXC; never run against Docker Desktop)
 
 ## Development Notes
 
@@ -166,8 +167,53 @@ pnpm dev
 
 ### Continuous Integration
 
-- `.github/workflows/ci.yml` runs on every push to `main` and on pull requests: install → `prisma generate` → lint → test → build.
-- No database is required in CI — every route is dynamic and tests mock Prisma, so a dummy `DATABASE_URL` is set in the workflow.
+- `.github/workflows/deploy.yml` runs on every push to `main` and on pull requests: install → `prisma generate` → lint → test → build on GitHub-hosted `ubuntu-latest`.
+- Pushes to `main` (and `workflow_dispatch`) then deploy on the self-hosted `reloading` runner: build `Dockerfile.prod`, replace only the `reloading-app` container, `docker system prune`.
+- No database is required in the test job — every route is dynamic and tests mock Prisma, so a dummy `DATABASE_URL` is set in the workflow.
+
+## Production
+
+Production is a Docker Compose stack on a dedicated Proxmox LXC (not LXC 107 / Trader), exposed via a Cloudflare Tunnel with **Cloudflare Access** in front. The laptop `docker-compose.yml` is unchanged.
+
+| Service | Container | Notes |
+|---|---|---|
+| `db` | `reloading-postgres` | Postgres 16, named volume `postgres_data`. Port 5432 is **not** published. |
+| `app` | `reloading-app` | `next build` + `next start`. Entrypoint runs `prisma migrate deploy`. Named volume `uploads` → `/app/public/uploads`. |
+| `cloudflared` | `reloading-cloudflared` | Token-auth tunnel. Public hostname is configured in the Cloudflare dashboard. |
+| `github-runner` | `reloading-github-runner` | Labels `self-hosted,reloading`. Docker socket mounted. **Never `docker rm` this** — registration lives in the container layer. |
+
+Compose project name is `reloading-prod` so it cannot collide with the Desktop dev volumes.
+
+The app has no login. **Cloudflare Access** is the gate (email allow-list). AI keys stay in the `AiSettings` DB row, configured on `/settings` after first boot.
+
+### First bootstrap (on the LXC, once)
+
+Chicken-and-egg: the runner is a compose service, so the first start is manual.
+
+1. Create the LXC (unprivileged, `nesting=1`), install Docker, enable `sshd`.
+2. Copy `docker-compose.prod.yml`, `Dockerfile.prod`, `docker-entrypoint.prod.sh`, `github-runner/`, and a `.env` from `.env.prod.example`.
+3. Fill `.env`: `DATABASE_URL`, `TUNNEL_TOKEN`, `ACTIONS_RUNNER_REPO_URL`, a fresh GitHub runner registration token.
+4. `docker compose -f docker-compose.prod.yml up -d db cloudflared github-runner`
+5. Confirm the runner is online (repo → Settings → Actions → Runners) with labels `self-hosted, reloading`.
+6. Set GitHub Actions secrets: `DATABASE_URL`, `TUNNEL_TOKEN`, `ACTIONS_RUNNER_REPO_URL`, `ACTIONS_RUNNER_TOKEN`.
+7. Push to `main` (or run **Deploy** via `workflow_dispatch`). Watch with `gh run watch`.
+8. Point Cloudflare Access at the tunnel hostname. Import data via Settings → Data if migrating from Desktop.
+
+Subsequent deploys never recreate `db`, `cloudflared`, or `github-runner`. Do **not** `docker compose down -v`.
+
+### SSH
+
+```bash
+# Direct (Bitwarden SSH agent — approve the prompt on first connect)
+ssh reloading
+
+# Via the hypervisor
+ssh proxmox "pct exec 110 -- docker ps"
+ssh proxmox "pct exec 110 -- docker logs reloading-app --tail 50"
+ssh proxmox "pct exec 110 -- docker exec reloading-app node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>r.text()).then(console.log)\""
+```
+
+LXC **110** (`reloading`), Debian 13, `192.168.100.230` (DHCP). Public hostname: `https://load.clouddev.dk` (Cloudflare Access). Do not enable Proxmox `vzdump` of this guest until there is off-host backup storage.
 
 ## License
 
