@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { Menu, Settings, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { InventoryMenu } from './InventoryMenu'
@@ -13,7 +12,6 @@ const LINK_CLASS =
 
 export function AppNav() {
   const t = useTranslations('nav')
-  const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
   const links = [
@@ -29,10 +27,6 @@ export function AppNav() {
     { href: '/propellants', label: t('propellants'), icon: '/images/propellant.svg' },
     { href: '/cartridges', label: t('cartridges'), icon: '/images/cartridge.svg' },
   ]
-
-  useEffect(() => {
-    setOpen(false)
-  }, [pathname])
 
   useEffect(() => {
     if (!open) return
@@ -85,18 +79,18 @@ export function AppNav() {
       {open && (
         <div id="mobile-nav" className="lg:hidden border-t border-zinc-200 dark:border-zinc-800 px-4 py-3 space-y-1">
           {inventory.map((l) => (
-            <Link key={l.href} href={l.href} className={`${LINK_CLASS} text-sm`}>
+            <Link key={l.href} href={l.href} className={`${LINK_CLASS} text-sm`} onClick={() => setOpen(false)}>
               <Image src={l.icon} alt="" width={20} height={20} />
               {l.label}
             </Link>
           ))}
           {links.map((l) => (
-            <Link key={l.href} href={l.href} className={`${LINK_CLASS} text-sm`}>
+            <Link key={l.href} href={l.href} className={`${LINK_CLASS} text-sm`} onClick={() => setOpen(false)}>
               <Image src={l.icon} alt="" width={20} height={20} />
               {l.label}
             </Link>
           ))}
-          <Link href="/settings" className={`${LINK_CLASS} text-sm`}>
+          <Link href="/settings" className={`${LINK_CLASS} text-sm`} onClick={() => setOpen(false)}>
             <Settings size={20} aria-hidden="true" />
             {t('settings')}
           </Link>
