@@ -457,7 +457,9 @@ export async function executeLoadLogsImport(jsonString: string): Promise<LoadLog
 }
 
 // ──────────────────────────────────────────────────────────────────────────
-// Range logs export / import (photos skipped)
+// Range logs export / import
+// Filename refs (not the files) travel with the JSON so a separately copied
+// uploads/ tree can be re-linked. Old exports without `images` are unchanged.
 // ──────────────────────────────────────────────────────────────────────────
 
 export interface RangeLogShotExport {
@@ -503,6 +505,13 @@ export interface RangeLogExportItem {
   fillRate: number | null
   shots: RangeLogShotExport[]
   groups: RangeGroupExport[]
+  images?: RangeLogImageExport[]
+}
+
+export interface RangeLogImageExport {
+  filename: string
+  description: string | null
+  isMain: boolean
 }
 
 export interface RangeLogsExport {
@@ -516,6 +525,7 @@ export async function exportRangeLogs(): Promise<string> {
     include: {
       shots: { orderBy: { shotIndex: 'asc' } },
       groups: { orderBy: { createdAt: 'asc' } },
+      images: { orderBy: { createdAt: 'asc' } },
     },
     orderBy: { date: 'asc' },
   })
@@ -558,6 +568,11 @@ export async function exportRangeLogs(): Promise<string> {
         groupSizeMm: g.groupSizeMm,
         moa: g.moa,
         notes: g.notes,
+      })),
+      images: l.images.map((img) => ({
+        filename: img.filename,
+        description: img.description,
+        isMain: l.mainImageId === img.id,
       })),
     })),
   }
@@ -633,18 +648,26 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
 
     const existing = logMap.get(key)
     if (existing) {
-      // Replace shots + groups on update: delete existing, insert imported.
-      await prisma.$transaction([
-        prisma.rangeLogShot.deleteMany({ where: { rangeLogId: existing.id } }),
-        prisma.rangeGroup.deleteMany({ where: { rangeLogId: existing.id } }),
-        prisma.rangeLog.update({ where: { id: existing.id }, data: baseData }),
-        ...(item.shots.length > 0
-          ? [prisma.rangeLogShot.createMany({ data: item.shots.map((s) => ({ ...s, rangeLogId: existing.id })) })]
-          : []),
-        ...(item.groups.length > 0
-          ? [prisma.rangeGroup.createMany({ data: item.groups.map((g) => ({ ...g, rangeLogId: existing.id })) })]
-          : []),
-      ])
+      await prisma.$transaction(async (tx) => {
+        await tx.rangeLogShot.deleteMany({ where: { rangeLogId: existing.id } })
+        await tx.rangeGroup.deleteMany({ where: { rangeLogId: existing.id } })
+        if (item.images) {
+          await tx.rangeLog.update({ where: { id: existing.id }, data: { mainImageId: null } })
+          await tx.rangeLogImage.deleteMany({ where: { rangeLogId: existing.id } })
+        }
+        await tx.rangeLog.update({ where: { id: existing.id }, data: baseData })
+        if (item.shots.length > 0) {
+          await tx.rangeLogShot.createMany({
+            data: item.shots.map((s) => ({ ...s, rangeLogId: existing.id })),
+          })
+        }
+        if (item.groups.length > 0) {
+          await tx.rangeGroup.createMany({
+            data: item.groups.map((g) => ({ ...g, rangeLogId: existing.id })),
+          })
+        }
+        await replaceRangeLogImages(tx, existing.id, item.images)
+      })
       updated++
     } else {
       const createdLog = await prisma.rangeLog.create({ data: baseData })
@@ -658,6 +681,7 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
           data: item.groups.map((g) => ({ ...g, rangeLogId: createdLog.id })),
         })
       }
+      await replaceRangeLogImages(prisma, createdLog.id, item.images)
       created++
     }
   }
@@ -671,9 +695,9 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
 // ──────────────────────────────────────────────────────────────────────────
 // Factory ammo export / import
 //
-// Bundles FactoryAmmo rows with their sessions, shots, and groups. Photos
-// (boxImageFilename / roundImageFilename) are dropped on export — sessions
-// import imageless, mirroring the range-log rule. Match by brand+model+caliber
+// Bundles FactoryAmmo rows with their sessions, shots, and groups. Photo
+// *filenames* (box/round) are included so a separately copied uploads/ tree
+// can be re-linked; the image files themselves are not in the JSON. Match by brand+model+caliber
 // (case-insensitive); sessions matched by date+location+roundsFired. Shots and
 // groups are replaced wholesale on update (same transaction pattern as range
 // logs). No inventory adjustments on import — `amount` is overwritten from the
@@ -706,6 +730,8 @@ export interface FactoryAmmoExportItem {
   projectileWeight: number | null
   projectileWeightUnit: 'GR' | 'G'
   notes: string | null
+  boxImageFilename?: string | null
+  roundImageFilename?: string | null
   sessions: FactoryAmmoSessionExport[]
 }
 export interface FactoryAmmoExport {
@@ -740,6 +766,8 @@ export async function exportFactoryAmmo(): Promise<string> {
       projectileWeight: a.projectileWeight,
       projectileWeightUnit: a.projectileWeightUnit,
       notes: a.notes,
+      boxImageFilename: a.boxImageFilename,
+      roundImageFilename: a.roundImageFilename,
       sessions: a.sessions.map((s) => ({
         date: s.date.toISOString(),
         location: s.location,
@@ -816,6 +844,12 @@ export async function executeFactoryAmmoImport(jsonString: string): Promise<Fact
             projectileWeight: item.projectileWeight,
             projectileWeightUnit: item.projectileWeightUnit,
             notes: item.notes,
+            ...(item.boxImageFilename !== undefined
+              ? { boxImageFilename: photoRef(item.boxImageFilename) }
+              : {}),
+            ...(item.roundImageFilename !== undefined
+              ? { roundImageFilename: photoRef(item.roundImageFilename) }
+              : {}),
           },
         }),
         // Cascade-deleting sessions would also wipe shots/groups; do it
@@ -868,6 +902,8 @@ export async function executeFactoryAmmoImport(jsonString: string): Promise<Fact
           projectileWeight: item.projectileWeight,
           projectileWeightUnit: item.projectileWeightUnit,
           notes: item.notes,
+          boxImageFilename: photoRef(item.boxImageFilename),
+          roundImageFilename: photoRef(item.roundImageFilename),
         },
       })
       for (const s of item.sessions) {
@@ -950,6 +986,36 @@ export async function exportEverything(): Promise<string> {
 // ──────────────────────────────────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────────────────────────────────
+
+function photoRef(name: string | null | undefined): string | null {
+  if (!name) return null
+  const base = name.replace(/\\/g, '/').split('/').pop() ?? ''
+  if (!base || base === '.' || base === '..') return null
+  return base
+}
+
+async function replaceRangeLogImages(
+  db: {
+    rangeLogImage: { create: typeof prisma.rangeLogImage.create }
+    rangeLog: { update: typeof prisma.rangeLog.update }
+  },
+  rangeLogId: string,
+  images: RangeLogImageExport[] | undefined,
+) {
+  if (!images) return
+  let mainId: string | null = null
+  for (const img of images) {
+    const filename = photoRef(img.filename)
+    if (!filename) continue
+    const row = await db.rangeLogImage.create({
+      data: { rangeLogId, filename, description: img.description ?? null },
+    })
+    if (img.isMain) mainId = row.id
+  }
+  if (mainId) {
+    await db.rangeLog.update({ where: { id: rangeLogId }, data: { mainImageId: mainId } })
+  }
+}
 
 function recipeKey(name: string, caliber: string): string {
   return name.trim().toLowerCase() + '|' + caliber.trim().toLowerCase()
