@@ -21,6 +21,10 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - **Ballistics** on the recipe detail: remaining velocity, energy, and drop (MOA clicks) at 50–800 m when measured V0 and a projectile G1/G7 BC are set (`lib/ballistics.ts`, ICAO sea-level, G7 preferred). Zero distance is saved on the recipe.
   - "Possible" loads column: how many cartridges you can currently make based on on-hand inventory (min of projectile count, primer count, and propellant grains ÷ charge).
   - Quick links from recipes to "Log load" or "Log range" (prefills the recipe).
+  - **QuickLOAD import**: create a recipe from QuickLOAD without retyping it. Two entry points on the recipes page:
+    - **Import from QL** (`app/recipes/QuickLoadImport.tsx`): upload a QuickLOAD `.dat` export; the client-side parser (`lib/parseQuickLoadDat.ts`, unit-tested) reads name, caliber, bullet, powder, charge, COAL, and measured V0 into an editable preview. Bullet and powder are matched against existing inventory (brand + type + weight + caliber, case-insensitive); with no match the modal offers to create a new projectile/propellant (zero stock) as part of the save.
+    - **Import from screenshot** (`app/recipes/QuickLoadImageImport.tsx`): upload a screenshot of the QuickLOAD recipe screen; a vision-capable model (the **Vision model** field in Settings, separate from the text model) extracts the same values — including calculated V0 and fill rate, which `.dat` files don't carry. The image is analyzed in-memory and never stored (max 10MB). Extraction is preview-only: nothing persists until you review/edit and save.
+  - Both paths funnel into the same shared save path (`importRecipeFromQuickLoad`), which resolves the caliber, creates stub inventory rows only when asked, and never touches inventory amounts.
   - **AI Safety Check**: a button sends the recipe's data to the AI model configured in `/settings` and asks for an advisory assessment. Returns a structured verdict (`OK` / `CAUTION` / `STOP` / `UNKNOWN`) with a summary and specific concerns, rendered as a colored banner. A persistent disclaimer makes clear this is **advisory only** — always cross-check against published manufacturer load data; never rely on it for safety.
     - From the **recipe detail view**: assesses the saved recipe and saves the result (shown until re-run).
     - From the **edit form** (create or edit modal): assesses the values currently entered, including unsaved changes, so you can tweak a charge and re-check before saving. The result shows in the modal and is only saved onto the recipe when the form matches the already-saved data (otherwise it stays modal-only, to avoid a stored verdict that describes unsaved values).
@@ -62,7 +66,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - **Appearance**: Light / Dark / System theme switch, plus an **Accent** picker (Copper / Brass / Field) for the highlight color used by links and key numbers. Both choices are saved per-device in `localStorage` and applied before first paint (no flash); "System" follows the OS preference and updates live when it changes. The two axes are independent — any accent works in both light and dark mode.
   - **AI configuration**
   - Configure the AI model the app uses. Single switchable config (provider dropdown + fields), designed to alternate between providers; **Grok (xAI)** is the first supported provider.
-  - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature and max tokens.
+  - Fields: provider, model (free text), API key, base URL (defaults to `https://api.x.ai/v1`), optional temperature, max tokens, and **vision model** (image-capable model, used by the QuickLOAD screenshot import).
   - **Test connection** button validates the key against the provider (xAI is OpenAI-compatible: `GET /models` with a bearer token) and reports success/failure via a toast.
   - Settings (including the API key) are stored in Postgres as a singleton row. The key is write-only in the UI: it is never sent back to the browser, only a masked `••••last4` placeholder; leave the field blank to keep the existing key. Note: the app has no authentication, so anyone who can reach it can change these.
   - **Data**: Export inventory, recipes, load logs, range sessions, or factory ammo as JSON (separately or as a combined "everything" file). Import a previously exported file — the file type is detected automatically (including the nested "everything" bundle) and a preview (how many will be created vs updated) is shown before merging. Inventory matches by brand+type (or brand+caliber); recipes by name+caliber (component refs resolved by natural key, with stub inventory rows created if missing); load logs by date+recipeName+quantity; range logs by date+location+recipeName; factory ammo by brand+model+caliber (sessions by date+location+roundsFired). Range log and factory ammo photo *filenames* are exported (not the files) so a separately copied `uploads/` tree re-links on import. Load/range/factory-ammo logs preserve their frozen recipe snapshots where applicable; recipe re-linking is informational only (no inventory adjustments on import). Non-destructive: records not in the file are left untouched.
@@ -76,7 +80,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Responsive, dark-mode friendly, clean zinc-based design.
 
 - **Internationalization (bilingual EN/DA)**
-  - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (14 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `recipes`, `logs`, `range`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
+  - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (16 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `calibers`, `recipes`, `logs`, `range`, `factoryAmmo`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
   - URLs are clean — `localePrefix: 'never'`. The active locale lives in a `NEXT_LOCALE` cookie, detected from the cookie first, then `Accept-Language`, then the default (`en`). `middleware.ts` reads it and sets `x-next-intl-locale` so server components resolve the right dictionary.
   - Switch locale from **Settings** (`LocaleSwitcher`): a `<select>` that writes the cookie and reloads the current path. Dates format via `Intl.DateTimeFormat` (`lib/format.ts`) and respect the active locale to avoid hydration mismatch.
   - **When adding/changing a user-facing string, update BOTH `messages/en.json` and `messages/da.json`** — there is no automated drift check; a missing key in one locale renders the key path verbatim.
@@ -126,15 +130,15 @@ pnpm dev
 - `app/` – Next.js App Router
   - `page.tsx` – Overview dashboard (Range Sessions + Load Logs first in cards + sections, then Recipes, then inventory tables; reuses *Row components for previews)
   - `primers/`, `projectiles/`, `propellants/`, `cartridges/` – inventory sections (table + form + actions)
-  - `recipes/` – recipes + "Possible" calc + quick links to logs/range
+  - `recipes/` – recipes + "Possible" calc + quick links to logs/range + QuickLOAD import (.dat file + screenshot via vision model)
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
   - `factory-ammo/` – factory ammo (list, new, [id], [id]/edit) + nested `sessions/` subdomain (new, [sessionId], [sessionId]/edit) — reuses `ChronographImport` (via a `namespace` prop) and `lib/moa.ts`
   - `settings/` – AI model configuration (singleton `AiSettings` row) + `SettingsForm` + `Test connection`
-- `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test and the recipe AI safety check
+- `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `visionCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test, the recipe AI safety check, and the QuickLOAD screenshot import
 - `i18n/routing.ts` + `i18n/request.ts` – next-intl routing (`locales: ['en','da']`, `localePrefix: 'never'`) and request config (loads `messages/<locale>.json`, `timeZone: 'Europe/Copenhagen'`)
 - `middleware.ts` – locale detection (cookie → `Accept-Language` → default `en`), sets `x-next-intl-locale` header
-- `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (14 namespaces)
+- `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (16 namespaces)
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo (seated round) + favicon (case head)
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)

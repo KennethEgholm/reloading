@@ -14,13 +14,13 @@ graph TB
     subgraph Next["Next.js 16 App Router (app container)"]
         direction TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
-        I18N["i18n/request.ts · messages/{en,da}.json<br/>15 namespaces · t() / getTranslations()"]
+        I18N["i18n/request.ts · messages/{en,da}.json<br/>16 namespaces · t() / getTranslations()"]
         SC["Server Components<br/>(pages: /, /recipes, /range, /factory-ammo,<br/>/logs, inventory, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
         subgraph Lib["lib/"]
             PRISMA["prisma.ts<br/>PrismaClient + pg adapter"]
-            AI["ai.ts<br/>chatCompletion · parseJsonFromModel<br/>AiError · DEFAULT_BASE_URLS"]
+            AI["ai.ts<br/>chatCompletion · visionCompletion<br/>parseJsonFromModel · AiError · DEFAULT_BASE_URLS"]
             FMT["format.ts (Intl.DateTimeFormat, locale-aware)"]
             TYP["types.ts (DeleteResult)"]
         end
@@ -44,6 +44,7 @@ graph TB
     SA -- "mutations + transactions" --> PRISMA
     SA -- "image read/write/unlink" --> FILES
     SA -- "AI safety check" --> AI
+    SA -- "QL screenshot extract" --> AI
     AI -- "HTTPS + bearer token" --> EXT
     PRISMA -- "SQL (pool)" --> PG
 
@@ -220,6 +221,19 @@ sequenceDiagram
     A->>A: shotsSchema.safeParse + recompute aggregates
     A->>DB: TX: upsert RangeLog + deleteMany/insertMany RangeLogShot
     A-->>U: revalidate + redirect to detail
+    end
+
+    rect rgb(30,41,59)
+    note over U,AI: QuickLOAD import (.dat + screenshot)
+    U->>U: select .dat → parseQuickLoadDat (client)
+    U->>U: editable preview; match projectile/propellant<br/>by brand+type+weight+caliber else offer create
+    U->>A: importRecipeFromQuickLoad (plain object)
+    A->>DB: resolveCaliberId + create stub inventory rows (if requested)
+    A->>DB: insert Recipe (no inventory adjustments)
+    U->>A: screenshot → extractQuickLoadFromImage (FormData)
+    A->>AI: visionCompletion (image in-memory, never stored)
+    AI-->>A: JSON values (defensive parse)
+    A-->>U: ParsedQuickLoad preview (nothing persisted until save)
     end
 
     rect rgb(30,41,59)
