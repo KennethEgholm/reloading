@@ -87,6 +87,7 @@ When completing a task, run these steps in order before reporting back:
 - Do **not** create PRs
 - Push directly to `main` when approved
 - Use clean conventional commit messages
+- **After every push, monitor the CI/deploy run** (`gh run watch <id> --exit-status` via `gh run list --branch main`) and report the result — both the `Lint, test & build` job and the `Build & deploy to Proxmox` job (on `main`) must finish green before the task counts as done
 
 ## Memory & Documentation
 - After any substantial work (especially bug fixes or new major flows), update both:
