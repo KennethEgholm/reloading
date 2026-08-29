@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { getRecipesForRangeLog } from '../actions'
+import { getRecipesForRangeLog, getRiflesForRangeLog } from '../actions'
 import { RangeLogForm } from '../RangeLogForm'
 
 export default async function NewRangeLogPage({
@@ -10,7 +10,7 @@ export default async function NewRangeLogPage({
 }) {
   const { recipeId } = await searchParams
   const t = await getTranslations('range')
-  const recipes = await getRecipesForRangeLog()
+  const [recipes, rifles] = await Promise.all([getRecipesForRangeLog(), getRiflesForRangeLog()])
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
@@ -26,7 +26,7 @@ export default async function NewRangeLogPage({
           {t('new.subtitle')}
         </p>
 
-        <RangeLogForm recipes={recipes} defaultRecipeId={recipeId} />
+        <RangeLogForm recipes={recipes} rifles={rifles} defaultRecipeId={recipeId} />
       </div>
     </div>
   )

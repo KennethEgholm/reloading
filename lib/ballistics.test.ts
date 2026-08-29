@@ -72,14 +72,20 @@ describe('computeRangeTable', () => {
     expect(rows.every((r) => r.dropCm == null)).toBe(true)
   })
 
-  it('converts drop to 1 cm/100 m clicks', () => {
+  it('converts drop to clicks using cm at 100 m', () => {
     expect(elevationClicks(10, 100)).toBe(10)
     expect(elevationClicks(20, 200)).toBe(10)
     expect(elevationClicks(8, 800)).toBe(1)
+    expect(elevationClicks(10, 100, 2)).toBe(5)
+  })
+
+  it('omits drop when sight height is not set', () => {
+    const rows = computeRangeTable({ measuredV0: 800, weightGr: 168, bcG1: 0.462, zeroDistanceM: 100 })
+    expect(rows.every((r) => r.dropCm == null)).toBe(true)
   })
 
   it('is ~0 drop at the zero distance and falls after', () => {
-    const rows = computeRangeTable({ measuredV0: 800, weightGr: 168, bcG1: 0.462, zeroDistanceM: 100 })
+    const rows = computeRangeTable({ measuredV0: 800, weightGr: 168, bcG1: 0.462, zeroDistanceM: 100, sightHeightCm: 5 })
     const atZero = rows.find((r) => r.distanceM === 100)
     const at800 = rows.find((r) => r.distanceM === 800)
     const at400 = rows.find((r) => r.distanceM === 400)

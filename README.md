@@ -10,7 +10,8 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Inventory Management**
   - Primers: brand, type (Small Rifle / Large Rifle / Small Pistol / Large Pistol), magnum flag, amount, description.
-  - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), optional G1/G7 ballistic coefficients, caliber, amount, description. BC is shown on recipe dropdowns, tables, and detail.
+  - Projectiles: brand, type (e.g. "Sierra Game King"), weight (gr), optional G1/G7 ballistic coefficients, optional preferred twist (inches per revolution, e.g. 10 = 1:10″), caliber, amount, description. BC and preferred twist are shown on recipe dropdowns, tables, and detail.
+  - **Fill missing with AI** (projectiles page): uses the Settings model to suggest empty twist/G1/G7 values. Nothing is written until you review the preview, uncheck anything you don't want, and apply. Existing values are never overwritten.
   - Propellants: brand, type, amount (grams, displayed as a whole number), description.
   - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
   - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
@@ -18,7 +19,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 - **Recipes**
   - Link one projectile + propellant + primer.
   - Charge weight (grains), COAL, calculated/measured V0, optional zero distance (m), fill rate, notes.
-  - **Ballistics** on the recipe detail: remaining velocity, energy, and drop (MOA clicks) at 50–800 m when measured V0 and a projectile G1/G7 BC are set (`lib/ballistics.ts`, ICAO sea-level, G7 preferred). Zero distance is saved on the recipe.
+  - **Ballistics** on the recipe detail: remaining velocity, energy, and drop (clicks) at 50–800 m when measured V0 and a projectile G1/G7 BC are set (`lib/ballistics.ts`, ICAO sea-level, G7 preferred). Drop/clicks require a linked rifle: zero distance, sight height, and click value (cm of POI shift at 100 m) all come from the rifle — no manual fields on the recipe.
   - "Possible" loads column: how many cartridges you can currently make based on on-hand inventory (min of projectile count, primer count, and propellant grains ÷ charge).
   - Quick links from recipes to "Log load" or "Log range" (prefills the recipe).
   - **QuickLOAD import**: create a recipe from QuickLOAD without retyping it. Two entry points on the recipes page:
@@ -36,6 +37,16 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Detail view shows the exact snapshot + summary of components consumed.
   - Delete a log (with confirmation) and the components are restored to inventory (again via transaction using the snapshots).
   - Recent load logs are shown on the Overview (after Range Sessions).
+
+- **Rifles** (`/rifles`)
+  - Track firearms: name, caliber, barrel length (mm), twist (inches per revolution, e.g. 10 = 1:10″), sight height (cm), zero distance (m), and click value (cm of POI shift at 100 m).
+  - Full CRUD. Row-click to edit (same pattern as inventory). Top-level nav, not part of Reloading Inventory.
+  - Caliber uses the shared `Caliber` model. Defaults on create: sight height 5 cm, zero 100 m, click 1 cm/100 m.
+  - Optional on a recipe (`Recipe.rifleId`) and on a range session (`RangeLog.rifleId`). The ballistics table takes zero, sight height, and click value from the linked rifle — no manual override. Drop/clicks are omitted until a rifle is linked. Deleting a rifle unlinks it from recipes and range logs (`onDelete: SetNull`); range sessions keep a frozen rifle snapshot.
+  - Range sessions snapshot the rifle (name, caliber, barrel, twist, sight, zero, click) like the recipe snapshot. The form prefills the recipe's rifle and lets you pick a different gun.
+  - Recipe detail/form warn when projectile preferred twist and rifle twist differ.
+  - Rifle detail (`/rifles/[id]`) lists recipes and range sessions that use it. Row-click on the rifle table opens that page.
+  - Recipe export/import includes the rifle as `{ name, caliber }` and re-links if a matching rifle exists (does not create stub rifles). Rifles themselves are not yet in Settings → Data export/import.
 
 - **Factory Ammo** (`/factory-ammo`)
   - Track store-bought ammunition as a unit (not its components): brand, model, caliber, and a hand-edited round count (`amount`). `amount` is **not** deducted when you log a session — it's manual inventory, like counting boxes on a shelf.
@@ -80,7 +91,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Responsive, dark-mode friendly, clean zinc-based design.
 
 - **Internationalization (bilingual EN/DA)**
-  - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (16 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `calibers`, `recipes`, `logs`, `range`, `factoryAmmo`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
+  - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (17 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `rifles`, `calibers`, `recipes`, `logs`, `range`, `factoryAmmo`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
   - URLs are clean — `localePrefix: 'never'`. The active locale lives in a `NEXT_LOCALE` cookie, detected from the cookie first, then `Accept-Language`, then the default (`en`). `middleware.ts` reads it and sets `x-next-intl-locale` so server components resolve the right dictionary.
   - Switch locale from **Settings** (`LocaleSwitcher`): a `<select>` that writes the cookie and reloads the current path. Dates format via `Intl.DateTimeFormat` (`lib/format.ts`) and respect the active locale to avoid hydration mismatch.
   - **When adding/changing a user-facing string, update BOTH `messages/en.json` and `messages/da.json`** — there is no automated drift check; a missing key in one locale renders the key path verbatim.
@@ -133,12 +144,13 @@ pnpm dev
   - `recipes/` – recipes + "Possible" calc + quick links to logs/range + QuickLOAD import (.dat file + screenshot via vision model)
   - `logs/` – load logs + snapshots + restore-on-delete (plus `LoadLogRow` for lists/previews)
   - `range/` – range sessions (list, new, [id], [id]/edit) + shared `RangeLogForm` + image handling (plus `RangeLogRow`)
+  - `rifles/` – rifles (table + form + actions). Name, caliber, barrel length (mm), twist (in/turn), sight height (cm), zero (m), click (cm at 100 m).
   - `factory-ammo/` – factory ammo (list, new, [id], [id]/edit) + nested `sessions/` subdomain (new, [sessionId], [sessionId]/edit) — reuses `ChronographImport` (via a `namespace` prop) and `lib/moa.ts`
   - `settings/` – AI model configuration (singleton `AiSettings` row) + `SettingsForm` + `Test connection`
 - `lib/ai.ts` – shared OpenAI-compatible model-call helpers (`chatCompletion`, `visionCompletion`, `parseJsonFromModel`, provider base URLs) reused by the settings test, the recipe AI safety check, and the QuickLOAD screenshot import
 - `i18n/routing.ts` + `i18n/request.ts` – next-intl routing (`locales: ['en','da']`, `localePrefix: 'never'`) and request config (loads `messages/<locale>.json`, `timeZone: 'Europe/Copenhagen'`)
 - `middleware.ts` – locale detection (cookie → `Accept-Language` → default `en`), sets `x-next-intl-locale` header
-- `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (16 namespaces)
+- `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (17 namespaces)
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo (seated round) + favicon (case head)
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)

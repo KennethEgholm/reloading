@@ -5,7 +5,8 @@ import { getRecipeById, getRecipeAccuracyGroups } from '../actions'
 import { RecipeAiCheck } from './RecipeAiCheck'
 import { RecipeBallistics } from './RecipeBallistics'
 import { RecipeEditButton } from './RecipeEditButton'
-import { formatDate, formatBcSuffix } from '@/lib/format'
+import { formatDate, formatBcSuffix, formatTwistSuffix } from '@/lib/format'
+import { twistsDiffer } from '@/lib/twist'
 import { averageMoa } from '@/lib/moa'
 import { EmptyState } from '../../EmptyState'
 
@@ -23,15 +24,17 @@ export default async function RecipeDetailPage({
     return <div className="max-w-4xl mx-auto px-6 py-10">{t('detail.notFound')}</div>
   }
 
-  const [accuracyGroups, projectiles, propellants, primers, cartridges, calibers] = await Promise.all([
+  const [accuracyGroups, projectiles, propellants, primers, cartridges, rifles, calibers] = await Promise.all([
     getRecipeAccuracyGroups(id),
     prisma.projectile.findMany({ orderBy: { brand: 'asc' } }),
     prisma.propellant.findMany({ orderBy: { brand: 'asc' } }),
     prisma.primer.findMany({ orderBy: { brand: 'asc' } }),
     prisma.cartridge.findMany({ include: { caliber: true }, orderBy: { brand: 'asc' } }),
+    prisma.rifle.findMany({ include: { caliber: true }, orderBy: { name: 'asc' } }),
     prisma.caliber.findMany({ orderBy: { name: 'asc' } }),
   ])
   const accuracyAvg = averageMoa(accuracyGroups.map((g) => g.moa))
+  const twistMismatch = twistsDiffer(recipe.projectile.preferredTwistIn, recipe.rifle?.twistIn)
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
@@ -66,6 +69,7 @@ export default async function RecipeDetailPage({
             propellants={propellants}
             primers={primers}
             cartridges={cartridges}
+            rifles={rifles}
             calibers={calibers}
           />
         </div>
@@ -78,7 +82,7 @@ export default async function RecipeDetailPage({
           <div>
             <div className="text-zinc-500">{t('detail.projectile')}</div>
             <div className="font-medium">
-              {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
+              {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}{formatTwistSuffix(recipe.projectile.preferredTwistIn)})
             </div>
           </div>
           <div>
@@ -98,7 +102,16 @@ export default async function RecipeDetailPage({
             <div className="text-zinc-500">{t('detail.cartridge')}</div>
             <div className="font-medium">
               {recipe.cartridge
-                ? `${recipe.cartridge.brand} ${recipe.cartridge.caliber}${recipe.cartridge.waterCapacityGr != null ? ` (${recipe.cartridge.waterCapacityGr} gr H₂O)` : ''}`
+                ? `${recipe.cartridge.brand} ${recipe.cartridge.caliber.name}${recipe.cartridge.waterCapacityGr != null ? ` (${recipe.cartridge.waterCapacityGr} gr H₂O)` : ''}`
+                : t('detail.none')}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-zinc-500">{t('detail.rifle')}</div>
+            <div className="font-medium">
+              {recipe.rifle
+                ? `${recipe.rifle.name} (${recipe.rifle.caliber.name})`
                 : t('detail.none')}
             </div>
           </div>
@@ -134,13 +147,21 @@ export default async function RecipeDetailPage({
         )}
       </div>
 
+      {twistMismatch && recipe.rifle && recipe.projectile.preferredTwistIn != null && (
+        <div className="text-sm text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 rounded-2xl px-4 py-3 mb-8">
+          {t('detail.twistMismatch', { preferred: recipe.projectile.preferredTwistIn, rifle: recipe.rifle.twistIn })}
+        </div>
+      )}
+
       <RecipeBallistics
-        recipeId={recipe.id}
         measuredV0={recipe.measuredV0}
         weightGr={recipe.projectile.weightGr}
         bcG1={recipe.projectile.bcG1}
         bcG7={recipe.projectile.bcG7}
-        zeroDistanceM={recipe.zeroDistanceM}
+        zeroDistanceM={recipe.rifle?.zeroDistanceM ?? null}
+        sightHeightCm={recipe.rifle?.sightHeightCm ?? null}
+        clickCmAt100m={recipe.rifle?.clickCmAt100m ?? null}
+        rifleName={recipe.rifle?.name ?? null}
       />
 
       {/* AI Safety Check */}

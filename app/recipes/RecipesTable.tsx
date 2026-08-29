@@ -8,13 +8,14 @@ import { DeleteRecipeButton } from './DeleteRecipeButton';
 import { SortIndicator } from '../SortIndicator';
 import { useSortBy } from '@/lib/useSortBy';
 import { getPossibleLoads } from '@/lib/inventory';
-import { formatBcSuffix } from '@/lib/format';
+import { formatBcSuffix, formatTwistSuffix } from '@/lib/format';
 import type {
   RecipeWithRelations,
   Projectile,
   Propellant,
   Primer,
   CartridgeWithCaliber,
+  RifleWithCaliber,
   CaliberOption,
 } from '@/lib/types';
 
@@ -63,10 +64,11 @@ interface RecipesTableProps {
   propellants: Propellant[];
   primers: Primer[];
   cartridges: CartridgeWithCaliber[];
+  rifles: RifleWithCaliber[];
   calibers: CaliberOption[];
 }
 
-export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges, calibers }: RecipesTableProps) {
+export function RecipesTable({ recipes, projectiles, propellants, primers, cartridges, rifles, calibers }: RecipesTableProps) {
   const t = useTranslations('recipes');
   const router = useRouter();
   const [editingRecipe, setEditingRecipe] = useState<RecipeWithRelations | null>(null);
@@ -75,7 +77,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
     () =>
       recipes.map((recipe) => ({
         ...recipe,
-        projectileLabel: `${recipe.projectile.brand} ${recipe.projectile.type ?? ''} ${recipe.projectile.weightGr}${formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}`,
+        projectileLabel: `${recipe.projectile.brand} ${recipe.projectile.type ?? ''} ${recipe.projectile.weightGr}${formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}${formatTwistSuffix(recipe.projectile.preferredTwistIn)}`,
         powderLabel: `${recipe.propellant.brand} ${recipe.propellant.type}`,
         possible: getPossibleLoads(recipe) ?? -1,
       })),
@@ -138,7 +140,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
                 <td className="px-3 py-4 font-medium whitespace-nowrap">{recipe.name}</td>
                 <td className="px-3 py-4 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">{recipe.caliber.name}</td>
                 <td className="px-3 py-4 whitespace-nowrap">
-                  {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
+                  {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}{formatTwistSuffix(recipe.projectile.preferredTwistIn)})
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap">
                   {recipe.propellant.brand} – {recipe.propellant.type}
@@ -189,6 +191,7 @@ export function RecipesTable({ recipes, projectiles, propellants, primers, cartr
         propellants={propellants}
         primers={primers}
         cartridges={cartridges}
+        rifles={rifles}
         calibers={calibers}
         open={!!editingRecipe}
         onOpenChange={(open) => {

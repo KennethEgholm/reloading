@@ -7,6 +7,7 @@
 // server-rendered text matching the client and respects the user's language.
 
 const DEFAULT_LOCALE = 'en-GB' // DD/MM/YYYY
+const TIME_ZONE = 'Europe/Copenhagen'
 
 function resolveLocale(locale?: string): string {
   return locale || DEFAULT_LOCALE
@@ -17,7 +18,7 @@ export function formatDate(
   value: Date | string | number,
   locale?: string
 ): string {
-  return new Date(value).toLocaleDateString(resolveLocale(locale))
+  return new Date(value).toLocaleDateString(resolveLocale(locale), { timeZone: TIME_ZONE })
 }
 
 /** Long date with weekday and month name, e.g. "Tuesday, 2 June 2026". */
@@ -26,6 +27,7 @@ export function formatDateLong(
   locale?: string
 ): string {
   return new Date(value).toLocaleDateString(resolveLocale(locale), {
+    timeZone: TIME_ZONE,
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -38,7 +40,7 @@ export function formatDateTime(
   value: Date | string | number,
   locale?: string
 ): string {
-  return new Date(value).toLocaleString(resolveLocale(locale))
+  return new Date(value).toLocaleString(resolveLocale(locale), { timeZone: TIME_ZONE })
 }
 
 /** Compact G1/G7 label, e.g. "G1 0.462 / G7 0.237". Empty string when both are unset. */
@@ -53,4 +55,9 @@ export function formatBc(bcG1?: number | null, bcG7?: number | null): string {
 export function formatBcSuffix(bcG1?: number | null, bcG7?: number | null): string {
   const bc = formatBc(bcG1, bcG7)
   return bc ? `, ${bc}` : ''
+}
+
+/** Leading-comma twist label, e.g. ", 1:10". Empty when unset. */
+export function formatTwistSuffix(twistIn?: number | null): string {
+  return twistIn != null ? `, 1:${twistIn}` : ''
 }

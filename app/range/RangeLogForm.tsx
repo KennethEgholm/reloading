@@ -16,10 +16,18 @@ interface RecipeOption {
   id: string
   name: string
   caliber: { name: string }
+  rifleId: string | null
+}
+
+interface RifleOption {
+  id: string
+  name: string
+  caliber: { name: string }
 }
 
 interface RangeLogFormProps {
   recipes: RecipeOption[]
+  rifles: RifleOption[]
   defaultRecipeId?: string
   // Edit / View mode
   initialData?: RangeLogWithImages | null
@@ -53,7 +61,7 @@ interface ExistingImage {
   isMain: boolean
 }
 
-export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, readonly = false }: RangeLogFormProps) {
+export function RangeLogForm({ recipes, rifles, defaultRecipeId, initialData, logId, readonly = false }: RangeLogFormProps) {
   const router = useRouter();
   const t = useTranslations('range')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -61,6 +69,12 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
   const isReadOnly = readonly || false
 
   const effectiveDefaultRecipeId = defaultRecipeId || initialData?.recipe?.id || initialData?.recipeId || ''
+  const defaultRifleId =
+    initialData?.rifle?.id ||
+    initialData?.rifleId ||
+    recipes.find((r) => r.id === effectiveDefaultRecipeId)?.rifleId ||
+    ''
+  const [rifleId, setRifleId] = useState(defaultRifleId)
 
   // For edit mode - handle existing images
   const initialExisting: ExistingImage[] = initialData?.images?.map((img) => ({
@@ -369,10 +383,45 @@ export function RangeLogForm({ recipes, defaultRecipeId, initialData, logId, rea
             autoComplete="off"
             defaultValue={effectiveDefaultRecipeId}
             disabled={isReadOnly}
+            onChange={(e) => {
+              const next = recipes.find((r) => r.id === e.target.value)
+              if (next?.rifleId) setRifleId(next.rifleId)
+            }}
             className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
           >
             <option value="">{t('form.recipePlaceholder')}</option>
             {recipes.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} — {r.caliber.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="range-rifle" className="block text-sm font-medium mb-1.5">{t('form.rifle')}</label>
+        {isReadOnly && !initialData?.rifle ? (
+          <input
+            id="range-rifle"
+            type="text"
+            disabled
+            autoComplete="off"
+            value={initialData?.rifleName ?? t('form.rifleNone')}
+            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+          />
+        ) : (
+          <select
+            id="range-rifle"
+            name="rifleId"
+            autoComplete="off"
+            value={rifleId}
+            onChange={(e) => setRifleId(e.target.value)}
+            disabled={isReadOnly}
+            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 disabled:bg-zinc-100 dark:disabled:bg-zinc-800"
+          >
+            <option value="">{t('form.riflePlaceholder')}</option>
+            {rifles.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name} — {r.caliber.name}
               </option>

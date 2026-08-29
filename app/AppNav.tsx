@@ -19,6 +19,7 @@ export function AppNav() {
     { href: '/logs', label: t('logs'), icon: '/images/log.svg' },
     { href: '/range', label: t('range'), icon: '/images/range.svg' },
     { href: '/factory-ammo', label: t('factoryAmmo'), icon: '/images/factory-ammo.svg' },
+    { href: '/rifles', label: t('rifles'), icon: '/images/rifle.svg' },
   ]
 
   const inventory = [

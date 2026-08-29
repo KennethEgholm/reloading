@@ -19,11 +19,11 @@ export async function createRecipe(formData: FormData) {
   const propellantId = formData.get('propellantId') as string
   const primerId = (formData.get('primerId') as string) || null
   const cartridgeId = (formData.get('cartridgeId') as string) || null
+  const rifleId = (formData.get('rifleId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
   const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
   const measuredV0 = formData.get('measuredV0') ? parseFloat(formData.get('measuredV0') as string) : null
-  const zeroDistanceM = formData.get('zeroDistanceM') ? parseFloat(formData.get('zeroDistanceM') as string) : null
   const fillRate = formData.get('fillRate') ? parseFloat(formData.get('fillRate') as string) : null
   const notes = (formData.get('notes') as string) || null
 
@@ -41,11 +41,11 @@ export async function createRecipe(formData: FormData) {
       propellantId,
       primerId,
       cartridgeId,
+      rifleId,
       chargeGr,
       coal,
       calculatedV0,
       measuredV0,
-      zeroDistanceM,
       fillRate,
       notes,
     },
@@ -287,6 +287,7 @@ export async function updateRecipe(id: string, formData: FormData) {
   const propellantId = formData.get('propellantId') as string
   const primerId = (formData.get('primerId') as string) || null
   const cartridgeId = (formData.get('cartridgeId') as string) || null
+  const rifleId = (formData.get('rifleId') as string) || null
   const chargeGr = formData.get('chargeGr') ? parseFloat(formData.get('chargeGr') as string) : null
   const coal = formData.get('coal') ? parseFloat(formData.get('coal') as string) : null
   const calculatedV0 = formData.get('calculatedV0') ? parseFloat(formData.get('calculatedV0') as string) : null
@@ -309,6 +310,7 @@ export async function updateRecipe(id: string, formData: FormData) {
       propellantId,
       primerId,
       cartridgeId,
+      rifleId,
       chargeGr,
       coal,
       calculatedV0,
@@ -323,17 +325,6 @@ export async function updateRecipe(id: string, formData: FormData) {
   revalidatePath('/')
 }
 
-export async function updateRecipeZeroDistance(id: string, zeroDistanceM: number | null) {
-  if (zeroDistanceM != null && (!Number.isFinite(zeroDistanceM) || zeroDistanceM <= 0)) {
-    return
-  }
-  await prisma.recipe.update({
-    where: { id },
-    data: { zeroDistanceM },
-  })
-  revalidatePath(`/recipes/${id}`)
-}
-
 export async function getRecipeById(id: string) {
   return prisma.recipe.findUnique({
     where: { id },
@@ -343,6 +334,7 @@ export async function getRecipeById(id: string) {
       propellant: true,
       primer: true,
       cartridge: { include: { caliber: true } },
+      rifle: { include: { caliber: true } },
       loadLogs: {
         orderBy: { date: 'desc' },
         take: 5,
@@ -567,6 +559,7 @@ export interface RecipeAiCheckInput {
   propellantId: string
   primerId?: string | null
   cartridgeId?: string | null
+  rifleId?: string | null
   chargeGr?: number | null
   coal?: number | null
   calculatedV0?: number | null
@@ -657,6 +650,7 @@ function recipeMatchesInput(
     propellantId: string
     primerId: string | null
     cartridgeId: string | null
+    rifleId: string | null
     chargeGr: number | null
     coal: number | null
     calculatedV0: number | null
@@ -676,6 +670,7 @@ function recipeMatchesInput(
     saved.propellantId === input.propellantId &&
     (saved.primerId ?? '') === (input.primerId ?? '') &&
     (saved.cartridgeId ?? '') === (input.cartridgeId ?? '') &&
+    (saved.rifleId ?? '') === (input.rifleId ?? '') &&
     num(saved.chargeGr) === num(input.chargeGr) &&
     num(saved.coal) === num(input.coal) &&
     num(saved.calculatedV0) === num(input.calculatedV0) &&

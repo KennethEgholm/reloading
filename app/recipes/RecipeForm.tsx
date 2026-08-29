@@ -10,7 +10,8 @@ import { runRecipeAiCheckOnInput, type RecipeAiCheckResult } from './actions';
 import { AiVerdictDisplay, AiDisclaimer } from './AiVerdictDisplay';
 import type { RecipeWithRelations, CaliberOption } from '@/lib/types';
 import { useFocusTrap } from '@/lib/useFocusTrap';
-import { formatBcSuffix } from '@/lib/format';
+import { formatBcSuffix, formatTwistSuffix } from '@/lib/format';
+import { twistsDiffer } from '@/lib/twist';
 import { CaliberField } from '../CaliberField';
 
 function createRecipeSchema(t: (key: string) => string) {
@@ -21,6 +22,7 @@ function createRecipeSchema(t: (key: string) => string) {
     propellantId: z.string().min(1, t('form.validation.propellantRequired')),
     primerId: z.string().optional(),
     cartridgeId: z.string().optional(),
+    rifleId: z.string().optional(),
     chargeGr: z.coerce.number().optional(),
     coal: z.coerce.number().optional(),
     calculatedV0: z.coerce.number().optional(),
@@ -38,10 +40,11 @@ interface RecipeFormProps {
   action?: (formData: FormData) => Promise<void>;
   updateAction?: (id: string, formData: FormData) => Promise<void>;
   defaultValues?: RecipeWithRelations | null;
-  projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null }>;
+  projectiles: Array<{ id: string; brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null; preferredTwistIn: number | null }>;
   propellants: Array<{ id: string; brand: string; type: string }>;
   primers: Array<{ id: string; brand: string; type: string; magnum: boolean }>;
   cartridges: Array<{ id: string; brand: string; caliber: { name: string } }>;
+  rifles: Array<{ id: string; name: string; caliber: { name: string }; twistIn: number }>;
   calibers: CaliberOption[];
   title?: string;
   submitLabel?: string;
@@ -57,6 +60,7 @@ export function RecipeForm({
   propellants,
   primers,
   cartridges,
+  rifles,
   calibers,
   title,
   submitLabel,
@@ -96,6 +100,7 @@ export function RecipeForm({
       propellantId: defaultValues?.propellantId || '',
       primerId: defaultValues?.primerId || '',
       cartridgeId: defaultValues?.cartridgeId || '',
+      rifleId: defaultValues?.rifleId || '',
       chargeGr: defaultValues?.chargeGr,
       coal: defaultValues?.coal,
       calculatedV0: defaultValues?.calculatedV0,
@@ -104,6 +109,10 @@ export function RecipeForm({
       notes: defaultValues?.notes || '',
     },
   });
+
+  const selectedProjectile = projectiles.find((p) => p.id === watch('projectileId'))
+  const selectedRifle = rifles.find((r) => r.id === watch('rifleId'))
+  const twistMismatch = twistsDiffer(selectedProjectile?.preferredTwistIn, selectedRifle?.twistIn)
 
   // AI safety-check state (edit mode). Result lives only in the modal; it is
   // persisted server-side only when the form matches the saved recipe.
@@ -119,6 +128,7 @@ export function RecipeForm({
         propellantId: defaultValues.propellantId || '',
         primerId: defaultValues.primerId || '',
         cartridgeId: defaultValues.cartridgeId || '',
+        rifleId: defaultValues.rifleId || '',
         chargeGr: defaultValues.chargeGr,
         coal: defaultValues.coal,
         calculatedV0: defaultValues.calculatedV0,
@@ -160,6 +170,7 @@ export function RecipeForm({
         propellantId: values.propellantId,
         primerId: values.primerId || null,
         cartridgeId: values.cartridgeId || null,
+        rifleId: values.rifleId || null,
         chargeGr: values.chargeGr ?? null,
         coal: values.coal ?? null,
         calculatedV0: values.calculatedV0 ?? null,
@@ -185,6 +196,7 @@ export function RecipeForm({
     formData.append('propellantId', data.propellantId);
     if (data.primerId) formData.append('primerId', data.primerId);
     if (data.cartridgeId) formData.append('cartridgeId', data.cartridgeId);
+    if (data.rifleId) formData.append('rifleId', data.rifleId);
     if (data.chargeGr !== undefined) formData.append('chargeGr', String(data.chargeGr));
     if (data.coal !== undefined) formData.append('coal', String(data.coal));
     if (data.calculatedV0 !== undefined) formData.append('calculatedV0', String(data.calculatedV0));
@@ -321,7 +333,7 @@ export function RecipeForm({
                     <option value="">{t('form.projectilePlaceholder')}</option>
                     {projectiles.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.brand} {p.type ? `– ${p.type}` : ''} ({p.weightGr} gr{formatBcSuffix(p.bcG1, p.bcG7)})
+                        {p.brand} {p.type ? `– ${p.type}` : ''} ({p.weightGr} gr{formatBcSuffix(p.bcG1, p.bcG7)}{formatTwistSuffix(p.preferredTwistIn)})
                       </option>
                     ))}
                   </select>
@@ -380,6 +392,28 @@ export function RecipeForm({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label htmlFor="recipe-rifle" className="block text-sm font-medium mb-1.5">{t('form.rifle')}</label>
+                <select
+                  id="recipe-rifle"
+                  autoComplete="off"
+                  {...register('rifleId')}
+                  className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950"
+                >
+                  <option value="">{t('form.riflePlaceholder')}</option>
+                  {rifles.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name} – {r.caliber.name}
+                    </option>
+                  ))}
+                </select>
+                {twistMismatch && selectedProjectile?.preferredTwistIn != null && selectedRifle && (
+                  <p className="text-amber-700 dark:text-amber-400 text-xs mt-1.5">
+                    {t('form.twistMismatch', { preferred: selectedProjectile.preferredTwistIn, rifle: selectedRifle.twistIn })}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

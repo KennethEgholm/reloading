@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getTranslations } from 'next-intl/server'
-import { getRangeLogById, getRecipesForRangeLog } from '../../actions'
+import { getRangeLogById, getRecipesForRangeLog, getRiflesForRangeLog } from '../../actions'
 import { RangeLogForm } from '../../RangeLogForm'
 
 export default async function EditRangeLogPage({
@@ -11,9 +11,10 @@ export default async function EditRangeLogPage({
 }) {
   const { id } = await params
   const t = await getTranslations('range')
-  const [log, recipes] = await Promise.all([
+  const [log, recipes, rifles] = await Promise.all([
     getRangeLogById(id),
     getRecipesForRangeLog(),
+    getRiflesForRangeLog(),
   ])
 
   if (!log) {
@@ -36,6 +37,7 @@ export default async function EditRangeLogPage({
 
         <RangeLogForm
           recipes={recipes}
+          rifles={rifles}
           initialData={log}
           logId={log.id}
         />

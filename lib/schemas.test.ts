@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   createCartridgeSchema,
+  createRifleSchema,
   createProjectileSchema,
   createPrimerSchema,
   createPropellantSchema,
@@ -64,14 +65,15 @@ describe('createProjectileSchema', () => {
     expect(r.success && r.data.amount).toBe(0)
   })
 
-  it('coerces empty optional BCs to null', () => {
+  it('coerces empty optional BCs and preferred twist to null', () => {
     const r = schema().safeParse({
-      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '', bcG7: '',
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '', bcG7: '', preferredTwistIn: '',
     })
     expect(r.success).toBe(true)
     if (r.success) {
       expect(r.data.bcG1).toBeNull()
       expect(r.data.bcG7).toBeNull()
+      expect(r.data.preferredTwistIn).toBeNull()
     }
   })
 
@@ -84,6 +86,18 @@ describe('createProjectileSchema', () => {
 
     const bad = schema().safeParse({
       brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', bcG1: '-0.1',
+    })
+    expect(bad.success).toBe(false)
+  })
+
+  it('keeps a preferred twist and rejects a non-positive one', () => {
+    const ok = schema().safeParse({
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', preferredTwistIn: '10',
+    })
+    expect(ok.success && ok.data.preferredTwistIn).toBe(10)
+
+    const bad = schema().safeParse({
+      brand: 'Sierra', type: 'GameKing', weightGr: '168', caliber: '.308', amount: '40', preferredTwistIn: '0',
     })
     expect(bad.success).toBe(false)
   })
@@ -114,6 +128,57 @@ describe('createCartridgeSchema', () => {
 
     const bad = schema().safeParse({ brand: 'Lapua', caliber: '6.5CM', waterCapacityGr: '-1', amount: '50' })
     expect(bad.success).toBe(false)
+  })
+})
+
+describe('createRifleSchema', () => {
+  const schema = () => createRifleSchema(t)
+
+  it('requires name and caliber', () => {
+    const r = schema().safeParse({ name: '', caliber: '', barrelLengthMm: '610', twistIn: '10', sightHeightCm: '5', zeroDistanceM: '100', clickCmAt100m: '1' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs).toContain('form.validation.nameRequired')
+      expect(msgs).toContain('form.validation.caliberRequired')
+    }
+  })
+
+  it('rejects non-positive barrel, twist, sight, zero, and click', () => {
+    const r = schema().safeParse({ name: 'Tikka', caliber: '.308', barrelLengthMm: '0', twistIn: '-1', sightHeightCm: '0', zeroDistanceM: '0', clickCmAt100m: '-1' })
+    expect(r.success).toBe(false)
+    if (!r.success) {
+      const msgs = r.error.issues.map((i) => i.message)
+      expect(msgs).toContain('form.validation.barrelPositive')
+      expect(msgs).toContain('form.validation.twistPositive')
+      expect(msgs).toContain('form.validation.sightPositive')
+      expect(msgs).toContain('form.validation.zeroPositive')
+      expect(msgs).toContain('form.validation.clickPositive')
+    }
+  })
+
+  it('coerces and trims a valid payload', () => {
+    const r = schema().safeParse({
+      name: '  Tikka T3x ',
+      caliber: '.308 Win',
+      barrelLengthMm: '610',
+      twistIn: '10',
+      sightHeightCm: '5.0',
+      zeroDistanceM: '100',
+      clickCmAt100m: '1',
+    })
+    expect(r.success).toBe(true)
+    if (r.success) {
+      expect(r.data).toMatchObject({
+        name: 'Tikka T3x',
+        caliber: '.308 Win',
+        barrelLengthMm: 610,
+        twistIn: 10,
+        sightHeightCm: 5,
+        zeroDistanceM: 100,
+        clickCmAt100m: 1,
+      })
+    }
   })
 })
 

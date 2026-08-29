@@ -9,14 +9,15 @@
     "logs": "Ladejournal",
     "range": "Skydning",
     "settings": "Indstillinger",
-    "personalInventory": "Personligt Lager",
-    "materials": "Personligt Lager",
+    "personalInventory": "Genladningslager",
+    "materials": "Genladningslager",
     "primers": "Fænghætter",
     "projectiles": "Projektiler",
     "propellants": "Krudt",
     "cartridges": "Hylstre",
     "skipToContent": "Gå til indhold",
     "factoryAmmo": "Fabriksammunition",
+    "rifles": "Rifler",
     "openMenu": "Åbn menu",
     "closeMenu": "Luk menu"
   },
@@ -41,7 +42,9 @@
       "pieces": "{count, plural, one {{count} stk.} other {{count} stk.}}",
       "cases": "{count, plural, one {{count} hylster} other {{count} hylstre}}",
       "factoryAmmo": "Fabriksammunition",
-      "roundsOnHand": "{count, plural, one {{count} patron på lager} other {{count} patroner på lager}}"
+      "roundsOnHand": "{count, plural, one {{count} patron på lager} other {{count} patroner på lager}}",
+      "rifles": "Rifler",
+      "rifleCount": "{count, plural, one {{count} riffel} other {{count} rifler}}"
     },
     "sections": {
       "rangeSessions": "Skydning",
@@ -67,7 +70,7 @@
         "possible": "Mulige"
       },
       "noRecipes": "Ingen ladninger gemt endnu.",
-      "materials": "Personligt Lager",
+      "materials": "Genladningslager",
       "materialsSummary": "({primers} fænghætter • {projectiles} projektiler • {propellants} krudttyper • {cartridges} hylstre)",
       "primers": "Fænghætter",
       "primerSummary": "({count} typer • {pieces} stk.)",
@@ -88,6 +91,7 @@
         "weight": "Vægt (gr)",
         "bcG1": "G1",
         "bcG7": "G7",
+        "preferredTwist": "Rifling (1: in)",
         "caliber": "Kaliber",
         "amount": "Antal",
         "description": "Beskrivelse"
@@ -121,6 +125,18 @@
         "model": "Model",
         "caliber": "Kaliber",
         "amount": "Patroner"
+      },
+      "rifles": "Rifler",
+      "rifleSummary": "({count} gemt)",
+      "noRifles": "Ingen rifler tilføjet endnu.",
+      "rifleTable": {
+        "name": "Navn",
+        "caliber": "Kaliber",
+        "barrel": "Pibe (mm)",
+        "twist": "Rifling (1: in)",
+        "sight": "Sigte (cm)",
+        "zero": "Indskydning (m)",
+        "click": "Klik (cm/100 m)"
       }
     }
   },
@@ -165,6 +181,12 @@
       "propellant": "Krudt",
       "primer": "Tændhætte",
       "cartridge": "Hylster / Patron",
+      "rifleSnapshot": "Riffel (på skydningstidspunktet)",
+      "rifleBarrel": "Pibe",
+      "rifleTwist": "Rifling",
+      "rifleSight": "Sigte",
+      "rifleZero": "Indskydning",
+      "rifleClick": "Klik",
       "groups": {
         "title": "Præcisionsgrupper",
         "sessionAvg": "Gns. for skydning: {value} MOA"
@@ -186,6 +208,9 @@
       "locationPlaceholder": "Lokal bane, 100m bane...",
       "recipe": "Brugt recept",
       "recipePlaceholder": "Vælg recept...",
+      "rifle": "Riffel",
+      "riflePlaceholder": "Vælg riffel (valgfri)",
+      "rifleNone": "—",
       "roundsFired": "Affyrede skud",
       "conditions": "Forhold / Vejr",
       "conditionsPlaceholder": "Solskin, 18°C, let sidevind...",
@@ -264,6 +289,7 @@
       "imageNotFound": "Billede ikke fundet",
       "notFound": "Skydning ikke fundet",
       "recipeNotFound": "Recept ikke fundet",
+      "rifleNotFound": "Riffel ikke fundet",
       "csvHeader": "Ikke en genkendt kronograf-eksport (mangler forventet header).",
       "csvNoShots": "Ingen skud fundet i CSV-filen (kræver mindst 2).",
       "csvParse": "Kunne ikke analysere CSV-filen.",
@@ -361,6 +387,8 @@
       "primer": "Tændhætte",
       "none": "—",
       "cartridge": "Hylster / Patron",
+      "rifle": "Riffel",
+      "twistMismatch": "Dette projektil foretrækker 1:{preferred}, men riflen er 1:{rifle}.",
       "charge": "Ladning",
       "coal": "COAL",
       "fillRate": "Fyldningsgrad",
@@ -369,11 +397,10 @@
       "notes": "Noter",
       "ballistics": {
         "title": "Ballistik",
-        "subtitle": "ICAO havniveau · {model}-modstand · 1 cm/100 m klik",
+        "subtitle": "ICAO havniveau · {model}-modstand",
         "missing": "Tilføj en målt V0 og en G1- eller G7-BC på projektilet for at se resthastighed og energi.",
-        "zeroDistance": "Indskydning (m)",
-        "zeroPlaceholder": "100",
-        "sightHeight": "Sigtehøjde (cm)",
+        "fromRifle": "Fra {rifle}: indskydning {zero} m · sigte {sight} cm · {click} cm/klik ved 100 m",
+        "noRifle": "Tilknyt en riffel til recepten for at beregne fald og klik.",
         "distance": "Afstand",
         "velocity": "Hastighed (m/s)",
         "energy": "Energi (J)",
@@ -433,6 +460,9 @@
       "primerPlaceholder": "Vælg tændhætte (valgfri)",
       "cartridge": "Hylster / Patron (valgfri)",
       "cartridgePlaceholder": "Vælg hylster (valgfri)",
+      "rifle": "Riffel (valgfri)",
+      "riflePlaceholder": "Vælg riffel (valgfri)",
+      "twistMismatch": "Dette projektil foretrækker 1:{preferred}, men riflen er 1:{rifle}.",
       "charge": "Ladning (grains)",
       "coal": "COAL (tommer)",
       "calcV0": "Beregnet V0 (m/s)",
@@ -470,7 +500,6 @@
       "saved": "Recept gemt",
       "updated": "Recept opdateret",
       "failed": "Kunne ikke gemme recept",
-      "zeroUpdated": "Indskydningsafstand gemt",
       "aiCheckComplete": "AI-sikkerhedstjek gennemført",
       "aiCheckSaved": "AI-sikkerhedstjek gennemført (gemt)",
       "aiCheckFailed": "AI-tjek mislykkedes",
@@ -596,6 +625,7 @@
       "weight": "Vægt (gr)",
       "bcG1": "G1",
       "bcG7": "G7",
+      "preferredTwist": "Rifling (1: in)",
       "caliber": "Kaliber",
       "amount": "Antal",
       "description": "Beskrivelse",
@@ -614,6 +644,9 @@
       "bcG1Placeholder": "0.462",
       "bcG7": "BC G7",
       "bcG7Placeholder": "0.237",
+      "preferredTwist": "Foretrukket rifling (1: in)",
+      "preferredTwistPlaceholder": "10",
+      "preferredTwistHint": "Tommer pr. omdrejning (10 = 1:10″)",
       "caliber": "Kaliber",
       "caliberPlaceholder": "9mm, .308, 5.56...",
       "amount": "Antal på lager",
@@ -628,6 +661,7 @@
         "typeRequired": "Type er påkrævet",
         "weightPositive": "Vægt skal være positiv",
         "bcNegative": "BC må ikke være negativ",
+        "twistPositive": "Foretrukket rifling skal være positiv",
         "caliberRequired": "Kaliber er påkrævet",
         "amountNegative": "Antal må ikke være negativt"
       }
@@ -637,6 +671,25 @@
       "updated": "Projektil opdateret",
       "deleted": "Projektil slettet",
       "failed": "Noget gik galt"
+    },
+    "errors": {
+      "configureAi": "Konfigurer først en AI-model under Indstillinger."
+    },
+    "aiFill": {
+      "button": "Udfyld manglende med AI",
+      "running": "Spørger AI…",
+      "title": "Gennemgå foreslåede værdier",
+      "disclaimer": "Kun vejledende — tjek mod producentdata før du anvender. Fjern flueben ved det, du ikke vil gemme.",
+      "projectile": "Projektil",
+      "field": "Felt",
+      "suggested": "Foreslået",
+      "accept": "Acceptér denne værdi",
+      "apply": "Anvend valgte",
+      "applying": "Gemmer…",
+      "nothingToFill": "Ingen manglende felter at udfylde (eller modellen havde ingen forslag).",
+      "noneSelected": "Vælg mindst ét forslag.",
+      "noneApplied": "Intet blev anvendt. Felterne kan allerede være udfyldt.",
+      "applied": "Opdaterede {count, plural, one {{count} projektil} other {{count} projektiler}}"
     },
     "delete": {
       "confirm": "Slet dette projektil?",
@@ -741,6 +794,76 @@
       "button": "Slet",
       "inUse": "Kan ikke slette: dette hylster bruges af {count} recept. Fjern det fra den recept først.",
       "inUse_plural": "Kan ikke slette: dette hylster bruges af {count} recepturer. Fjern det fra disse recepturer først."
+    }
+  },
+  "rifles": {
+    "page": {
+      "title": "Rifler",
+      "subtitle": "Skydevåben: pibe, rifling, sigtehøjde, indskydning og klikværdi",
+      "addButton": "+ Tilføj riffel"
+    },
+    "table": {
+      "name": "Navn",
+      "caliber": "Kaliber",
+      "barrel": "Pibe (mm)",
+      "twist": "Rifling (1: in)",
+      "sight": "Sigte (cm)",
+      "zero": "Indskydning (m)",
+      "click": "Klik (cm/100 m)",
+      "empty": "Ingen rifler endnu."
+    },
+    "form": {
+      "titleAdd": "Tilføj ny riffel",
+      "titleEdit": "Rediger riffel",
+      "name": "Navn",
+      "namePlaceholder": "Tikka T3x, Sauer 404...",
+      "caliber": "Kaliber",
+      "barrelLength": "Pibelængde (mm)",
+      "barrelPlaceholder": "610",
+      "twist": "Rifling (1: in)",
+      "twistPlaceholder": "10",
+      "twistHint": "Tommer pr. omdrejning (10 = 1:10″)",
+      "sightHeight": "Sigtehøjde (cm)",
+      "sightPlaceholder": "5",
+      "zeroDistance": "Indskydning (m)",
+      "zeroPlaceholder": "100",
+      "click": "Klik (cm ved 100 m)",
+      "clickPlaceholder": "1",
+      "clickHint": "POI-forskydning pr. klik ved 100 m (1 = 1 cm / 0,1 mrad)",
+      "submit": "Opret riffel",
+      "saveChanges": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "validation": {
+        "nameRequired": "Navn er påkrævet",
+        "caliberRequired": "Kaliber er påkrævet",
+        "barrelPositive": "Pibelængde skal være positiv",
+        "twistPositive": "Rifling skal være positiv",
+        "sightPositive": "Sigtehøjde skal være positiv",
+        "zeroPositive": "Indskydning skal være positiv",
+        "clickPositive": "Klikværdi skal være positiv"
+      }
+    },
+    "toast": {
+      "created": "Riffel oprettet",
+      "updated": "Riffel opdateret",
+      "deleted": "Riffel slettet",
+      "failed": "Noget gik galt"
+    },
+    "delete": {
+      "confirm": "Slet denne riffel?",
+      "button": "Slet"
+    },
+    "detail": {
+      "back": "← Tilbage til rifler",
+      "specs": "Specifikationer",
+      "recipes": "Ladninger",
+      "noRecipes": "Ingen ladninger knyttet til denne riffel.",
+      "recipeName": "Navn",
+      "recipeProjectile": "Projektil",
+      "recipeCharge": "Ladning",
+      "rangeSessions": "Skydninger",
+      "noRangeSessions": "Ingen skydninger logget med denne riffel."
     }
   },
   "settings": {

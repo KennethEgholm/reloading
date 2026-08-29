@@ -9,6 +9,7 @@ import type {
   Propellant,
   Primer,
   CartridgeWithCaliber,
+  RifleWithCaliber,
   CaliberOption,
 } from '@/lib/types'
 
@@ -18,6 +19,7 @@ interface RecipeEditButtonProps {
   propellants: Propellant[]
   primers: Primer[]
   cartridges: CartridgeWithCaliber[]
+  rifles: RifleWithCaliber[]
   calibers: CaliberOption[]
 }
 
@@ -27,6 +29,7 @@ export function RecipeEditButton({
   propellants,
   primers,
   cartridges,
+  rifles,
   calibers,
 }: RecipeEditButtonProps) {
   const t = useTranslations('recipes')
@@ -51,6 +54,7 @@ export function RecipeEditButton({
         propellants={propellants}
         primers={primers}
         cartridges={cartridges}
+        rifles={rifles}
         calibers={calibers}
         open={open}
         onOpenChange={setOpen}

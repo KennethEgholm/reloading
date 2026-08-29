@@ -1,37 +1,32 @@
 'use client'
 
-import { useMemo, useState, useTransition } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
-import { computeRangeTable, resolveDrag, DEFAULT_SIGHT_HEIGHT_CM } from '@/lib/ballistics'
-import { updateRecipeZeroDistance } from '../actions'
+import { computeRangeTable, resolveDrag } from '@/lib/ballistics'
 
 interface RecipeBallisticsProps {
-  recipeId: string
   measuredV0: number | null
   weightGr: number
   bcG1: number | null
   bcG7: number | null
   zeroDistanceM: number | null
+  sightHeightCm: number | null
+  clickCmAt100m: number | null
+  rifleName: string | null
 }
 
 export function RecipeBallistics({
-  recipeId,
   measuredV0,
   weightGr,
   bcG1,
   bcG7,
   zeroDistanceM,
+  sightHeightCm,
+  clickCmAt100m,
+  rifleName,
 }: RecipeBallisticsProps) {
   const t = useTranslations('recipes')
   const [open, setOpen] = useState(false)
-  const [zero, setZero] = useState(zeroDistanceM != null ? String(zeroDistanceM) : '')
-  const [sight, setSight] = useState(String(DEFAULT_SIGHT_HEIGHT_CM))
-  const [isPending, startTransition] = useTransition()
-  const zeroN = zero.trim() === '' ? null : Number(zero)
-  const zeroValid = zeroN != null && Number.isFinite(zeroN) && zeroN > 0
-  const sightN = Number(sight)
-  const sightCm = Number.isFinite(sightN) && sightN > 0 ? sightN : DEFAULT_SIGHT_HEIGHT_CM
   const rows = useMemo(() => {
     if (!open) return []
     return computeRangeTable({
@@ -39,25 +34,12 @@ export function RecipeBallistics({
       weightGr,
       bcG1,
       bcG7,
-      zeroDistanceM: zeroValid ? zeroN : null,
-      sightHeightCm: sightCm,
+      zeroDistanceM,
+      sightHeightCm,
+      clickCmAt100m,
     })
-  }, [open, measuredV0, weightGr, bcG1, bcG7, zeroValid, zeroN, sightCm])
+  }, [open, measuredV0, weightGr, bcG1, bcG7, zeroDistanceM, sightHeightCm, clickCmAt100m])
   const drag = resolveDrag(bcG1, bcG7)
-
-  const saveZero = () => {
-    const parsed = zero.trim() === '' ? null : Number(zero)
-    if (parsed != null && (!Number.isFinite(parsed) || parsed <= 0)) return
-    if (parsed === zeroDistanceM || (parsed == null && zeroDistanceM == null)) return
-    startTransition(async () => {
-      try {
-        await updateRecipeZeroDistance(recipeId, parsed)
-        toast.success(t('toast.zeroUpdated'))
-      } catch {
-        toast.error(t('toast.failed'))
-      }
-    })
-  }
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 mb-8">
@@ -79,49 +61,16 @@ export function RecipeBallistics({
         </summary>
 
         <div className="mt-4">
-      <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
-        <div>
-          <label htmlFor="recipe-zero" className="block text-sm font-medium mb-1.5">
-            {t('detail.ballistics.zeroDistance')}
-          </label>
-          <input
-            id="recipe-zero"
-            type="number"
-            step="1"
-            min="1"
-            inputMode="numeric"
-            autoComplete="off"
-            value={zero}
-            disabled={isPending}
-            onChange={(e) => setZero(e.target.value)}
-            onBlur={saveZero}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                ;(e.target as HTMLInputElement).blur()
-              }
-            }}
-            placeholder={t('detail.ballistics.zeroPlaceholder')}
-            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 font-mono"
-          />
-        </div>
-        <div>
-          <label htmlFor="recipe-sight" className="block text-sm font-medium mb-1.5">
-            {t('detail.ballistics.sightHeight')}
-          </label>
-          <input
-            id="recipe-sight"
-            type="number"
-            step="0.1"
-            min="0.1"
-            inputMode="decimal"
-            autoComplete="off"
-            value={sight}
-            onChange={(e) => setSight(e.target.value)}
-            className="w-full border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 bg-white dark:bg-zinc-950 font-mono"
-          />
-        </div>
-      </div>
+      <p className="text-sm text-zinc-500 mb-4">
+        {rifleName && sightHeightCm != null && zeroDistanceM != null && clickCmAt100m != null
+          ? t('detail.ballistics.fromRifle', {
+              rifle: rifleName,
+              zero: zeroDistanceM,
+              sight: sightHeightCm,
+              click: clickCmAt100m,
+            })
+          : t('detail.ballistics.noRifle')}
+      </p>
 
       {rows.length === 0 ? (
         <p className="text-sm text-zinc-500">{t('detail.ballistics.missing')}</p>
@@ -143,7 +92,7 @@ export function RecipeBallistics({
               </thead>
               <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {rows.map((row) => {
-                  const isZero = zeroN != null && row.distanceM === zeroN
+                  const isZero = zeroDistanceM != null && row.distanceM === zeroDistanceM
                   return (
                     <tr key={row.distanceM} className={isZero ? 'bg-accent/10' : undefined}>
                       <td className="px-3 py-2 font-mono">{row.distanceM} m</td>

@@ -21,11 +21,18 @@ export type {
   FactoryAmmoSession,
   FactoryAmmoShot,
   FactoryAmmoGroup,
+  Rifle,
 } from '@prisma/client'
 
 // A Cartridge with its caliber relation resolved — the shape returned by the
 // cartridge list query and consumed by CartridgesTable / CartridgeForm.
 export type CartridgeWithCaliber = Prisma.CartridgeGetPayload<{
+  include: { caliber: true }
+}>
+
+// A Rifle with its caliber relation resolved — the shape returned by the
+// rifle list query and consumed by RiflesTable / RifleForm.
+export type RifleWithCaliber = Prisma.RifleGetPayload<{
   include: { caliber: true }
 }>
 
@@ -42,6 +49,7 @@ export type RecipeWithRelations = Prisma.RecipeGetPayload<{
     propellant: true
     primer: true
     cartridge: { include: { caliber: true } }
+    rifle: { include: { caliber: true } }
   }
 }>
 
@@ -60,7 +68,8 @@ export type RangeLogListItem = Prisma.RangeLogGetPayload<{
 // `initialData` of RangeLogForm in edit/view mode.
 export type RangeLogWithImages = Prisma.RangeLogGetPayload<{
   include: {
-    recipe: { select: { id: true; name: true; caliber: { select: { name: true } } } }
+    recipe: { select: { id: true; name: true; caliber: { select: { name: true } }; rifleId: true } }
+    rifle: { select: { id: true; name: true; caliber: { select: { name: true } } } }
     mainImage: { select: { id: true; filename: true; description: true } }
     images: true
     shots: { orderBy: { shotIndex: 'asc' } }

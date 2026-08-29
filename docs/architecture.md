@@ -14,8 +14,8 @@ graph TB
     subgraph Next["Next.js 16 App Router (app container)"]
         direction TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
-        I18N["i18n/request.ts · messages/{en,da}.json<br/>16 namespaces · t() / getTranslations()"]
-        SC["Server Components<br/>(pages: /, /recipes, /range, /factory-ammo,<br/>/logs, inventory, /settings)"]
+        I18N["i18n/request.ts · messages/{en,da}.json<br/>17 namespaces · t() / getTranslations()"]
+        SC["Server Components<br/>(pages: /, /recipes, /range, /factory-ammo,<br/>/rifles, /logs, inventory, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
         subgraph Lib["lib/"]
@@ -68,6 +68,8 @@ erDiagram
     Projectile ||--o{ Recipe : "projectileId"
     Propellant ||--o{ Recipe : "propellantId"
     Cartridge ||--o{ Recipe : "cartridgeId (optional)"
+    Rifle ||--o{ Recipe : "rifleId (optional, SetNull)"
+    Rifle ||--o{ RangeLog : "rifleId (optional, SetNull)"
 
     Recipe ||--o{ LoadLog : "recipeId (nullable)"
     Recipe ||--o{ RangeLog : "recipeId (required)"
@@ -77,6 +79,7 @@ erDiagram
     RangeLog ||--o{ RangeGroup : "groups (cascade)"
 
     Caliber ||--o{ FactoryAmmo : "caliberId"
+    Caliber ||--o{ Rifle : "caliberId"
     FactoryAmmo ||--o{ FactoryAmmoSession : "sessions (cascade)"
     FactoryAmmoSession ||--o{ FactoryAmmoShot : "shots (cascade)"
     FactoryAmmoSession ||--o{ FactoryAmmoGroup : "groups (cascade)"
@@ -88,6 +91,7 @@ erDiagram
         float weightGr
         float bcG1 "optional G1 BC"
         float bcG7 "optional G7 BC"
+        float preferredTwistIn "optional, inches/rev"
         string caliber
         int amount
     }
@@ -98,7 +102,6 @@ erDiagram
         float coal
         float calculatedV0
         float measuredV0
-        float zeroDistanceM "optional, meters"
         string aiVerdict "advisory only"
         string aiSummary
         string aiConcerns
@@ -124,6 +127,8 @@ erDiagram
         float velocityAvg
         float extremeSpread
         float stdDev
+        string rifleName "snapshot"
+        float rifleTwistIn "snapshot"
     }
 
     RangeLogImage {
@@ -185,6 +190,18 @@ erDiagram
         float groupSizeMm
         float moa "server-computed"
     }
+
+    Rifle {
+        string id PK
+        string name
+        string caliberId FK
+        float barrelLengthMm
+        float twistIn "inches per revolution"
+        float sightHeightCm
+        float zeroDistanceM "metres"
+        float clickCmAt100m "cm per click at 100 m"
+    }
+}
 ```
 
 ## Key flows

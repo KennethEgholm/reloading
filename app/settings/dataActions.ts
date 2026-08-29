@@ -13,7 +13,7 @@ export interface InventoryExport {
   version: number
   exportedAt: string
   primers: { brand: string; type: string; magnum: boolean; amount: number; description: string | null }[]
-  projectiles: { brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null; caliber: string; amount: number; description: string | null }[]
+  projectiles: { brand: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null; preferredTwistIn: number | null; caliber: string; amount: number; description: string | null }[]
   propellants: { brand: string; type: string; amountGr: number; description: string | null }[]
   cartridges: { brand: string; caliber: string; waterCapacityGr: number | null; amount: number; description: string | null }[]
 }
@@ -42,6 +42,7 @@ export async function exportInventory(): Promise<string> {
       weightGr: p.weightGr,
       bcG1: p.bcG1,
       bcG7: p.bcG7,
+      preferredTwistIn: p.preferredTwistIn,
       caliber: p.caliber,
       amount: p.amount,
       description: p.description,
@@ -126,10 +127,10 @@ export async function executeInventoryImport(jsonString: string): Promise<Import
     const key = item.brand + '|' + item.caliber
     const existing = projectileMap.get(key)
     if (existing) {
-      await prisma.projectile.update({ where: { id: existing.id }, data: { type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, amount: item.amount, description: item.description } })
+      await prisma.projectile.update({ where: { id: existing.id }, data: { type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, preferredTwistIn: item.preferredTwistIn ?? null, amount: item.amount, description: item.description } })
       projectileUpdated++
     } else {
-      await prisma.projectile.create({ data: { brand: item.brand, type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, caliber: item.caliber, amount: item.amount, description: item.description } })
+      await prisma.projectile.create({ data: { brand: item.brand, type: item.type, weightGr: item.weightGr, bcG1: item.bcG1 ?? null, bcG7: item.bcG7 ?? null, preferredTwistIn: item.preferredTwistIn ?? null, caliber: item.caliber, amount: item.amount, description: item.description } })
       projectileCreated++
     }
   }
@@ -184,13 +185,13 @@ export interface RecipeExportItem {
   coal: number | null
   calculatedV0: number | null
   measuredV0: number | null
-  zeroDistanceM: number | null
   fillRate: number | null
   notes: string | null
   primer: { brand: string; type: string; magnum: boolean } | null
-  projectile: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null }
+  projectile: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1: number | null; bcG7: number | null; preferredTwistIn?: number | null }
   propellant: { brand: string; type: string }
   cartridge: { brand: string; caliber: string; waterCapacityGr: number | null } | null
+  rifle?: { name: string; caliber: string } | null
 }
 
 export interface RecipesExport {
@@ -207,6 +208,7 @@ export async function exportRecipes(): Promise<string> {
       propellant: true,
       primer: true,
       cartridge: { include: { caliber: true } },
+      rifle: { include: { caliber: true } },
     },
     orderBy: { createdAt: 'asc' },
   })
@@ -221,13 +223,13 @@ export async function exportRecipes(): Promise<string> {
       coal: r.coal,
       calculatedV0: r.calculatedV0,
       measuredV0: r.measuredV0,
-      zeroDistanceM: r.zeroDistanceM,
       fillRate: r.fillRate,
       notes: r.notes,
       primer: r.primer ? { brand: r.primer.brand, type: r.primer.type, magnum: r.primer.magnum } : null,
-      projectile: { brand: r.projectile.brand, caliber: r.projectile.caliber, type: r.projectile.type, weightGr: r.projectile.weightGr, bcG1: r.projectile.bcG1, bcG7: r.projectile.bcG7 },
+      projectile: { brand: r.projectile.brand, caliber: r.projectile.caliber, type: r.projectile.type, weightGr: r.projectile.weightGr, bcG1: r.projectile.bcG1, bcG7: r.projectile.bcG7, preferredTwistIn: r.projectile.preferredTwistIn },
       propellant: { brand: r.propellant.brand, type: r.propellant.type },
       cartridge: r.cartridge ? { brand: r.cartridge.brand, caliber: r.cartridge.caliber.name, waterCapacityGr: r.cartridge.waterCapacityGr } : null,
+      rifle: r.rifle ? { name: r.rifle.name, caliber: r.rifle.caliber.name } : null,
     })),
   }
 
@@ -259,6 +261,7 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
   const existingProjectiles = await prisma.projectile.findMany()
   const existingPropellants = await prisma.propellant.findMany()
   const existingCartridges = await prisma.cartridge.findMany({ include: { caliber: true } })
+  const existingRifles = await prisma.rifle.findMany({ include: { caliber: true } })
 
   const recipeMap = new Map(existingRecipes.map((r) => [recipeKey(r.name, r.caliber.name), r]))
 
@@ -270,6 +273,7 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
     const propellantId = await resolvePropellant(item.propellant, existingPropellants)
     const primerId = item.primer ? await resolvePrimer(item.primer, existingPrimers) : null
     const cartridgeId = item.cartridge ? await resolveCartridge(item.cartridge, existingCartridges) : null
+    const rifleId = item.rifle ? resolveRifle(item.rifle, existingRifles) : null
 
     const recipeData = {
       name: item.name,
@@ -278,11 +282,11 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
       propellantId,
       primerId,
       cartridgeId,
+      rifleId,
       chargeGr: item.chargeGr,
       coal: item.coal,
       calculatedV0: item.calculatedV0,
       measuredV0: item.measuredV0,
-      zeroDistanceM: item.zeroDistanceM ?? null,
       fillRate: item.fillRate,
       notes: item.notes,
     }
@@ -514,6 +518,13 @@ export interface RangeLogExportItem {
   calculatedV0: number | null
   measuredV0: number | null
   fillRate: number | null
+  rifleName?: string | null
+  rifleCaliber?: string | null
+  rifleBarrelLengthMm?: number | null
+  rifleTwistIn?: number | null
+  rifleSightHeightCm?: number | null
+  rifleZeroDistanceM?: number | null
+  rifleClickCmAt100m?: number | null
   shots: RangeLogShotExport[]
   groups: RangeGroupExport[]
   images?: RangeLogImageExport[]
@@ -566,6 +577,13 @@ export async function exportRangeLogs(): Promise<string> {
       calculatedV0: l.calculatedV0,
       measuredV0: l.measuredV0,
       fillRate: l.fillRate,
+      rifleName: l.rifleName,
+      rifleCaliber: l.rifleCaliber,
+      rifleBarrelLengthMm: l.rifleBarrelLengthMm,
+      rifleTwistIn: l.rifleTwistIn,
+      rifleSightHeightCm: l.rifleSightHeightCm,
+      rifleZeroDistanceM: l.rifleZeroDistanceM,
+      rifleClickCmAt100m: l.rifleClickCmAt100m,
       shots: l.shots.map((s) => ({ shotIndex: s.shotIndex, velocity: s.velocity })),
       groups: l.groups.map((g) => ({
         distanceM: g.distanceM,
@@ -607,6 +625,7 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
 
   const existingLogs = await prisma.rangeLog.findMany({ include: { shots: true } })
   const existingRecipes = await prisma.recipe.findMany({ include: { caliber: true } })
+  const existingRifles = await prisma.rifle.findMany({ include: { caliber: true } })
   const logMap = new Map(existingLogs.map((l) => [rangeLogKey(l.date, l.location, l.recipeName), l]))
 
   let created = 0, updated = 0
@@ -615,6 +634,9 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
     const date = new Date(item.date)
     const key = rangeLogKey(date, item.location, item.recipeName)
     const recipeId = linkRecipe(item.recipeName, item.caliber, existingRecipes)
+    const rifleId = item.rifleName && item.rifleCaliber
+      ? resolveRifle({ name: item.rifleName, caliber: item.rifleCaliber }, existingRifles)
+      : null
 
     const snapshotData = {
       recipeName: item.recipeName,
@@ -634,6 +656,13 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
       calculatedV0: item.calculatedV0,
       measuredV0: item.measuredV0,
       fillRate: item.fillRate,
+      rifleName: item.rifleName ?? null,
+      rifleCaliber: item.rifleCaliber ?? null,
+      rifleBarrelLengthMm: item.rifleBarrelLengthMm ?? null,
+      rifleTwistIn: item.rifleTwistIn ?? null,
+      rifleSightHeightCm: item.rifleSightHeightCm ?? null,
+      rifleZeroDistanceM: item.rifleZeroDistanceM ?? null,
+      rifleClickCmAt100m: item.rifleClickCmAt100m ?? null,
     }
 
     const baseData = {
@@ -648,6 +677,7 @@ export async function executeRangeLogsImport(jsonString: string): Promise<RangeL
       stdDev: item.stdDev,
       notes: item.notes,
       recipeId,
+      rifleId,
       ...snapshotData,
     }
 
@@ -1058,13 +1088,13 @@ async function resolvePrimer(
 }
 
 async function resolveProjectile(
-  ref: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1?: number | null; bcG7?: number | null },
+  ref: { brand: string; caliber: string; type: string | null; weightGr: number; bcG1?: number | null; bcG7?: number | null; preferredTwistIn?: number | null },
   existing: { id: string; brand: string; caliber: string }[],
 ): Promise<string> {
   const match = existing.find((p) => p.brand === ref.brand && p.caliber === ref.caliber)
   if (match) return match.id
   const created = await prisma.projectile.create({
-    data: { brand: ref.brand, caliber: ref.caliber, type: ref.type, weightGr: ref.weightGr, bcG1: ref.bcG1 ?? null, bcG7: ref.bcG7 ?? null, amount: 0, description: null },
+    data: { brand: ref.brand, caliber: ref.caliber, type: ref.type, weightGr: ref.weightGr, bcG1: ref.bcG1 ?? null, bcG7: ref.bcG7 ?? null, preferredTwistIn: ref.preferredTwistIn ?? null, amount: 0, description: null },
   })
   return created.id
 }
@@ -1079,6 +1109,15 @@ async function resolvePropellant(
     data: { brand: ref.brand, type: ref.type, amountGr: 0, description: null },
   })
   return created.id
+}
+
+function resolveRifle(
+  ref: { name: string; caliber: string },
+  existing: { id: string; name: string; caliber: { name: string } }[],
+): string | null {
+  const name = ref.name.trim().toLowerCase()
+  const caliber = ref.caliber.trim().toLowerCase()
+  return existing.find((r) => r.name.toLowerCase() === name && r.caliber.name.toLowerCase() === caliber)?.id ?? null
 }
 
 async function resolveCartridge(

@@ -9,7 +9,7 @@ import { EmptyState } from '../EmptyState'
 
 export default async function RecipesPage() {
   const t = await getTranslations('recipes')
-  const [recipes, projectiles, propellants, primers, cartridges, calibers] = await Promise.all([
+  const [recipes, projectiles, propellants, primers, cartridges, rifles, calibers] = await Promise.all([
     prisma.recipe.findMany({
       include: {
         caliber: true,
@@ -17,6 +17,7 @@ export default async function RecipesPage() {
         propellant: true,
         primer: true,
         cartridge: { include: { caliber: true } },
+        rifle: { include: { caliber: true } },
       },
       orderBy: { createdAt: 'desc' },
     }),
@@ -24,6 +25,7 @@ export default async function RecipesPage() {
     prisma.propellant.findMany({ orderBy: { brand: 'asc' } }),
     prisma.primer.findMany({ orderBy: { brand: 'asc' } }),
     prisma.cartridge.findMany({ include: { caliber: true }, orderBy: { brand: 'asc' } }),
+    prisma.rifle.findMany({ include: { caliber: true }, orderBy: { name: 'asc' } }),
     prisma.caliber.findMany({ orderBy: { name: 'asc' } }),
   ])
 
@@ -48,6 +50,7 @@ export default async function RecipesPage() {
             propellants={propellants}
             primers={primers}
             cartridges={cartridges}
+            rifles={rifles}
             calibers={calibers}
           />
         </div>
@@ -63,6 +66,7 @@ export default async function RecipesPage() {
           propellants={propellants}
           primers={primers}
           cartridges={cartridges}
+          rifles={rifles}
           calibers={calibers}
         />
       )}

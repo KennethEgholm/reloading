@@ -5,7 +5,7 @@ import { RangeLogRow } from './range/RangeLogRow';
 import { LoadLogRow } from './logs/LoadLogRow';
 import { getPossibleLoads } from '@/lib/inventory';
 import { EmptyState } from './EmptyState';
-import { formatBcSuffix } from '@/lib/format';
+import { formatBcSuffix, formatTwistSuffix } from '@/lib/format';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
@@ -28,6 +28,7 @@ export default async function Overview() {
     factoryAmmo,
     factoryAmmoTotalRounds,
     factoryAmmoCount,
+    rifles,
   ] = await Promise.all([
     prisma.primer.findMany({
       orderBy: { createdAt: 'desc' },
@@ -81,6 +82,10 @@ export default async function Overview() {
     }),
     prisma.factoryAmmo.aggregate({ _sum: { amount: true } }),
     prisma.factoryAmmo.count(),
+    prisma.rifle.findMany({
+      include: { caliber: true },
+      orderBy: { createdAt: 'desc' },
+    }),
   ]);
 
   const totalRounds = rangeSum._sum.roundsFired ?? 0;
@@ -106,7 +111,7 @@ export default async function Overview() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-4 mb-10">
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
@@ -123,6 +128,11 @@ export default async function Overview() {
           <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.factoryAmmo')}</div>
           <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: factoryAmmoCount })}</div>
           <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsOnHand', { count: totalFactoryAmmoRounds })}</div>
+        </div>
+
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
+          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rifles')}</div>
+          <div className="font-display text-3xl font-semibold mt-1">{t('summary.rifleCount', { count: rifles.length })}</div>
         </div>
 
         <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
@@ -266,6 +276,56 @@ export default async function Overview() {
         )}
       </div>
 
+      {/* Rifles Section */}
+      <div className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <img src="/images/rifle.svg" alt={t('sections.rifles')} className="w-7 h-7" width={28} height={28} loading="lazy" />
+            <h2 className="font-display text-2xl font-semibold">{t('sections.rifles')}</h2>
+            <span className="text-sm text-zinc-500">{t('sections.rifleSummary', { count: rifles.length })}</span>
+          </div>
+          <Link
+            href="/rifles"
+            className="text-sm text-accent hover:text-accent-hover hover:underline"
+          >
+            {t('sections.viewFullList')}
+          </Link>
+        </div>
+
+        {rifles.length > 0 ? (
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
+                <tr>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.rifleTable.name')}</th>
+                  <th className="text-left px-6 py-3 font-medium">{t('sections.rifleTable.caliber')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.rifleTable.barrel')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.rifleTable.twist')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.rifleTable.sight')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.rifleTable.zero')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.rifleTable.click')}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                {rifles.map((rifle) => (
+                  <tr key={rifle.id}>
+                    <td className="px-6 py-3 font-medium">{rifle.name}</td>
+                    <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{rifle.caliber.name}</td>
+                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(rifle.barrelLengthMm)}</td>
+                    <td className="px-6 py-3 text-right font-mono">1:{fmt1.format(rifle.twistIn)}</td>
+                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(rifle.sightHeightCm)}</td>
+                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(rifle.zeroDistanceM)}</td>
+                    <td className="px-6 py-3 text-right font-mono">{fmt1.format(rifle.clickCmAt100m)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <EmptyState>{t('sections.noRifles')}</EmptyState>
+        )}
+      </div>
+
       {/* Recipes Section */}
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
@@ -305,7 +365,7 @@ export default async function Overview() {
                     <td className="px-6 py-3 font-medium">{recipe.name}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{recipe.caliber.name}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">
-                      {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)})
+                      {recipe.projectile.brand} {recipe.projectile.type} ({recipe.projectile.weightGr} gr{formatBcSuffix(recipe.projectile.bcG1, recipe.projectile.bcG7)}{formatTwistSuffix(recipe.projectile.preferredTwistIn)})
                     </td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">
                       {recipe.propellant.brand} – {recipe.propellant.type}
@@ -446,7 +506,7 @@ export default async function Overview() {
         </div>
 
         {projectiles.length > 0 ? (
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
                 <tr>
@@ -455,6 +515,7 @@ export default async function Overview() {
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.weight')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.bcG1')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.bcG7')}</th>
+                  <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.preferredTwist')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.caliber')}</th>
                   <th className="text-right px-6 py-3 font-medium">{t('sections.projectileTable.amount')}</th>
                   <th className="text-left px-6 py-3 font-medium">{t('sections.projectileTable.description')}</th>
@@ -468,6 +529,7 @@ export default async function Overview() {
                     <td className="px-6 py-3 text-right font-mono">{proj.weightGr}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.bcG1 != null ? proj.bcG1 : '—'}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.bcG7 != null ? proj.bcG7 : '—'}</td>
+                    <td className="px-6 py-3 text-right font-mono">{proj.preferredTwistIn != null ? `1:${proj.preferredTwistIn}` : '—'}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400">{proj.caliber}</td>
                     <td className="px-6 py-3 text-right font-mono">{proj.amount}</td>
                     <td className="px-6 py-3 text-zinc-600 dark:text-zinc-400 text-sm truncate max-w-xs">
@@ -479,6 +541,7 @@ export default async function Overview() {
               <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
                 <tr>
                   <td className="px-6 py-3 font-medium">{tCommon('total')}</td>
+                  <td />
                   <td />
                   <td />
                   <td />

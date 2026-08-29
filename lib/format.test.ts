@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatBc, formatBcSuffix } from './format'
+import { formatBc, formatBcSuffix, formatTwistSuffix } from './format'
 
 describe('formatBc', () => {
   it('returns empty when both are unset', () => {
@@ -24,5 +24,16 @@ describe('formatBcSuffix', () => {
 
   it('prefixes a comma', () => {
     expect(formatBcSuffix(0.462, 0.237)).toBe(', G1 0.462 / G7 0.237')
+  })
+})
+
+describe('formatTwistSuffix', () => {
+  it('returns empty when unset', () => {
+    expect(formatTwistSuffix(null)).toBe('')
+    expect(formatTwistSuffix(undefined)).toBe('')
+  })
+
+  it('formats 1:N', () => {
+    expect(formatTwistSuffix(10)).toBe(', 1:10')
   })
 })

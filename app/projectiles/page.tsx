@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 import { createProjectile } from './actions';
 import { ProjectileForm } from './ProjectileForm';
 import { ProjectilesTable } from './ProjectilesTable';
+import { ProjectileAiFill } from './ProjectileAiFill';
 
 export default async function ProjectilesPage() {
   const t = await getTranslations('projectiles');
@@ -20,11 +21,14 @@ export default async function ProjectilesPage() {
           </p>
         </div>
 
-        <ProjectileForm
-          action={createProjectile}
-          title={t('form.titleAdd')}
-          submitLabel={t('form.submit')}
-        />
+        <div className="flex items-center gap-2">
+          <ProjectileAiFill projectiles={projectiles} />
+          <ProjectileForm
+            action={createProjectile}
+            title={t('form.titleAdd')}
+            submitLabel={t('form.submit')}
+          />
+        </div>
       </div>
 
       <ProjectilesTable projectiles={projectiles} />

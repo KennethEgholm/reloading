@@ -87,8 +87,10 @@ async function cleanupUploadFiles(filenames: string[]) {
 
 // A recipe with the component relations needed to build a RangeLog snapshot.
 type RecipeForSnapshot = Prisma.RecipeGetPayload<{
-  include: { caliber: true; projectile: true; propellant: true; primer: true; cartridge: { include: { caliber: true } } }
+  include: { caliber: true; projectile: true; propellant: true; primer: true; cartridge: { include: { caliber: true } }; rifle: { include: { caliber: true } } }
 }>
+
+type RifleForSnapshot = Prisma.RifleGetPayload<{ include: { caliber: true } }>
 
 // Builds the frozen-recipe snapshot fields from a fetched recipe. Written onto
 // the RangeLog at create time and refreshed on edit only when the linked recipe
@@ -116,6 +118,18 @@ function recipeSnapshot(recipe: RecipeForSnapshot) {
   }
 }
 
+function rifleSnapshot(rifle: RifleForSnapshot) {
+  return {
+    rifleName: rifle.name,
+    rifleCaliber: rifle.caliber.name,
+    rifleBarrelLengthMm: rifle.barrelLengthMm,
+    rifleTwistIn: rifle.twistIn,
+    rifleSightHeightCm: rifle.sightHeightCm,
+    rifleZeroDistanceM: rifle.zeroDistanceM,
+    rifleClickCmAt100m: rifle.clickCmAt100m,
+  }
+}
+
 export async function getRangeLogs() {
   return prisma.rangeLog.findMany({
     include: {
@@ -138,6 +152,9 @@ export async function getRangeLogById(id: string) {
     where: { id },
     include: {
       recipe: {
+        select: { id: true, name: true, caliber: { select: { name: true } }, rifleId: true },
+      },
+      rifle: {
         select: { id: true, name: true, caliber: { select: { name: true } } },
       },
       mainImage: {
@@ -152,7 +169,14 @@ export async function getRangeLogById(id: string) {
 
 export async function getRecipesForRangeLog() {
   return prisma.recipe.findMany({
-    select: { id: true, name: true, caliber: { select: { name: true } } },
+    select: { id: true, name: true, caliber: { select: { name: true } }, rifleId: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
+export async function getRiflesForRangeLog() {
+  return prisma.rifle.findMany({
+    include: { caliber: true },
     orderBy: { name: 'asc' },
   })
 }
@@ -164,6 +188,7 @@ export async function createRangeLog(formData: FormData) {
     location: formData.get('location'),
     conditions: formData.get('conditions'),
     recipeId: formData.get('recipeId'),
+    rifleId: formData.get('rifleId'),
     roundsFired: formData.get('roundsFired'),
     velocityMin: formData.get('velocityMin'),
     velocityMax: formData.get('velocityMax'),
@@ -182,6 +207,7 @@ export async function createRangeLog(formData: FormData) {
     location,
     conditions,
     recipeId,
+    rifleId: submittedRifleId,
     roundsFired,
     velocityMin,
     velocityMax,
@@ -239,10 +265,22 @@ export async function createRangeLog(formData: FormData) {
   // createLoadLog). The snapshot survives later recipe edits/deletion.
   const recipe = await prisma.recipe.findUnique({
     where: { id: recipeId },
-    include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } } },
+    include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } }, rifle: { include: { caliber: true } } },
   })
   if (!recipe) {
     throw new Error(t('errors.recipeNotFound'))
+  }
+
+  const resolvedRifleId = (submittedRifleId && submittedRifleId.trim() !== '' ? submittedRifleId : null) || recipe.rifleId
+  let linkedRifle: RifleForSnapshot | null = null
+  if (resolvedRifleId) {
+    linkedRifle = await prisma.rifle.findUnique({
+      where: { id: resolvedRifleId },
+      include: { caliber: true },
+    })
+    if (submittedRifleId && submittedRifleId.trim() !== '' && !linkedRifle) {
+      throw new Error(t('errors.rifleNotFound'))
+    }
   }
 
   const imageFiles = formData.getAll('newImages') as File[]
@@ -271,6 +309,7 @@ export async function createRangeLog(formData: FormData) {
           location,
           conditions,
           recipeId,
+          rifleId: linkedRifle?.id ?? null,
           roundsFired: effectiveAggregates?.roundsFired ?? roundsFired,
           velocityMin: effectiveAggregates?.velocityMin ?? velocityMin,
           velocityMax: effectiveAggregates?.velocityMax ?? velocityMax,
@@ -279,6 +318,7 @@ export async function createRangeLog(formData: FormData) {
           stdDev: effectiveAggregates?.stdDev ?? stdDev,
           notes,
           ...recipeSnapshot(recipe),
+          ...(linkedRifle ? rifleSnapshot(linkedRifle) : {}),
         },
       })
 
@@ -323,6 +363,7 @@ export async function createRangeLog(formData: FormData) {
   if (rangeLogId) {
     revalidatePath('/range')
     revalidatePath(`/range/${rangeLogId}`)
+    revalidatePath('/rifles')
     revalidatePath('/')
   }
 }
@@ -390,6 +431,7 @@ export async function deleteRangeLog(id: string): Promise<DeleteResult> {
   await prisma.rangeLog.delete({ where: { id } })
 
   revalidatePath('/range')
+  revalidatePath('/rifles')
   revalidatePath('/')
 
   return { ok: true }
@@ -415,6 +457,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
     location: formData.get('location'),
     conditions: formData.get('conditions'),
     recipeId: formData.get('recipeId'),
+    rifleId: formData.get('rifleId'),
     roundsFired: formData.get('roundsFired'),
     velocityMin: formData.get('velocityMin'),
     velocityMax: formData.get('velocityMax'),
@@ -434,6 +477,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
     location,
     conditions,
     recipeId,
+    rifleId: submittedRifleId,
     roundsFired,
     velocityMin,
     velocityMax,
@@ -498,7 +542,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
   // means "leave the link as-is" (matches the previous keep-old behavior).
   const existing = await prisma.rangeLog.findUnique({
     where: { id },
-    select: { recipeId: true },
+    select: { recipeId: true, rifleId: true },
   })
   const submittedRecipeId = recipeId && recipeId.trim() !== '' ? recipeId : null
   const effectiveRecipeId = submittedRecipeId ?? existing?.recipeId ?? null
@@ -506,10 +550,23 @@ export async function updateRangeLog(id: string, formData: FormData) {
   if (effectiveRecipeId !== null && effectiveRecipeId !== existing?.recipeId) {
     linkedRecipe = await prisma.recipe.findUnique({
       where: { id: effectiveRecipeId },
-      include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } } },
+      include: { caliber: true, projectile: true, propellant: true, primer: true, cartridge: { include: { caliber: true } }, rifle: { include: { caliber: true } } },
     })
     if (!linkedRecipe) {
       throw new Error(t('errors.recipeNotFound'))
+    }
+  }
+
+  const submittedRifle = submittedRifleId && submittedRifleId.trim() !== '' ? submittedRifleId : null
+  const effectiveRifleId = submittedRifle ?? existing?.rifleId ?? null
+  let linkedRifle: RifleForSnapshot | null = null
+  if (effectiveRifleId !== null && effectiveRifleId !== existing?.rifleId) {
+    linkedRifle = await prisma.rifle.findUnique({
+      where: { id: effectiveRifleId },
+      include: { caliber: true },
+    })
+    if (!linkedRifle) {
+      throw new Error(t('errors.rifleNotFound'))
     }
   }
 
@@ -553,6 +610,7 @@ export async function updateRangeLog(id: string, formData: FormData) {
           stdDev: effectiveAggregates?.stdDev ?? stdDev,
           notes,
           ...(linkedRecipe ? { ...recipeSnapshot(linkedRecipe), recipeId: effectiveRecipeId } : {}),
+          ...(linkedRifle ? { ...rifleSnapshot(linkedRifle), rifleId: effectiveRifleId } : {}),
           mainImageId: mainImageId || null,
         },
       })
@@ -624,5 +682,6 @@ export async function updateRangeLog(id: string, formData: FormData) {
 
   revalidatePath('/range')
   revalidatePath(`/range/${id}`)
+  revalidatePath('/rifles')
   revalidatePath('/')
 }

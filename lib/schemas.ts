@@ -37,6 +37,7 @@ export function createRangeLogInputSchema(t: (key: string) => string) {
     location: z.string().nullish(),
     conditions: z.string().nullish(),
     recipeId: z.string().min(1, t('range.errors.validation.recipeRequired')),
+    rifleId: z.string().nullish(),
     roundsFired: z.coerce.number().int().min(1, t('range.errors.validation.roundsFiredMin')),
     velocityMin: z.coerce.number().min(0, t('range.errors.validation.velocityMinPositive')).nullish(),
     velocityMax: z.coerce.number().min(0, t('range.errors.validation.velocityMaxPositive')).nullish(),
@@ -53,6 +54,7 @@ export function createRangeLogUpdateInputSchema(t: (key: string) => string) {
   const base = createRangeLogInputSchema(t)
   return base.extend({
     recipeId: z.string().nullish(),
+    rifleId: z.string().nullish(),
     mainImageId: z.string().nullish(),
   })
 }
@@ -83,6 +85,18 @@ export function createCartridgeSchema(t: Translator) {
   })
 }
 
+export function createRifleSchema(t: Translator) {
+  return z.object({
+    name: z.string().trim().min(1, t('form.validation.nameRequired')),
+    caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
+    barrelLengthMm: z.coerce.number().positive(t('form.validation.barrelPositive')),
+    twistIn: z.coerce.number().positive(t('form.validation.twistPositive')),
+    sightHeightCm: z.coerce.number().positive(t('form.validation.sightPositive')),
+    zeroDistanceM: z.coerce.number().positive(t('form.validation.zeroPositive')),
+    clickCmAt100m: z.coerce.number().positive(t('form.validation.clickPositive')),
+  })
+}
+
 export function createProjectileSchema(t: Translator) {
   return z.object({
     brand: z.string().trim().min(1, t('form.validation.brandRequired')),
@@ -95,6 +109,10 @@ export function createProjectileSchema(t: Translator) {
     bcG7: z.preprocess(
       emptyToUndefined,
       z.coerce.number().min(0, t('form.validation.bcNegative')).optional(),
+    ).transform((v) => v ?? null),
+    preferredTwistIn: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().positive(t('form.validation.twistPositive')).optional(),
     ).transform((v) => v ?? null),
     caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
     amount: z.preprocess(

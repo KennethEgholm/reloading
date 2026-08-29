@@ -8,7 +8,7 @@ import { SortIndicator } from '../SortIndicator';
 import { useSortBy } from '@/lib/useSortBy';
 import type { Projectile } from '@/lib/types';
 
-type SortKey = 'brand' | 'type' | 'weightGr' | 'bcG1' | 'bcG7' | 'caliber' | 'amount' | 'description';
+type SortKey = 'brand' | 'type' | 'weightGr' | 'bcG1' | 'bcG7' | 'preferredTwistIn' | 'caliber' | 'amount' | 'description';
 
 interface ProjectilesTableProps {
   projectiles: Projectile[];
@@ -39,7 +39,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
             <tr>
@@ -48,6 +48,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
               {sortableHeader('weightGr', t('table.weight'), 'right')}
               {sortableHeader('bcG1', t('table.bcG1'), 'right')}
               {sortableHeader('bcG7', t('table.bcG7'), 'right')}
+              {sortableHeader('preferredTwistIn', t('table.preferredTwist'), 'right')}
               {sortableHeader('caliber', t('table.caliber'))}
               {sortableHeader('amount', t('table.amount'), 'right')}
               {sortableHeader('description', t('table.description'))}
@@ -57,7 +58,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
           <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
             {sorted.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
+                <td colSpan={10} className="px-6 py-12 text-center text-zinc-500 dark:text-zinc-400">
                   {t('table.empty')}
                 </td>
               </tr>
@@ -82,6 +83,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
                 <td className="px-6 py-4 text-right font-mono">{projectile.weightGr}</td>
                 <td className="px-6 py-4 text-right font-mono">{projectile.bcG1 != null ? projectile.bcG1 : '—'}</td>
                 <td className="px-6 py-4 text-right font-mono">{projectile.bcG7 != null ? projectile.bcG7 : '—'}</td>
+                <td className="px-6 py-4 text-right font-mono">{projectile.preferredTwistIn != null ? `1:${projectile.preferredTwistIn}` : '—'}</td>
                 <td className="px-6 py-4 text-zinc-600 dark:text-zinc-400">{projectile.caliber}</td>
                 <td className="px-6 py-4 text-right font-mono font-medium">
                   {projectile.amount}
@@ -99,6 +101,7 @@ export function ProjectilesTable({ projectiles }: ProjectilesTableProps) {
             <tfoot className="border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950">
               <tr>
                 <td className="px-6 py-3 font-medium">{tc('total')}</td>
+                <td />
                 <td />
                 <td />
                 <td />

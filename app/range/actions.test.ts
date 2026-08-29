@@ -31,6 +31,7 @@ const { prismaMock } = vi.hoisted(() => {
   return {
     prismaMock: {
       recipe: { findUnique: vi.fn() },
+      rifle: { findUnique: vi.fn() },
       rangeLog: { findUnique: vi.fn(), create: vi.fn(), update: vi.fn() },
       rangeLogImage: { create: vi.fn(), update: vi.fn(), findUnique: vi.fn(), delete: vi.fn() },
       rangeLogShot: { createMany: vi.fn(), deleteMany: vi.fn() },
@@ -67,6 +68,7 @@ function makeRecipe(overrides: Record<string, unknown> = {}) {
     propellantId: 'prop-1',
     primerId: 'prim-1',
     cartridgeId: 'cart-1',
+    rifleId: null,
     projectile: { id: 'proj-1', brand: 'Sierra', type: 'GameKing', weightGr: 168 },
     propellant: { id: 'prop-1', brand: 'Vihtavuori', type: 'N140' },
     primer: { id: 'prim-1', brand: 'CCI', type: 'LARGE_RIFLE' },
@@ -150,12 +152,63 @@ describe('createRangeLog', () => {
       cartridgeWaterCapacityGr: null,
     })
   })
+
+  it('writes a rifle snapshot when a rifleId is submitted', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe())
+    prismaMock.rifle.findUnique.mockResolvedValue({
+      id: 'rifle-1',
+      name: 'Tikka T3x',
+      caliber: { id: 'cal-1', name: '.308' },
+      barrelLengthMm: 610,
+      twistIn: 10,
+      sightHeightCm: 5,
+      zeroDistanceM: 100,
+      clickCmAt100m: 1,
+    })
+    prismaMock.rangeLog.create.mockResolvedValue({ id: 'range-1' })
+
+    await createRangeLog(form({ date: '2026-06-17', recipeId: 'recipe-1', rifleId: 'rifle-1', roundsFired: '20' }))
+
+    expect(prismaMock.rifle.findUnique).toHaveBeenCalledTimes(1)
+    expect(prismaMock.rangeLog.create.mock.calls[0][0].data).toMatchObject({
+      rifleId: 'rifle-1',
+      rifleName: 'Tikka T3x',
+      rifleCaliber: '.308',
+      rifleBarrelLengthMm: 610,
+      rifleTwistIn: 10,
+      rifleSightHeightCm: 5,
+      rifleZeroDistanceM: 100,
+      rifleClickCmAt100m: 1,
+    })
+  })
+
+  it('falls back to the recipe rifle when rifleId is omitted', async () => {
+    prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe({ rifleId: 'rifle-1' }))
+    prismaMock.rifle.findUnique.mockResolvedValue({
+      id: 'rifle-1',
+      name: 'Tikka T3x',
+      caliber: { id: 'cal-1', name: '.308' },
+      barrelLengthMm: 610,
+      twistIn: 10,
+      sightHeightCm: 5,
+      zeroDistanceM: 100,
+      clickCmAt100m: 1,
+    })
+    prismaMock.rangeLog.create.mockResolvedValue({ id: 'range-1' })
+
+    await createRangeLog(form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' }))
+
+    expect(prismaMock.rangeLog.create.mock.calls[0][0].data).toMatchObject({
+      rifleId: 'rifle-1',
+      rifleName: 'Tikka T3x',
+    })
+  })
 })
 
 describe('updateRangeLog', () => {
   it('re-snapshots the recipe when the linked recipe changes', async () => {
     // Existing session linked to recipe-old; the form submits recipe-1.
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-old' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-old', rifleId: null })
     prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe())
 
     await updateRangeLog(
@@ -178,7 +231,7 @@ describe('updateRangeLog', () => {
   })
 
   it('preserves the frozen snapshot when the recipe link is unchanged', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: null })
 
     await updateRangeLog(
       'range-1',
@@ -196,7 +249,7 @@ describe('updateRangeLog', () => {
   })
 
   it('keeps the link and snapshot untouched when an empty recipeId is submitted', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: null })
 
     await updateRangeLog('range-1', form({ date: '2026-06-17', recipeId: '', roundsFired: '20' }))
 
@@ -206,8 +259,34 @@ describe('updateRangeLog', () => {
     expect(data).not.toHaveProperty('recipeName')
   })
 
+  it('re-snapshots the rifle when the linked rifle changes', async () => {
+    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: 'rifle-old' })
+    prismaMock.rifle.findUnique.mockResolvedValue({
+      id: 'rifle-1',
+      name: 'Tikka T3x',
+      caliber: { id: 'cal-1', name: '.308' },
+      barrelLengthMm: 610,
+      twistIn: 10,
+      sightHeightCm: 5,
+      zeroDistanceM: 100,
+      clickCmAt100m: 1,
+    })
+
+    await updateRangeLog(
+      'range-1',
+      form({ date: '2026-06-17', recipeId: 'recipe-1', rifleId: 'rifle-1', roundsFired: '20' }),
+    )
+
+    expect(prismaMock.rifle.findUnique).toHaveBeenCalledTimes(1)
+    expect(prismaMock.rangeLog.update.mock.calls[0][0].data).toMatchObject({
+      rifleId: 'rifle-1',
+      rifleName: 'Tikka T3x',
+      rifleTwistIn: 10,
+    })
+  })
+
   it('allows re-linking a snapshot after the recipe was deleted (recipeId was null)', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: null })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: null, rifleId: null })
     prismaMock.recipe.findUnique.mockResolvedValue(makeRecipe())
 
     await updateRangeLog(
@@ -305,7 +384,7 @@ describe('createRangeLog — chronograph shots', () => {
 
 describe('updateRangeLog — chronograph shots', () => {
   it('replaces shots when replaceShots=true and shots are present', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: null })
     prismaMock.rangeLog.update.mockResolvedValue({ id: 'range-1' })
 
     const fd = form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '2' })
@@ -322,7 +401,7 @@ describe('updateRangeLog — chronograph shots', () => {
   })
 
   it('leaves existing shots untouched when no shots field is submitted', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: null })
     prismaMock.rangeLog.update.mockResolvedValue({ id: 'range-1' })
 
     await updateRangeLog('range-1', form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' }))
@@ -332,7 +411,7 @@ describe('updateRangeLog — chronograph shots', () => {
   })
 
   it('deletes existing shots when replaceShots=true and no shots are submitted (remove case)', async () => {
-    prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1' })
+     prismaMock.rangeLog.findUnique.mockResolvedValue({ recipeId: 'recipe-1', rifleId: null })
     prismaMock.rangeLog.update.mockResolvedValue({ id: 'range-1' })
 
     const fd = form({ date: '2026-06-17', recipeId: 'recipe-1', roundsFired: '20' })

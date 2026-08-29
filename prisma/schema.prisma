@@ -40,7 +40,7 @@ model AiSettings {
 }
 
 // Canonical cartridge designations (e.g. ".308 Win", ".30-06 Spring"),
-// referenced by recipes and cartridges. Names are stored as the user first
+// referenced by recipes, cartridges, factory ammo, and rifles. Names are stored as the user first
 // typed them; uniqueness/deduplication is enforced case-insensitively at the
 // resolver (see resolveCaliberId), so ".308 win" reuses an existing ".308 Win".
 model Caliber {
@@ -52,6 +52,7 @@ model Caliber {
   recipes      Recipe[]
   cartridges   Cartridge[]
   factoryAmmo  FactoryAmmo[]
+  rifles       Rifle[]
 }
 
 model Propellant {
@@ -71,9 +72,10 @@ model Projectile {
   brand       String
   type        String? // e.g. "Game King", "MatchKing", "Tipped"
   weightGr    Float // Weight in grains (industry standard)
-  bcG1        Float? // G1 ballistic coefficient (optional)
-  bcG7        Float? // G7 ballistic coefficient (optional)
-  caliber     String
+  bcG1             Float? // G1 ballistic coefficient (optional)
+  bcG7             Float? // G7 ballistic coefficient (optional)
+  preferredTwistIn Float? // preferred twist, inches per revolution (e.g. 10 = 1:10")
+  caliber          String
   amount      Int      @default(0) // Number of projectiles in stock
   description String?
   createdAt   DateTime @default(now())
@@ -111,6 +113,25 @@ model Cartridge {
   @@index([caliberId])
 }
 
+model Rifle {
+  id             String   @id @default(cuid())
+  name           String
+  caliberId      String
+  barrelLengthMm Float // millimetres
+  twistIn        Float // inches per revolution (e.g. 10 = 1:10")
+  sightHeightCm  Float // centimetres above bore
+  zeroDistanceM  Float // zero distance in metres
+  clickCmAt100m  Float // POI shift per click at 100 m, centimetres
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  caliber   Caliber    @relation(fields: [caliberId], references: [id])
+  recipes   Recipe[]
+  rangeLogs RangeLog[]
+
+  @@index([caliberId])
+}
+
 model Recipe {
   id           String   @id @default(cuid())
   name         String
@@ -119,11 +140,11 @@ model Recipe {
   propellantId String
   primerId     String?
   cartridgeId  String?
+  rifleId      String?
   chargeGr     Float? // Powder charge in grains
   coal         Float? // Cartridge Overall Length (inches)
   calculatedV0   Float? // Calculated muzzle velocity (m/s)
   measuredV0     Float? // Measured muzzle velocity (m/s)
-  zeroDistanceM  Float? // Zero distance in meters (optional)
   fillRate       Float? // Powder fill rate (%)
   notes        String?
   createdAt    DateTime @default(now())
@@ -141,10 +162,12 @@ model Recipe {
   propellant Propellant @relation(fields: [propellantId], references: [id])
   primer     Primer?    @relation(fields: [primerId], references: [id])
   cartridge  Cartridge? @relation(fields: [cartridgeId], references: [id])
+  rifle      Rifle?     @relation(fields: [rifleId], references: [id], onDelete: SetNull)
   loadLogs   LoadLog[]
   rangeLogs  RangeLog[]
 
   @@index([caliberId])
+  @@index([rifleId])
 }
 
 model LoadLog {
@@ -201,6 +224,7 @@ model RangeLog {
   location      String?
   conditions    String?
   recipeId      String? // Nullable: a recipe deletion nulls the FK; the snapshot below preserves the record
+  rifleId       String? // Nullable: a rifle deletion nulls the FK; the snapshot below preserves the record
   roundsFired   Int
   velocityMin   Float?
   velocityMax   Float?
@@ -234,12 +258,24 @@ model RangeLog {
   measuredV0         Float?
   fillRate           Float?
 
+  // Snapshot of the rifle at the time the session was logged.
+  rifleName           String?
+  rifleCaliber        String?
+  rifleBarrelLengthMm Float?
+  rifleTwistIn        Float?
+  rifleSightHeightCm  Float?
+  rifleZeroDistanceM  Float?
+  rifleClickCmAt100m  Float?
+
   recipe        Recipe?         @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  rifle         Rifle?          @relation(fields: [rifleId], references: [id], onDelete: SetNull)
   images        RangeLogImage[]   @relation("RangeLogImages")
   mainImageId   String?  @unique
   mainImage     RangeLogImage?    @relation("MainImage", fields: [mainImageId], references: [id], onDelete: SetNull)
   shots         RangeLogShot[]    @relation("RangeLogShots")
   groups        RangeGroup[]      @relation("RangeLogGroups")
+
+  @@index([rifleId])
 }
 
 // One measured target group from a range session. The user records the

@@ -5,8 +5,8 @@
  * Uses the published G1 / G7 Cd-vs-Mach curves (McCoy) scaled by the
  * projectile's BC. G7 is preferred when both BCs are present.
  *
- * Drop is centimetres below the line of sight (positive = low). Sight height
- * defaults to 5.0 cm. Requires a zero distance; otherwise drop is omitted.
+ * Drop is centimetres below the line of sight (positive = low). Requires both
+ * a zero distance and a positive sightHeightCm; otherwise drop is omitted.
  */
 
 export const DEFAULT_SIGHT_HEIGHT_CM = 5
@@ -72,6 +72,7 @@ export interface BallisticsInput {
   bcG7?: number | null
   zeroDistanceM?: number | null
   sightHeightCm?: number | null
+  clickCmAt100m?: number | null
 }
 
 export interface RangeTableRow {
@@ -92,9 +93,10 @@ export function kineticEnergyJ(weightGr: number, velocityMs: number): number {
   return 0.5 * weightGr * GRAIN_KG * velocityMs * velocityMs
 }
 
-/** Elevation clicks to counter drop. Positive = up. 1 click = 1 cm at 100 m. */
-export function elevationClicks(dropCm: number, distanceM: number): number {
-  const n = Math.round(dropCm * 100 / distanceM / CLICK_CM_AT_100M)
+/** Elevation clicks to counter drop. Positive = up. clickCmAt100m is POI shift per click at 100 m. */
+export function elevationClicks(dropCm: number, distanceM: number, clickCmAt100m: number = CLICK_CM_AT_100M): number {
+  if (!(clickCmAt100m > 0) || !(distanceM > 0)) return 0
+  const n = Math.round(dropCm * 100 / distanceM / clickCmAt100m)
   return n === 0 ? 0 : n
 }
 
@@ -210,11 +212,13 @@ export function computeRangeTable(input: BallisticsInput): RangeTableRow[] {
   if (!drag) return []
   const v0 = input.measuredV0 as number
   const zero = input.zeroDistanceM != null && input.zeroDistanceM > 0 ? input.zeroDistanceM : null
-  const sightHeightM = (input.sightHeightCm != null && input.sightHeightCm > 0 ? input.sightHeightCm : DEFAULT_SIGHT_HEIGHT_CM) / 100
-  const angle = zero != null ? solveAngle(v0, drag.bc, drag.model, zero, sightHeightM) : 0
-  return fly(v0, drag.bc, drag.model, angle, zero != null, sightHeightM).map((row) => ({
+  const hasSight = input.sightHeightCm != null && input.sightHeightCm > 0
+  const sightHeightM = (hasSight ? input.sightHeightCm! : DEFAULT_SIGHT_HEIGHT_CM) / 100
+  const withDrop = zero != null && hasSight
+  const angle = withDrop ? solveAngle(v0, drag.bc, drag.model, zero, sightHeightM) : 0
+  return fly(v0, drag.bc, drag.model, angle, withDrop, sightHeightM).map((row) => ({
     ...row,
     energyJ: Math.round(kineticEnergyJ(input.weightGr, row.velocityMs)),
-    clicks: row.dropCm == null ? null : elevationClicks(row.dropCm, row.distanceM),
+    clicks: row.dropCm == null ? null : elevationClicks(row.dropCm, row.distanceM, input.clickCmAt100m ?? CLICK_CM_AT_100M),
   }))
 }

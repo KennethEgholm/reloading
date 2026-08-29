@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
-import { getRangeLogById, getRecipesForRangeLog } from '../actions'
+import { getRangeLogById, getRecipesForRangeLog, getRiflesForRangeLog } from '../actions'
 import { RangeLogForm } from '../RangeLogForm'
 import { DeleteRangeLogButton } from '../DeleteRangeLogButton'
 import { averageMoa } from '@/lib/moa'
@@ -13,9 +13,10 @@ export default async function RangeLogDetailPage({
 }) {
   const { id } = await params
   const t = await getTranslations('range')
-  const [log, recipes] = await Promise.all([
+  const [log, recipes, rifles] = await Promise.all([
     getRangeLogById(id),
     getRecipesForRangeLog(),
+    getRiflesForRangeLog(),
   ])
 
   if (!log) {
@@ -103,9 +104,41 @@ export default async function RangeLogDetailPage({
         </div>
       </div>
 
+      {(log.rifleName || log.rifle) && (
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8 mb-6">
+          <h2 className="text-lg font-semibold mb-1">{t('detail.rifleSnapshot')}</h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+            {log.rifleName || '—'}{log.rifleCaliber ? ` • ${log.rifleCaliber}` : ''}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.rifleBarrel')}</div>
+              <div className="font-medium font-mono mt-1">{log.rifleBarrelLengthMm != null ? `${log.rifleBarrelLengthMm} mm` : '—'}</div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.rifleTwist')}</div>
+              <div className="font-medium font-mono mt-1">{log.rifleTwistIn != null ? `1:${log.rifleTwistIn}` : '—'}</div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.rifleSight')}</div>
+              <div className="font-medium font-mono mt-1">{log.rifleSightHeightCm != null ? `${log.rifleSightHeightCm} cm` : '—'}</div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.rifleZero')}</div>
+              <div className="font-medium font-mono mt-1">{log.rifleZeroDistanceM != null ? `${log.rifleZeroDistanceM} m` : '—'}</div>
+            </div>
+            <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
+              <div className="text-zinc-500 dark:text-zinc-400">{t('detail.rifleClick')}</div>
+              <div className="font-medium font-mono mt-1">{log.rifleClickCmAt100m != null ? `${log.rifleClickCmAt100m} cm` : '—'}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-8">
         <RangeLogForm
           recipes={recipes}
+          rifles={rifles}
           initialData={log}
           logId={log.id}
           readonly={true}
