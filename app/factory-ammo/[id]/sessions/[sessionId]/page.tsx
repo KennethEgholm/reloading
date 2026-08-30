@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { getFactoryAmmoSessionById } from '@/app/factory-ammo/sessions/actions'
 import { FactoryAmmoSessionForm } from '@/app/factory-ammo/sessions/FactoryAmmoSessionForm'
 import { DeleteFactoryAmmoSessionButton } from '@/app/factory-ammo/sessions/DeleteFactoryAmmoSessionButton'
 import { averageMoa } from '@/lib/moa'
+import { formatDate } from '@/lib/format'
 
 export default async function FactoryAmmoSessionDetailPage({
   params,
@@ -13,6 +14,7 @@ export default async function FactoryAmmoSessionDetailPage({
 }) {
   const { id, sessionId } = await params
   const t = await getTranslations('factoryAmmo')
+  const locale = await getLocale()
   const session = await getFactoryAmmoSessionById(id, sessionId)
 
   if (!session) {
@@ -41,7 +43,7 @@ export default async function FactoryAmmoSessionDetailPage({
           {session.factoryAmmo.brand} {session.factoryAmmo.model}
         </h1>
         <p className="text-sm text-zinc-500 mb-6">
-          {session.date.toLocaleDateString()}
+          {formatDate(session.date, locale)}
           {session.location && ` • ${session.location}`}
         </p>
 

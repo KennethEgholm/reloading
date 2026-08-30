@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { getFactoryAmmoById } from '../actions'
 import { DeleteFactoryAmmoButton } from '../DeleteFactoryAmmoButton'
+import { formatDate } from '@/lib/format'
 
 export default async function FactoryAmmoDetailPage({
   params,
@@ -11,6 +12,7 @@ export default async function FactoryAmmoDetailPage({
 }) {
   const { id } = await params
   const t = await getTranslations('factoryAmmo')
+  const locale = await getLocale()
   const ammo = await getFactoryAmmoById(id)
 
   if (!ammo) {
@@ -97,7 +99,7 @@ export default async function FactoryAmmoDetailPage({
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium">
-                      {session.date.toLocaleDateString()}
+                      {formatDate(session.date, locale)}
                       {session.location && ` • ${session.location}`}
                     </div>
                     <div className="text-sm text-zinc-500 mt-1">

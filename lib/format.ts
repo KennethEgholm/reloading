@@ -5,20 +5,34 @@
 // React hydration mismatch (e.g. server "02/06/2026" vs client "6/2/2026").
 // Accepting an explicit locale from the active next-intl request/hook keeps
 // server-rendered text matching the client and respects the user's language.
+//
+// The short formats (`formatDate`, `formatDateTime`) pin day/month/year order
+// explicitly: the app's bare "en" locale resolves to en-US in Intl (MM/DD/YYYY),
+// but this app consistently shows dates as DD/MM/YYYY regardless of locale.
+// Long formats keep full locale rendering (weekday + month names).
 
 const DEFAULT_LOCALE = 'en-GB' // DD/MM/YYYY
 const TIME_ZONE = 'Europe/Copenhagen'
 
+// The app's locales are bare subtags ("en", "da"). Intl resolves bare "en"
+// to en-US (MM/DD/YYYY), so it is normalized to en-GB to keep every short
+// date DD/MM/YYYY. "da" is already day-first (02.06.2026).
 function resolveLocale(locale?: string): string {
-  return locale || DEFAULT_LOCALE
+  if (!locale) return DEFAULT_LOCALE
+  return locale === 'en' ? 'en-GB' : locale
 }
 
-/** Short numeric date, e.g. "02/06/2026". */
+/** Short numeric date, e.g. "02/06/2026" (always DD/MM/YYYY). */
 export function formatDate(
   value: Date | string | number,
   locale?: string
 ): string {
-  return new Date(value).toLocaleDateString(resolveLocale(locale), { timeZone: TIME_ZONE })
+  return new Date(value).toLocaleDateString(resolveLocale(locale), {
+    timeZone: TIME_ZONE,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
 }
 
 /** Long date with weekday and month name, e.g. "Tuesday, 2 June 2026". */
@@ -35,12 +49,19 @@ export function formatDateLong(
   })
 }
 
-/** Date + time, e.g. "02/06/2026, 14:07". */
+/** Date + time, e.g. "02/06/2026, 14:07" (date part always DD/MM/YYYY). */
 export function formatDateTime(
   value: Date | string | number,
   locale?: string
 ): string {
-  return new Date(value).toLocaleString(resolveLocale(locale), { timeZone: TIME_ZONE })
+  return new Date(value).toLocaleString(resolveLocale(locale), {
+    timeZone: TIME_ZONE,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 /** Compact G1/G7 label, e.g. "G1 0.462 / G7 0.237". Empty string when both are unset. */
