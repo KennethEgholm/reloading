@@ -94,7 +94,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - The app is fully localized for English and Danish via [next-intl](https://next-intl.dev). All user-facing strings — navigation, page headings, table columns, form labels, toasts, AI verdict copy, Zod validation messages — flow through `t()` / `getTranslations()` from message dictionaries in `messages/en.json` and `messages/da.json` (17 namespaces: `nav`, `overview`, `primers`, `projectiles`, `propellants`, `cartridges`, `rifles`, `calibers`, `recipes`, `logs`, `range`, `factoryAmmo`, `settings`, `common`, `errors`, `metadata`, `localeSwitcher`).
   - URLs are clean — `localePrefix: 'never'`. The active locale lives in a `NEXT_LOCALE` cookie, detected from the cookie first, then `Accept-Language`, then the default (`en`). `middleware.ts` reads it and sets `x-next-intl-locale` so server components resolve the right dictionary.
   - Switch locale from **Settings** (`LocaleSwitcher`): a `<select>` that writes the cookie and reloads the current path. Dates format via `Intl.DateTimeFormat` (`lib/format.ts`) and respect the active locale to avoid hydration mismatch.
-  - **When adding/changing a user-facing string, update BOTH `messages/en.json` and `messages/da.json`** — there is no automated drift check; a missing key in one locale renders the key path verbatim.
+  - **When adding/changing a user-facing string, update BOTH `messages/en.json` and `messages/da.json`** — parity is enforced by `lib/i18nParity.test.ts` (part of `pnpm test` / CI); a missing key in one locale would render the key path verbatim.
 
 ## Tech Stack
 
@@ -164,7 +164,8 @@ pnpm dev
 - Range photos use a combination of client state (`existingImages` with `markedForDelete`, `images` for new File objects) + explicit `formData.append` for new files + metadata for existing ones. Never give the dynamic photo inputs a `name` attribute (prevents double submission).
 - Server Actions are the trust boundary: they re-validate every `FormData` payload with shared Zod schemas in `lib/schemas.ts` (forms validating client-side is not enough). Add new entity validation there rather than hand-parsing in the action.
 - After any schema change, run the migration inside the container and restart the app service.
-- Always run `pnpm exec tsc --noEmit` (or the equivalent inside Docker) before declaring something "done".
+- `pnpm install` runs `prisma generate` automatically (`postinstall` script), so the host Prisma client stays in sync with `prisma/schema.prisma` and `pnpm typecheck` won't fail with stale-model errors after a schema change.
+- Always run `pnpm typecheck` (or the equivalent inside Docker) before declaring something "done".
 
 ### Testing
 
