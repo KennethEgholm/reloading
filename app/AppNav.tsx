@@ -39,7 +39,7 @@ export function AppNav() {
   }, [open])
 
   return (
-    <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+    <nav className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 print:hidden">
       <div className="w-full px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">

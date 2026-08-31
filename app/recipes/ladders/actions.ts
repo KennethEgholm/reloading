@@ -168,18 +168,17 @@ export async function promoteLadderWinner(ladderId: string, formData: FormData) 
 }
 
 /**
- * Deletes a ladder. Member recipes survive: both ladderId and
- * ladderChargeIndex are nulled explicitly (SetNull only clears the FK).
+ * Deletes a ladder and all member recipes. Load/range log FKs SetNull;
+ * snapshots on those logs survive (same as deleteRecipe).
  */
 export async function deleteLadder(id: string): Promise<DeleteResult> {
   await prisma.$transaction(async (tx) => {
-    await tx.recipe.updateMany({
-      where: { ladderId: id },
-      data: { ladderId: null, ladderChargeIndex: null },
-    })
+    await tx.recipe.deleteMany({ where: { ladderId: id } })
     await tx.ladder.delete({ where: { id } })
   })
   revalidateLadderPaths()
+  revalidatePath('/range')
+  revalidatePath('/logs')
   return { ok: true }
 }
 

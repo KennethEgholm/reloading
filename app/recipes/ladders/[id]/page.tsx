@@ -46,6 +46,12 @@ export default async function LadderDetailPage({
           )}
         </div>
         <div className="flex items-center gap-4">
+          <Link
+            href={`/recipes/ladders/${ladder.id}/print`}
+            className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+          >
+            {t('page.print')}
+          </Link>
           {winnerId && ladder.recipes.some((r) => r.id === winnerId) && (
             <PromoteWinnerButton
               ladderId={ladder.id}

@@ -106,3 +106,18 @@ a:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible
 }
 
 h1, h2, h3 { text-wrap: balance; }
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  nav,
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

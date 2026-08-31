@@ -77,6 +77,12 @@ export default async function RecipeDetailPage({
             {t('detail.logLoad')}
           </Link>
           <Link
+            href={`/recipes/${recipe.id}/print`}
+            className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          >
+            {t('detail.print')}
+          </Link>
+          <Link
             href={`/range/new?recipeId=${recipe.id}`}
             className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >

@@ -382,6 +382,7 @@
       "logLoad": "Log en ladning",
       "logRange": "Log skydning",
       "startLadder": "Start ladder",
+      "print": "Udskriv",
       "edit": "Rediger",
       "recipeDetails": "Receptdetaljer",
       "projectile": "Projektil",
@@ -499,6 +500,10 @@
       "possible": "Mulige",
       "ladderBadge": "Ladder",
       "ladderSteps": "{count} trin"
+    },
+    "print": {
+      "back": "Tilbage til opskrift",
+      "measuredV0": "Målt V0 (m/s)"
     },
     "toast": {
       "saved": "Recept gemt",
@@ -1155,7 +1160,8 @@
       "bestHighlighted": "Bedste gruppe ({moa} MOA) er fremhævet.",
       "promote": "Promover vinder",
       "promoteTitle": "Promover vinder til en opskrift",
-      "promoteHint": "“{name}” bliver en almindelig opskrift. De øvrige trin bliver i ladderen, medmindre du sletter dem nedenfor."
+      "promoteHint": "“{name}” bliver en almindelig opskrift. De øvrige trin bliver i ladderen, medmindre du sletter dem nedenfor.",
+      "print": "Udskriv"
     },
     "form": {
       "name": "Ladder-navn",
@@ -1212,8 +1218,8 @@
       "markWinner": "Markér som vinder"
     },
     "delete": {
-      "button": "Slet",
-      "confirm": "Slet denne ladder? Medlemsopskrifterne bevares — kun ladder-grupperingen fjernes."
+      "button": "Slet ladder",
+      "confirm": "Slet denne ladder og alle dens trin? Ladnings- og skydelogs bevares (opskriftslinket ryddes)."
     },
     "toast": {
       "created": "Ladder oprettet",
@@ -1228,6 +1234,13 @@
       "caliberRequired": "Kaliber er påkrævet",
       "notAMember": "Den opskrift er ikke medlem af denne ladder",
       "noWinner": "Markér en vinder først"
+    },
+    "print": {
+      "back": "Tilbage til ladder",
+      "step": "#",
+      "measuredV0": "Målt V0",
+      "groupMm": "Gruppe mm",
+      "notes": "Noter"
     }
   }
 }

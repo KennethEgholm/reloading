@@ -382,6 +382,7 @@
       "logLoad": "Log a load",
       "logRange": "Log range session",
       "startLadder": "Start ladder",
+      "print": "Print",
       "edit": "Edit",
       "recipeDetails": "Recipe Details",
       "projectile": "Projectile",
@@ -499,6 +500,10 @@
       "possible": "Possible",
       "ladderBadge": "Ladder",
       "ladderSteps": "{count} steps"
+    },
+    "print": {
+      "back": "Back to recipe",
+      "measuredV0": "Measured V0 (m/s)"
     },
     "toast": {
       "saved": "Recipe saved",
@@ -1155,7 +1160,8 @@
       "bestHighlighted": "Best group ({moa} MOA) is highlighted.",
       "promote": "Promote winner",
       "promoteTitle": "Promote winner to a recipe",
-      "promoteHint": "“{name}” becomes a normal recipe. Other steps stay in the ladder unless you delete them below."
+      "promoteHint": "“{name}” becomes a normal recipe. Other steps stay in the ladder unless you delete them below.",
+      "print": "Print"
     },
     "form": {
       "name": "Ladder name",
@@ -1212,8 +1218,8 @@
       "markWinner": "Mark as winner"
     },
     "delete": {
-      "button": "Delete",
-      "confirm": "Delete this ladder? The member recipes are kept — only the ladder grouping is removed."
+      "button": "Delete ladder",
+      "confirm": "Delete this ladder and all its steps? Load logs and range sessions are kept (the recipe link is cleared)."
     },
     "toast": {
       "created": "Ladder created",
@@ -1228,6 +1234,13 @@
       "caliberRequired": "Caliber is required",
       "notAMember": "That recipe is not a member of this ladder",
       "noWinner": "Mark a winner first"
+    },
+    "print": {
+      "back": "Back to ladder",
+      "step": "#",
+      "measuredV0": "Meas. V0",
+      "groupMm": "Group mm",
+      "notes": "Notes"
     }
   }
 }

@@ -136,8 +136,8 @@ model Rifle {
 // (projectile, propellant, primer, cartridge, rifle, COAL, notes) and differing
 // only in powder charge. Members are ordinary Recipe rows (ladderId +
 // ladderChargeIndex); everything downstream (load logs, range sessions, MOA
-// groups, AI check) works on them unchanged. Deleting a ladder nulls the
-// member fields — recipes survive unlinked (see deleteLadder).
+// groups, AI check) works on them unchanged. Deleting a ladder deletes
+// member recipes (log FKs SetNull; see deleteLadder).
 model Ladder {
   id              String   @id @default(cuid())
   name            String
