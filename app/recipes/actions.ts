@@ -335,6 +335,7 @@ export async function getRecipeById(id: string) {
       primer: true,
       cartridge: { include: { caliber: true } },
       rifle: { include: { caliber: true } },
+      ladder: { select: { id: true, name: true } },
       loadLogs: {
         orderBy: { date: 'desc' },
         take: 5,

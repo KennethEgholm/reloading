@@ -192,6 +192,8 @@ export interface RecipeExportItem {
   propellant: { brand: string; type: string }
   cartridge: { brand: string; caliber: string; waterCapacityGr: number | null } | null
   rifle?: { name: string; caliber: string } | null
+  ladderName?: string | null
+  ladderChargeIndex?: number | null
 }
 
 export interface RecipesExport {
@@ -209,6 +211,7 @@ export async function exportRecipes(): Promise<string> {
       primer: true,
       cartridge: { include: { caliber: true } },
       rifle: { include: { caliber: true } },
+      ladder: { select: { name: true } },
     },
     orderBy: { createdAt: 'asc' },
   })
@@ -230,6 +233,8 @@ export async function exportRecipes(): Promise<string> {
       propellant: { brand: r.propellant.brand, type: r.propellant.type },
       cartridge: r.cartridge ? { brand: r.cartridge.brand, caliber: r.cartridge.caliber.name, waterCapacityGr: r.cartridge.waterCapacityGr } : null,
       rifle: r.rifle ? { name: r.rifle.name, caliber: r.rifle.caliber.name } : null,
+      ladderName: r.ladder ? r.ladder.name : null,
+      ladderChargeIndex: r.ladderChargeIndex ?? null,
     })),
   }
 
@@ -262,8 +267,21 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
   const existingPropellants = await prisma.propellant.findMany()
   const existingCartridges = await prisma.cartridge.findMany({ include: { caliber: true } })
   const existingRifles = await prisma.rifle.findMany({ include: { caliber: true } })
+  const existingLadders = await prisma.ladder.findMany()
 
   const recipeMap = new Map(existingRecipes.map((r) => [recipeKey(r.name, r.caliber.name), r]))
+  const ladderMap = new Map(existingLadders.map((l) => [l.name.toLowerCase(), l]))
+
+  // Resolve a ladder by (case-insensitive) name, creating a stub if missing —
+  // mirrors the stub-inventory pattern for other imported references.
+  const resolveLadder = async (name: string) => {
+    const key = name.toLowerCase()
+    const existing = ladderMap.get(key)
+    if (existing) return existing
+    const created = await prisma.ladder.create({ data: { name } })
+    ladderMap.set(key, created)
+    return created
+  }
 
   let created = 0, updated = 0
 
@@ -274,6 +292,7 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
     const primerId = item.primer ? await resolvePrimer(item.primer, existingPrimers) : null
     const cartridgeId = item.cartridge ? await resolveCartridge(item.cartridge, existingCartridges) : null
     const rifleId = item.rifle ? resolveRifle(item.rifle, existingRifles) : null
+    const ladder = item.ladderName ? await resolveLadder(item.ladderName) : null
 
     const recipeData = {
       name: item.name,
@@ -289,6 +308,8 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
       measuredV0: item.measuredV0,
       fillRate: item.fillRate,
       notes: item.notes,
+      ladderId: ladder ? ladder.id : null,
+      ladderChargeIndex: ladder ? (item.ladderChargeIndex ?? null) : null,
     }
 
     const key = recipeKey(item.name, item.caliber)

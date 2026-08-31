@@ -132,6 +132,23 @@ model Rifle {
   @@index([caliberId])
 }
 
+// A load-development ladder: N member recipes sharing all components
+// (projectile, propellant, primer, cartridge, rifle, COAL, notes) and differing
+// only in powder charge. Members are ordinary Recipe rows (ladderId +
+// ladderChargeIndex); everything downstream (load logs, range sessions, MOA
+// groups, AI check) works on them unchanged. Deleting a ladder nulls the
+// member fields — recipes survive unlinked (see deleteLadder).
+model Ladder {
+  id              String   @id @default(cuid())
+  name            String
+  notes           String?
+  winningRecipeId String? // plain recipe id (no FK — validated at write time)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  recipes Recipe[]
+}
+
 model Recipe {
   id           String   @id @default(cuid())
   name         String
@@ -150,6 +167,12 @@ model Recipe {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Ladder membership (optional): which ladder this recipe belongs to and its
+  // 1..N position within it. SetNull keeps the recipe when the ladder is
+  // deleted; ladderChargeIndex is cleared explicitly in deleteLadder.
+  ladderId          String?
+  ladderChargeIndex Int?
+
   // Latest AI safety-check assessment (advisory only). Nullable until run.
   aiVerdict   String? // "OK" | "CAUTION" | "STOP" | "UNKNOWN"
   aiSummary   String? // short prose summary
@@ -163,11 +186,13 @@ model Recipe {
   primer     Primer?    @relation(fields: [primerId], references: [id])
   cartridge  Cartridge? @relation(fields: [cartridgeId], references: [id])
   rifle      Rifle?     @relation(fields: [rifleId], references: [id], onDelete: SetNull)
+  ladder     Ladder?    @relation(fields: [ladderId], references: [id], onDelete: SetNull)
   loadLogs   LoadLog[]
   rangeLogs  RangeLog[]
 
   @@index([caliberId])
   @@index([rifleId])
+  @@index([ladderId])
 }
 
 model LoadLog {

@@ -374,12 +374,14 @@
       "title": "Load Recipes",
       "subtitle": "Saved combinations of components",
       "addButton": "+ Add Recipe",
-      "empty": "No recipes yet. Click \"+ Add Recipe\" above to create your first one."
+      "empty": "No recipes yet. Click \"+ Add Recipe\" above to create your first one.",
+      "newLadder": "New Ladder"
     },
     "detail": {
       "back": "← Back to Recipes",
       "logLoad": "Log a load",
       "logRange": "Log range session",
+      "startLadder": "Start ladder",
       "edit": "Edit",
       "recipeDetails": "Recipe Details",
       "projectile": "Projectile",
@@ -494,7 +496,9 @@
       "measV0": "Meas V0",
       "fill": "Fill %",
       "check": "Check",
-      "possible": "Possible"
+      "possible": "Possible",
+      "ladderBadge": "Ladder",
+      "ladderSteps": "{count} steps"
     },
     "toast": {
       "saved": "Recipe saved",
@@ -1137,6 +1141,93 @@
         "extremeSpreadPositive": "Extreme spread cannot be negative",
         "stdDevPositive": "Standard deviation cannot be negative"
       }
+    }
+  },
+  "ladders": {
+    "page": {
+      "titleNew": "New Load-Development Ladder",
+      "subtitleNew": "Create a series of recipes that share every component and differ only in powder charge.",
+      "backToRecipes": "Back to Recipes",
+      "edit": "Edit",
+      "editTitle": "Edit Ladder",
+      "membersCount": "{count} member recipes",
+      "empty": "This ladder has no member recipes.",
+      "bestHighlighted": "Best group ({moa} MOA) is highlighted.",
+      "promote": "Promote winner",
+      "promoteTitle": "Promote winner to a recipe",
+      "promoteHint": "“{name}” becomes a normal recipe. Other steps stay in the ladder unless you delete them below."
+    },
+    "form": {
+      "name": "Ladder name",
+      "namePlaceholder": "e.g. 6.5 CM Varget ladder",
+      "caliber": "Caliber",
+      "projectile": "Projectile",
+      "projectilePlaceholder": "Select a projectile…",
+      "propellant": "Propellant",
+      "propellantPlaceholder": "Select a propellant…",
+      "primer": "Primer (optional)",
+      "primerPlaceholder": "Select a primer…",
+      "cartridge": "Cartridge (optional)",
+      "cartridgePlaceholder": "Select a cartridge…",
+      "rifle": "Rifle (optional)",
+      "riflePlaceholder": "Select a rifle…",
+      "coal": "COAL (inches)",
+      "startCharge": "Start charge (gr)",
+      "step": "Step (gr)",
+      "count": "Number of steps",
+      "notes": "Notes",
+      "notesPlaceholder": "Purpose of this ladder, weather, anything worth remembering…",
+      "prefilledFrom": "Prefilling from “{name}”. Adjust start charge, step, and count, then create.",
+      "previewTitle": "Recipes to be created",
+      "previewHint": "Enter start charge, step, and count to preview the generated recipes.",
+      "previewUnnamed": "(ladder name)",
+      "cancel": "Cancel",
+      "saving": "Saving…",
+      "create": "Create Ladder",
+      "save": "Save Changes",
+      "recipeName": "Recipe name",
+      "deleteRemaining": "Delete the other ladder steps",
+      "deleteRemainingHint": "Their load logs and range sessions are kept (the recipe link is cleared). The empty ladder is removed.",
+      "validation": {
+        "nameRequired": "Name is required",
+        "caliberRequired": "Caliber is required",
+        "projectileRequired": "Projectile is required",
+        "propellantRequired": "Propellant is required",
+        "chargePositive": "Start charge must be greater than zero",
+        "stepNonZero": "Step cannot be zero",
+        "countRange": "Number of steps must be between 2 and 20",
+        "coalPositive": "COAL must be greater than zero"
+      }
+    },
+    "table": {
+      "charge": "Charge",
+      "avgMoa": "Avg MOA",
+      "bestMoa": "Best MOA",
+      "avgVelocity": "Avg velocity",
+      "extremeSpread": "ES",
+      "stdDev": "SD",
+      "sessions": "Sessions",
+      "winner": "Winner",
+      "winnerBadge": "★ Winner",
+      "markWinner": "Mark as winner"
+    },
+    "delete": {
+      "button": "Delete",
+      "confirm": "Delete this ladder? The member recipes are kept — only the ladder grouping is removed."
+    },
+    "toast": {
+      "created": "Ladder created",
+      "updated": "Ladder updated",
+      "deleted": "Ladder deleted",
+      "failed": "Failed to save ladder",
+      "deleteFailed": "Failed to delete ladder",
+      "winnerSet": "Winner marked",
+      "promoted": "Winner promoted"
+    },
+    "errors": {
+      "caliberRequired": "Caliber is required",
+      "notAMember": "That recipe is not a member of this ladder",
+      "noWinner": "Mark a winner first"
     }
   }
 }

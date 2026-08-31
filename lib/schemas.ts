@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { PrimerType, WeightUnit } from '@prisma/client'
+import { LADDER_MIN_STEPS, LADDER_MAX_STEPS } from '@/lib/ladder'
 
 type Translator = (key: string) => string
 
@@ -229,3 +230,47 @@ export function createFactoryAmmoSessionSchema(t: (key: string) => string) {
 }
 
 export type FactoryAmmoSessionInput = z.infer<ReturnType<typeof createFactoryAmmoSessionSchema>>
+
+export function createLadderSchema(t: Translator) {
+  return z.object({
+    name: z.string().trim().min(1, t('form.validation.nameRequired')),
+    caliber: z.string().trim().min(1, t('form.validation.caliberRequired')),
+    projectileId: z.string().min(1, t('form.validation.projectileRequired')),
+    propellantId: z.string().min(1, t('form.validation.propellantRequired')),
+    primerId: z.string().nullish(),
+    cartridgeId: z.string().nullish(),
+    rifleId: z.string().nullish(),
+    coal: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().positive(t('form.validation.coalPositive')).optional(),
+    ).transform((v) => v ?? null),
+    startChargeGr: z.coerce.number().positive(t('form.validation.chargePositive')),
+    stepGr: z.coerce.number().refine((v) => v !== 0, t('form.validation.stepNonZero')),
+    count: z.coerce
+      .number()
+      .int()
+      .min(LADDER_MIN_STEPS, t('form.validation.countRange'))
+      .max(LADDER_MAX_STEPS, t('form.validation.countRange')),
+    notes: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export type LadderInput = z.infer<ReturnType<typeof createLadderSchema>>
+
+export function createLadderUpdateSchema(t: Translator) {
+  return z.object({
+    name: z.string().trim().min(1, t('form.validation.nameRequired')),
+    notes: z.string().nullish().transform((v) => v?.trim() || null),
+  })
+}
+
+export type LadderUpdateInput = z.infer<ReturnType<typeof createLadderUpdateSchema>>
+
+export function createLadderPromoteSchema(t: Translator) {
+  return z.object({
+    name: z.string().trim().min(1, t('form.validation.nameRequired')),
+    deleteRemaining: z.preprocess((v) => v === 'true' || v === 'on' || v === true, z.boolean()).default(false),
+  })
+}
+
+export type LadderPromoteInput = z.infer<ReturnType<typeof createLadderPromoteSchema>>

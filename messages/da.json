@@ -374,12 +374,14 @@
       "title": "Laderecepturer",
       "subtitle": "Gemte kombinationer af komponenter",
       "addButton": "+ Tilføj recept",
-      "empty": "Ingen recepturer endnu. Klik på \"+ Tilføj recept\" ovenfor for at oprette din første."
+      "empty": "Ingen recepturer endnu. Klik på \"+ Tilføj recept\" ovenfor for at oprette din første.",
+      "newLadder": "Ny ladder"
     },
     "detail": {
       "back": "← Tilbage til recepturer",
       "logLoad": "Log en ladning",
       "logRange": "Log skydning",
+      "startLadder": "Start ladder",
       "edit": "Rediger",
       "recipeDetails": "Receptdetaljer",
       "projectile": "Projektil",
@@ -494,7 +496,9 @@
       "measV0": "Målt V0",
       "fill": "Fyldning %",
       "check": "Tjek",
-      "possible": "Mulige"
+      "possible": "Mulige",
+      "ladderBadge": "Ladder",
+      "ladderSteps": "{count} trin"
     },
     "toast": {
       "saved": "Recept gemt",
@@ -1137,6 +1141,93 @@
         "extremeSpreadPositive": "Ekstrem spredning kan ikke være negativ",
         "stdDevPositive": "Standardafvigelse kan ikke være negativ"
       }
+    }
+  },
+  "ladders": {
+    "page": {
+      "titleNew": "Ny udviklingsladder",
+      "subtitleNew": "Opret en række opskrifter der deler alle komponenter og kun adskiller sig i krudtmængden.",
+      "backToRecipes": "Tilbage til opskrifter",
+      "edit": "Rediger",
+      "editTitle": "Rediger ladder",
+      "membersCount": "{count} medlemsopskrifter",
+      "empty": "Denne ladder har ingen medlemsopskrifter.",
+      "bestHighlighted": "Bedste gruppe ({moa} MOA) er fremhævet.",
+      "promote": "Promover vinder",
+      "promoteTitle": "Promover vinder til en opskrift",
+      "promoteHint": "“{name}” bliver en almindelig opskrift. De øvrige trin bliver i ladderen, medmindre du sletter dem nedenfor."
+    },
+    "form": {
+      "name": "Ladder-navn",
+      "namePlaceholder": "f.eks. 6.5 CM Varget-ladder",
+      "caliber": "Kaliber",
+      "projectile": "Projektil",
+      "projectilePlaceholder": "Vælg en projektil…",
+      "propellant": "Krudt",
+      "propellantPlaceholder": "Vælg et krudt…",
+      "primer": "Tændhætte (valgfri)",
+      "primerPlaceholder": "Vælg en tændhætte…",
+      "cartridge": "Patronhylster (valgfri)",
+      "cartridgePlaceholder": "Vælg et hylster…",
+      "rifle": "Riffel (valgfri)",
+      "riflePlaceholder": "Vælg en riffel…",
+      "coal": "Samlet længde (tommer)",
+      "startCharge": "Startmængde (gr)",
+      "step": "Trin (gr)",
+      "count": "Antal trin",
+      "notes": "Noter",
+      "notesPlaceholder": "Formålet med denne ladder, vejr, alt der er værd at huske…",
+      "prefilledFrom": "Udfylder fra “{name}”. Juster startmængde, trin og antal, og opret.",
+      "previewTitle": "Opskrifter der oprettes",
+      "previewHint": "Udfyld startmængde, trin og antal for at se en forhåndsvisning.",
+      "previewUnnamed": "(ladder-navn)",
+      "cancel": "Annuller",
+      "saving": "Gemmer…",
+      "create": "Opret ladder",
+      "save": "Gem ændringer",
+      "recipeName": "Opskriftsnavn",
+      "deleteRemaining": "Slet de øvrige ladder-trin",
+      "deleteRemainingHint": "Deres ladnings- og skydelogs bevares (opskriftslinket ryddes). Den tomme ladder fjernes.",
+      "validation": {
+        "nameRequired": "Navn er påkrævet",
+        "caliberRequired": "Kaliber er påkrævet",
+        "projectileRequired": "Projektil er påkrævet",
+        "propellantRequired": "Krudt er påkrævet",
+        "chargePositive": "Startmængden skal være større end nul",
+        "stepNonZero": "Trin må ikke være nul",
+        "countRange": "Antal trin skal være mellem 2 og 20",
+        "coalPositive": "Samlet længde skal være større end nul"
+      }
+    },
+    "table": {
+      "charge": "Mængde",
+      "avgMoa": "Gns. MOA",
+      "bestMoa": "Bedste MOA",
+      "avgVelocity": "Gns. fart",
+      "extremeSpread": "ES",
+      "stdDev": "SD",
+      "sessions": "Sessioner",
+      "winner": "Vinder",
+      "winnerBadge": "★ Vinder",
+      "markWinner": "Markér som vinder"
+    },
+    "delete": {
+      "button": "Slet",
+      "confirm": "Slet denne ladder? Medlemsopskrifterne bevares — kun ladder-grupperingen fjernes."
+    },
+    "toast": {
+      "created": "Ladder oprettet",
+      "updated": "Ladder opdateret",
+      "deleted": "Ladder slettet",
+      "failed": "Kunne ikke gemme ladder",
+      "deleteFailed": "Kunne ikke slette ladder",
+      "winnerSet": "Vinder markeret",
+      "promoted": "Vinder promoveret"
+    },
+    "errors": {
+      "caliberRequired": "Kaliber er påkrævet",
+      "notAMember": "Den opskrift er ikke medlem af denne ladder",
+      "noWinner": "Markér en vinder først"
     }
   }
 }

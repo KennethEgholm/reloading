@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Rifle" ALTER COLUMN "zeroDistanceM" DROP DEFAULT,
+ALTER COLUMN "clickCmAt100m" DROP DEFAULT;

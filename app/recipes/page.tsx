@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getTranslations } from 'next-intl/server'
+import Link from 'next/link'
 import { createRecipe } from './actions'
 import { RecipesTable } from './RecipesTable'
 import { RecipeForm } from './RecipeForm'
@@ -18,6 +19,7 @@ export default async function RecipesPage() {
         primer: true,
         cartridge: { include: { caliber: true } },
         rifle: { include: { caliber: true } },
+        ladder: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: 'desc' },
     }),
@@ -42,6 +44,12 @@ export default async function RecipesPage() {
         <div className="flex items-center gap-2">
           <QuickLoadImageImport projectiles={projectiles} propellants={propellants} calibers={calibers} />
           <QuickLoadImport projectiles={projectiles} propellants={propellants} calibers={calibers} />
+          <Link
+            href="/recipes/ladders/new"
+            className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+          >
+            {t('page.newLadder')}
+          </Link>
           <RecipeForm
             action={createRecipe}
             title={t('form.titleAdd')}

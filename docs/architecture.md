@@ -14,7 +14,7 @@ graph TB
     subgraph Next["Next.js 16 App Router (app container)"]
         direction TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
-        I18N["i18n/request.ts · messages/{en,da}.json<br/>17 namespaces · t() / getTranslations()"]
+         I18N["i18n/request.ts · messages/{en,da}.json<br/>18 namespaces · t() / getTranslations()"]
         SC["Server Components<br/>(pages: /, /recipes, /range, /factory-ammo,<br/>/rifles, /logs, inventory, /settings)"]
         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
 
@@ -70,6 +70,7 @@ erDiagram
     Cartridge ||--o{ Recipe : "cartridgeId (optional)"
     Rifle ||--o{ Recipe : "rifleId (optional, SetNull)"
     Rifle ||--o{ RangeLog : "rifleId (optional, SetNull)"
+    Ladder ||--o{ Recipe : "ladderId (optional, SetNull)"
 
     Recipe ||--o{ LoadLog : "recipeId (nullable)"
     Recipe ||--o{ RangeLog : "recipeId (required)"
@@ -105,6 +106,15 @@ erDiagram
         string aiVerdict "advisory only"
         string aiSummary
         string aiConcerns
+        string ladderId FK "optional ladder membership"
+        int ladderChargeIndex "1..N within ladder"
+    }
+
+    Ladder {
+        string id PK
+        string name
+        string notes
+        string winningRecipeId "plain id, validated at write"
     }
 
     LoadLog {
@@ -251,6 +261,15 @@ sequenceDiagram
     A->>AI: visionCompletion (image in-memory, never stored)
     AI-->>A: JSON values (defensive parse)
     A-->>U: ParsedQuickLoad preview (nothing persisted until save)
+    end
+
+    rect rgb(30,41,59)
+    note over U,DB: Ladder create — N recipes in one transaction
+    U->>U: pick shared components + start/step/count<br/>(live preview via generateCharges, client)
+    U->>A: FormData
+    A->>A: createLadderSchema.safeParse + resolveCaliberId
+    A->>DB: TX: insert Ladder + createMany N Recipes<br/>(ladderId + ladderChargeIndex, charge varies)
+    A-->>U: redirect to /recipes/ladders/[id]
     end
 
     rect rgb(30,41,59)

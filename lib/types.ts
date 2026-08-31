@@ -41,7 +41,8 @@ export type CaliberOption = { id: string; name: string }
 
 // A Recipe with its component relations resolved — the shape returned by the
 // recipe list/detail queries (which `include` projectile/propellant/primer/
-// cartridge) and consumed by RecipesTable / RecipeForm.
+// cartridge/ladder) and consumed by RecipesTable / RecipeForm. The ladder
+// include (id + name only) powers the ladder badge on member rows.
 export type RecipeWithRelations = Prisma.RecipeGetPayload<{
   include: {
     caliber: true
@@ -50,6 +51,7 @@ export type RecipeWithRelations = Prisma.RecipeGetPayload<{
     primer: true
     cartridge: { include: { caliber: true } }
     rifle: { include: { caliber: true } }
+    ladder: { select: { id: true; name: true } }
   }
 }>
 

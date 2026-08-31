@@ -46,11 +46,30 @@ export default async function RecipeDetailPage({
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="font-display text-4xl font-semibold tracking-tight">{recipe.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="font-display text-4xl font-semibold tracking-tight">{recipe.name}</h1>
+            {recipe.ladder && (
+              <Link
+                href={`/recipes/ladders/${recipe.ladder.id}`}
+                className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                title={recipe.ladder.name}
+              >
+                {t('table.ladderBadge')}
+              </Link>
+            )}
+          </div>
           <p className="text-xl text-zinc-600 dark:text-zinc-400 mt-1">{recipe.caliber.name}</p>
         </div>
 
         <div className="flex gap-3">
+          {!recipe.ladder && (
+            <Link
+              href={`/recipes/ladders/new?recipeId=${recipe.id}`}
+              className="px-4 py-2 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              {t('detail.startLadder')}
+            </Link>
+          )}
           <Link
             href={`/logs?recipeId=${recipe.id}`}
             className="px-4 py-2 bg-black text-white dark:bg-white dark:text-black rounded-xl text-sm font-medium hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
