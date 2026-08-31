@@ -14,7 +14,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - **Fill missing with AI** (projectiles page): uses the Settings model to suggest empty twist/G1/G7 values. Nothing is written until you review the preview, uncheck anything you don't want, and apply. Existing values are never overwritten.
   - Propellants: brand, type, amount (grams, displayed as a whole number), description.
   - Cartridges: brand/name, caliber, optional water capacity (grains of water), amount (cases on hand), description. Selectable on recipes (optional) and included in the AI safety check.
-  - Full CRUD. Overview dashboard with totals + recent activity (Range Sessions and Load Logs first, then Recipes, then inventory tables). Low-stock awareness via recipe "Possible" calculations. Range and load log previews use the same row components as their dedicated pages.
+  - Full CRUD. Overview dashboard: hero cards (Range Sessions, Load Logs, Factory Ammo, Rifles — whole-card links with accent icons and mono stat lines), inventory chip row (recipes/primers/projectiles/propellants/cases totals), a **Last 12 months activity chart** (server-rendered SVG: rounds fired vs. loaded per month, accent-themed, `lib/monthlyActivity.ts` + `app/ActivityChart.tsx`), then recent Range/Load sections, Factory Ammo, Rifles, Recipes, and the collapsible inventory tables. Low-stock awareness via recipe "Possible" calculations with mini accent bars scaled against the best-stocked recipe. Range and load log previews use the same row components as their dedicated pages.
 
 - **Recipes**
   - Link one projectile + propellant + primer.

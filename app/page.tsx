@@ -6,6 +6,8 @@ import { LoadLogRow } from './logs/LoadLogRow';
 import { getPossibleLoads } from '@/lib/inventory';
 import { EmptyState } from './EmptyState';
 import { formatBcSuffix, formatTwistSuffix } from '@/lib/format';
+import { bucketMonthlyActivity } from '@/lib/monthlyActivity';
+import { ActivityChart } from './ActivityChart';
 
 export default async function Overview() {
   const t = await getTranslations('overview');
@@ -29,6 +31,8 @@ export default async function Overview() {
     factoryAmmoTotalRounds,
     factoryAmmoCount,
     rifles,
+    rangeActivity,
+    loadActivity,
   ] = await Promise.all([
     prisma.primer.findMany({
       orderBy: { createdAt: 'desc' },
@@ -86,6 +90,14 @@ export default async function Overview() {
       include: { caliber: true },
       orderBy: { createdAt: 'desc' },
     }),
+    prisma.rangeLog.findMany({
+      select: { date: true, roundsFired: true },
+      orderBy: { date: 'desc' },
+    }),
+    prisma.loadLog.findMany({
+      select: { date: true, quantity: true },
+      orderBy: { date: 'desc' },
+    }),
   ]);
 
   const totalRounds = rangeSum._sum.roundsFired ?? 0;
@@ -96,6 +108,16 @@ export default async function Overview() {
   const totalProjectiles = projectiles.reduce((sum, p) => sum + p.amount, 0);
   const totalPropellantGrams = propellants.reduce((sum, p) => sum + p.amountGr, 0);
   const totalCases = cartridges.reduce((sum, c) => sum + c.amount, 0);
+
+  const activityBuckets = bucketMonthlyActivity(
+    rangeActivity.map((r) => ({ date: r.date, rounds: r.roundsFired })),
+    loadActivity.map((l) => ({ date: l.date, rounds: l.quantity })),
+  );
+  const hasActivity = activityBuckets.some((b) => b.fired > 0 || b.loaded > 0);
+  const possibleLoads = recipes
+    .map((recipe) => getPossibleLoads(recipe))
+    .filter((v): v is number => v !== null);
+  const maxPossibleLoads = possibleLoads.length > 0 ? Math.max(...possibleLoads) : null;
 
   return (
     <div className="w-full px-6 py-10">
@@ -110,57 +132,105 @@ export default async function Overview() {
         </p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-9 gap-4 mb-10">
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.logged', { count: rangeCount })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsFired', { count: totalRounds })}</div>
-        </div>
+      {/* Hero cards: recent activity domains, whole card links */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-4">
+        <Link
+          href="/range"
+          className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-accent hover:shadow-md hover:shadow-accent/10 dark:hover:border-accent transition-all"
+        >
+          <div className="flex items-start justify-between">
+            <img src="/images/range.svg" alt="" aria-hidden="true" className="w-10 h-10 p-2 bg-accent/10 rounded-xl text-accent" width={40} height={40} loading="lazy" />
+            <span className="text-zinc-300 dark:text-zinc-600 group-hover:text-accent group-hover:translate-x-0.5 transition-all" aria-hidden="true">→</span>
+          </div>
+          <div className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rangeSessions')}</div>
+          <div className="font-display text-3xl font-semibold mt-1 text-accent">{t('summary.logged', { count: rangeCount })}</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-mono">{t('summary.roundsFired', { count: totalRounds })}</div>
+        </Link>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.loadLogs')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.loads', { count: loadCount })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsLoaded', { count: totalLoaded })}</div>
-        </div>
+        <Link
+          href="/logs"
+          className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-accent hover:shadow-md hover:shadow-accent/10 dark:hover:border-accent transition-all"
+        >
+          <div className="flex items-start justify-between">
+            <img src="/images/log.svg" alt="" aria-hidden="true" className="w-10 h-10 p-2 bg-accent/10 rounded-xl text-accent" width={40} height={40} loading="lazy" />
+            <span className="text-zinc-300 dark:text-zinc-600 group-hover:text-accent group-hover:translate-x-0.5 transition-all" aria-hidden="true">→</span>
+          </div>
+          <div className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{t('summary.loadLogs')}</div>
+          <div className="font-display text-3xl font-semibold mt-1 text-accent">{t('summary.loads', { count: loadCount })}</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-mono">{t('summary.roundsLoaded', { count: totalLoaded })}</div>
+        </Link>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.factoryAmmo')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: factoryAmmoCount })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.roundsOnHand', { count: totalFactoryAmmoRounds })}</div>
-        </div>
+        <Link
+          href="/factory-ammo"
+          className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-accent hover:shadow-md hover:shadow-accent/10 dark:hover:border-accent transition-all"
+        >
+          <div className="flex items-start justify-between">
+            <img src="/images/factory-ammo.svg" alt="" aria-hidden="true" className="w-10 h-10 p-2 bg-accent/10 rounded-xl text-accent" width={40} height={40} loading="lazy" />
+            <span className="text-zinc-300 dark:text-zinc-600 group-hover:text-accent group-hover:translate-x-0.5 transition-all" aria-hidden="true">→</span>
+          </div>
+          <div className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{t('summary.factoryAmmo')}</div>
+          <div className="font-display text-3xl font-semibold mt-1 text-accent">{t('summary.types', { count: factoryAmmoCount })}</div>
+          <div className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 font-mono">{t('summary.roundsOnHand', { count: totalFactoryAmmoRounds })}</div>
+        </Link>
 
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rifles')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.rifleCount', { count: rifles.length })}</div>
-        </div>
-
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.recipes')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.saved', { count: recipes.length })}</div>
-        </div>
-
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.primers')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: primers.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.pieces', { count: totalPrimers })}</div>
-        </div>
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.projectiles')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: projectiles.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.pieces', { count: totalProjectiles })}</div>
-        </div>
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: propellants.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.amountGrams', { count: Math.round(totalPropellantGrams) })}</div>
-        </div>
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5">
-          <div className="text-sm text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
-          <div className="font-display text-3xl font-semibold mt-1">{t('summary.types', { count: cartridges.length })}</div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400 mt-1">{t('summary.cases', { count: totalCases })}</div>
-        </div>
+        <Link
+          href="/rifles"
+          className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 hover:border-accent hover:shadow-md hover:shadow-accent/10 dark:hover:border-accent transition-all"
+        >
+          <div className="flex items-start justify-between">
+            <img src="/images/rifle.svg" alt="" aria-hidden="true" className="w-10 h-10 p-2 bg-accent/10 rounded-xl text-accent" width={40} height={40} loading="lazy" />
+            <span className="text-zinc-300 dark:text-zinc-600 group-hover:text-accent group-hover:translate-x-0.5 transition-all" aria-hidden="true">→</span>
+          </div>
+          <div className="mt-3 text-sm text-zinc-500 dark:text-zinc-400">{t('summary.rifles')}</div>
+          <div className="font-display text-3xl font-semibold mt-1 text-accent">{t('summary.rifleCount', { count: rifles.length })}</div>
+        </Link>
       </div>
+
+      {/* Inventory chips: stock at a glance */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-10">
+        <Link
+          href="/recipes"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 hover:border-accent dark:hover:border-accent transition-colors"
+        >
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('summary.recipes')}</div>
+          <div className="font-mono text-xl font-medium mt-0.5">{recipes.length}</div>
+        </Link>
+        <Link
+          href="/primers"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 hover:border-accent dark:hover:border-accent transition-colors"
+        >
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('summary.primers')}</div>
+          <div className="font-mono text-xl font-medium mt-0.5">{totalPrimers}</div>
+        </Link>
+        <Link
+          href="/projectiles"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 hover:border-accent dark:hover:border-accent transition-colors"
+        >
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('summary.projectiles')}</div>
+          <div className="font-mono text-xl font-medium mt-0.5">{totalProjectiles}</div>
+        </Link>
+        <Link
+          href="/propellants"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 hover:border-accent dark:hover:border-accent transition-colors"
+        >
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('summary.propellants')}</div>
+          <div className="font-mono text-xl font-medium mt-0.5">{Math.round(totalPropellantGrams)}</div>
+        </Link>
+        <Link
+          href="/cartridges"
+          className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 hover:border-accent dark:hover:border-accent transition-colors"
+        >
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{t('summary.cartridges')}</div>
+          <div className="font-mono text-xl font-medium mt-0.5">{totalCases}</div>
+        </Link>
+      </div>
+
+      {/* Monthly activity chart */}
+      {hasActivity && (
+        <div className="mb-10">
+          <ActivityChart buckets={activityBuckets} locale={locale} />
+        </div>
+      )}
 
       {/* Range Sessions Section (recent) */}
       <div className="mb-10">
@@ -385,10 +455,22 @@ export default async function Overview() {
                     <td className="px-6 py-3 text-right font-mono">
                       {recipe.fillRate ? `${recipe.fillRate}` : '—'}
                     </td>
-                    <td className="px-6 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400">
+                    <td className="px-6 py-3 text-right">
                       {(() => {
                         const possible = getPossibleLoads(recipe);
-                        return possible !== null ? `${possible}×` : '—';
+                        if (possible === null) return '—';
+                        return (
+                          <span className="inline-flex flex-col items-end gap-1">
+                            <span className="font-mono font-medium text-emerald-600 dark:text-emerald-400">{possible}×</span>
+                            {maxPossibleLoads !== null && possible > 0 && (
+                              <span
+                                aria-hidden="true"
+                                className="block h-1 rounded-full bg-accent"
+                                style={{ width: `${Math.max(8, Math.round((possible / maxPossibleLoads) * 48))}px` }}
+                              />
+                            )}
+                          </span>
+                        );
                       })()}
                     </td>
                   </tr>
