@@ -1,6 +1,7 @@
 export type DetectedExportType =
   | 'inventory'
   | 'recipes'
+  | 'rifles'
   | 'loadLogs'
   | 'rangeLogs'
   | 'factoryAmmo'
@@ -16,6 +17,7 @@ export function detectExportType(text: string): DetectedExportType | null {
       return 'everything'
     }
     if (Array.isArray(parsed.recipes)) return 'recipes'
+    if (Array.isArray(parsed.rifles)) return 'rifles'
     if (Array.isArray(parsed.loadLogs)) return 'loadLogs'
     if (Array.isArray(parsed.rangeLogs)) return 'rangeLogs'
     if (Array.isArray(parsed.factoryAmmo)) return 'factoryAmmo'

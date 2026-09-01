@@ -940,7 +940,7 @@
     "data": {
       "title": "Data",
       "export": "Export",
-      "exportHint": "Download your data as a JSON file. Inventory, recipes, load logs, range sessions, or everything at once.",
+      "exportHint": "Download your data as a JSON file. Inventory, recipes, rifles, load logs, range sessions, or everything at once.",
       "import": "Import",
       "importHint": "Upload a previously exported JSON file. The file type is detected automatically.",
       "preview": "Preview",
@@ -958,6 +958,8 @@
       "rangeLogs": "Range Sessions",
       "exportInventory": "Export inventory",
       "exportRecipes": "Export recipes",
+      "exportRifles": "Export rifles",
+      "rifles": "Rifles",
       "exportLoadLogs": "Export load logs",
       "exportRangeLogs": "Export range sessions",
       "exportEverything": "Export everything",

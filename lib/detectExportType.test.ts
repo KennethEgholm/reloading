@@ -34,6 +34,10 @@ describe('detectExportType', () => {
     expect(detectExportType(JSON.stringify(recipes))).toBe('recipes')
   })
 
+  it('detects a rifles-only export', () => {
+    expect(detectExportType(JSON.stringify({ version: 1, rifles: [{ name: 'Tikka' }] }))).toBe('rifles')
+  })
+
   it('detects an inventory-only export', () => {
     expect(detectExportType(JSON.stringify(inventory))).toBe('inventory')
   })

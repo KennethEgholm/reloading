@@ -20,21 +20,26 @@ import {
   exportFactoryAmmo,
   previewFactoryAmmoImport,
   executeFactoryAmmoImport,
+  exportRifles,
+  previewRiflesImport,
+  executeRiflesImport,
   exportEverything,
   type ImportPreview,
   type RecipesImportPreview,
+  type RiflesImportPreview,
   type LoadLogsImportPreview,
   type RangeLogsImportPreview,
   type FactoryAmmoImportPreview,
 } from './dataActions'
 import { detectExportType, inventoryHasData, sectionHasData } from '@/lib/detectExportType'
 
-type DataType = 'inventory' | 'recipes' | 'loadLogs' | 'rangeLogs' | 'factoryAmmo' | 'everything'
-type Preview = ImportPreview | RecipesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview
+type DataType = 'inventory' | 'recipes' | 'rifles' | 'loadLogs' | 'rangeLogs' | 'factoryAmmo' | 'everything'
+type Preview = ImportPreview | RecipesImportPreview | RiflesImportPreview | LoadLogsImportPreview | RangeLogsImportPreview | FactoryAmmoImportPreview
 
 const EXPORTERS: Record<Exclude<DataType, 'everything'>, () => Promise<string>> = {
   inventory: exportInventory,
   recipes: exportRecipes,
+  rifles: exportRifles,
   loadLogs: exportLoadLogs,
   rangeLogs: exportRangeLogs,
   factoryAmmo: exportFactoryAmmo,
@@ -43,6 +48,7 @@ const EXPORTERS: Record<Exclude<DataType, 'everything'>, () => Promise<string>> 
 const FILE_PREFIX: Record<Exclude<DataType, 'everything'>, string> = {
   inventory: 'reloading-inventory',
   recipes: 'reloading-recipes',
+  rifles: 'reloading-rifles',
   loadLogs: 'reloading-loadlogs',
   rangeLogs: 'reloading-rangelogs',
   factoryAmmo: 'reloading-factoryammo',
@@ -51,6 +57,7 @@ const FILE_PREFIX: Record<Exclude<DataType, 'everything'>, string> = {
 const PREVIEWERS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise<unknown>> = {
   inventory: previewInventoryImport,
   recipes: previewRecipesImport,
+  rifles: previewRiflesImport,
   loadLogs: previewLoadLogsImport,
   rangeLogs: previewRangeLogsImport,
   factoryAmmo: previewFactoryAmmoImport,
@@ -59,6 +66,7 @@ const PREVIEWERS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise
 const EXECUTORS: Record<Exclude<DataType, 'everything'>, (s: string) => Promise<unknown>> = {
   inventory: executeInventoryImport,
   recipes: executeRecipesImport,
+  rifles: executeRiflesImport,
   loadLogs: executeLoadLogsImport,
   rangeLogs: executeRangeLogsImport,
   factoryAmmo: executeFactoryAmmoImport,
@@ -168,6 +176,7 @@ export function DataCard() {
           <div className="flex flex-wrap gap-2">
             <ExportButton label={t('data.exportInventory')} onClick={() => handleExport('inventory')} disabled={isExporting} />
             <ExportButton label={t('data.exportRecipes')} onClick={() => handleExport('recipes')} disabled={isExporting} />
+            <ExportButton label={t('data.exportRifles')} onClick={() => handleExport('rifles')} disabled={isExporting} />
             <ExportButton label={t('data.exportLoadLogs')} onClick={() => handleExport('loadLogs')} disabled={isExporting} />
             <ExportButton label={t('data.exportRangeLogs')} onClick={() => handleExport('rangeLogs')} disabled={isExporting} />
             <ExportButton label={t('data.exportFactoryAmmo')} onClick={() => handleExport('factoryAmmo')} disabled={isExporting} />
@@ -251,6 +260,9 @@ function previewRows(
   if ('recipes' in preview) {
     rows.push(<PreviewRow key="rc" label={t('data.recipes')} created={preview.recipes.created} updated={preview.recipes.updated} t={t} />)
   }
+  if ('rifles' in preview) {
+    rows.push(<PreviewRow key="rf" label={t('data.rifles')} created={preview.rifles.created} updated={preview.rifles.updated} t={t} />)
+  }
   if ('loadLogs' in preview) {
     rows.push(<PreviewRow key="ll" label={t('data.loadLogs')} created={preview.loadLogs.created} updated={preview.loadLogs.updated} t={t} />)
   }
@@ -280,6 +292,9 @@ async function previewEverything(text: string): Promise<Preview | null> {
   if (inventoryHasData(parsed.inventory)) {
     Object.assign(parts, await previewInventoryImport(JSON.stringify(parsed.inventory)))
   }
+  if (sectionHasData(parsed.rifles, 'rifles')) {
+    Object.assign(parts, await previewRiflesImport(JSON.stringify(parsed.rifles)))
+  }
   if (sectionHasData(parsed.recipes, 'recipes')) {
     Object.assign(parts, await previewRecipesImport(JSON.stringify(parsed.recipes)))
   }
@@ -300,6 +315,9 @@ async function executeEverything(text: string): Promise<Record<string, Counts>> 
   const parts: Record<string, Counts> = {}
   if (inventoryHasData(parsed.inventory)) {
     Object.assign(parts, await executeInventoryImport(JSON.stringify(parsed.inventory)))
+  }
+  if (sectionHasData(parsed.rifles, 'rifles')) {
+    Object.assign(parts, await executeRiflesImport(JSON.stringify(parsed.rifles)))
   }
   if (sectionHasData(parsed.recipes, 'recipes')) {
     Object.assign(parts, await executeRecipesImport(JSON.stringify(parsed.recipes)))

@@ -940,7 +940,7 @@
     "data": {
       "title": "Data",
       "export": "Eksportér",
-      "exportHint": "Download dine data som en JSON-fil. Lager, opskrifter, læsse-log, skydebane-sessions eller det hele på én gang.",
+      "exportHint": "Download dine data som en JSON-fil. Lager, opskrifter, rifler, læsse-log, skydebane-sessions eller det hele på én gang.",
       "import": "Importér",
       "importHint": "Upload en tidligere eksporteret JSON-fil. Filtypen registreres automatisk.",
       "preview": "Forhåndsvisning",
@@ -958,6 +958,8 @@
       "rangeLogs": "Skydebane-sessions",
       "exportInventory": "Eksportér lager",
       "exportRecipes": "Eksportér opskrifter",
+      "exportRifles": "Eksportér rifler",
+      "rifles": "Rifler",
       "exportLoadLogs": "Eksportér læsse-log",
       "exportRangeLogs": "Eksportér skydebane-sessions",
       "exportEverything": "Eksportér alt",

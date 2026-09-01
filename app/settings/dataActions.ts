@@ -336,6 +336,99 @@ export async function executeRecipesImport(jsonString: string): Promise<RecipesI
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// Rifles export / import
+// ──────────────────────────────────────────────────────────────────────────
+
+export interface RifleExportItem {
+  name: string
+  caliber: string
+  barrelLengthMm: number
+  twistIn: number
+  sightHeightCm: number
+  zeroDistanceM: number
+  clickCmAt100m: number
+}
+
+export interface RiflesExport {
+  version: number
+  exportedAt: string
+  rifles: RifleExportItem[]
+}
+
+export interface RiflesImportPreview {
+  rifles: { created: number; updated: number }
+}
+
+export async function exportRifles(): Promise<string> {
+  const rifles = await prisma.rifle.findMany({
+    include: { caliber: true },
+    orderBy: { createdAt: 'asc' },
+  })
+  const data: RiflesExport = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    rifles: rifles.map((r) => ({
+      name: r.name,
+      caliber: r.caliber.name,
+      barrelLengthMm: r.barrelLengthMm,
+      twistIn: r.twistIn,
+      sightHeightCm: r.sightHeightCm,
+      zeroDistanceM: r.zeroDistanceM,
+      clickCmAt100m: r.clickCmAt100m,
+    })),
+  }
+  return JSON.stringify(data, null, 2)
+}
+
+export async function previewRiflesImport(jsonString: string): Promise<RiflesImportPreview> {
+  const data = parseExport(jsonString, ['rifles']) as RiflesExport
+  const existing = await prisma.rifle.findMany({ include: { caliber: true } })
+  return {
+    rifles: countMatchExisting(
+      data.rifles,
+      existing,
+      (i) => rifleKey(i.name, i.caliber),
+      (e) => rifleKey(e.name, e.caliber.name),
+    ),
+  }
+}
+
+export async function executeRiflesImport(jsonString: string): Promise<RiflesImportPreview> {
+  const data = parseExport(jsonString, ['rifles']) as RiflesExport
+  const existing = await prisma.rifle.findMany({ include: { caliber: true } })
+  const rifleMap = new Map(existing.map((r) => [rifleKey(r.name, r.caliber.name), r.id]))
+
+  let created = 0, updated = 0
+  for (const item of data.rifles) {
+    const caliberId = await resolveCaliberId(item.caliber)
+    const rifleData = {
+      name: item.name,
+      caliberId,
+      barrelLengthMm: item.barrelLengthMm,
+      twistIn: item.twistIn,
+      sightHeightCm: item.sightHeightCm,
+      zeroDistanceM: item.zeroDistanceM,
+      clickCmAt100m: item.clickCmAt100m,
+    }
+    const existingId = rifleMap.get(rifleKey(item.name, item.caliber))
+    if (existingId) {
+      await prisma.rifle.update({ where: { id: existingId }, data: rifleData })
+      updated++
+    } else {
+      const row = await prisma.rifle.create({ data: rifleData })
+      rifleMap.set(rifleKey(item.name, item.caliber), row.id)
+      created++
+    }
+  }
+
+  revalidatePath('/rifles')
+  revalidatePath('/recipes')
+  revalidatePath('/range')
+  revalidatePath('/')
+  return { rifles: { created, updated } }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // Load logs export / import
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -1008,6 +1101,7 @@ export interface FullExport {
   version: number
   exportedAt: string
   inventory: InventoryExport
+  rifles: RiflesExport
   recipes: RecipesExport
   loadLogs: LoadLogsExport
   rangeLogs: RangeLogsExport
@@ -1015,14 +1109,16 @@ export interface FullExport {
 }
 
 export async function exportEverything(): Promise<string> {
-  const [inventoryJson, recipesJson, loadLogsJson, rangeLogsJson, factoryAmmoJson] = await Promise.all([
+  const [inventoryJson, riflesJson, recipesJson, loadLogsJson, rangeLogsJson, factoryAmmoJson] = await Promise.all([
     exportInventory(),
+    exportRifles(),
     exportRecipes(),
     exportLoadLogs(),
     exportRangeLogs(),
     exportFactoryAmmo(),
   ])
   const inventory = JSON.parse(inventoryJson) as InventoryExport
+  const rifles = JSON.parse(riflesJson) as RiflesExport
   const recipes = JSON.parse(recipesJson) as RecipesExport
   const loadLogs = JSON.parse(loadLogsJson) as LoadLogsExport
   const rangeLogs = JSON.parse(rangeLogsJson) as RangeLogsExport
@@ -1031,6 +1127,7 @@ export async function exportEverything(): Promise<string> {
     version: 1,
     exportedAt: new Date().toISOString(),
     inventory,
+    rifles,
     recipes,
     loadLogs,
     rangeLogs,
@@ -1074,6 +1171,10 @@ async function replaceRangeLogImages(
 }
 
 function recipeKey(name: string, caliber: string): string {
+  return name.trim().toLowerCase() + '|' + caliber.trim().toLowerCase()
+}
+
+function rifleKey(name: string, caliber: string): string {
   return name.trim().toLowerCase() + '|' + caliber.trim().toLowerCase()
 }
 
@@ -1136,9 +1237,8 @@ function resolveRifle(
   ref: { name: string; caliber: string },
   existing: { id: string; name: string; caliber: { name: string } }[],
 ): string | null {
-  const name = ref.name.trim().toLowerCase()
-  const caliber = ref.caliber.trim().toLowerCase()
-  return existing.find((r) => r.name.toLowerCase() === name && r.caliber.name.toLowerCase() === caliber)?.id ?? null
+  const key = rifleKey(ref.name, ref.caliber)
+  return existing.find((r) => rifleKey(r.name, r.caliber.name) === key)?.id ?? null
 }
 
 async function resolveCartridge(
