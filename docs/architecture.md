@@ -16,7 +16,8 @@ graph TB
         MW["middleware.ts<br/>locale: cookie → Accept-Language → default"]
          I18N["i18n/request.ts · messages/{en,da}.json<br/>18 namespaces · t() / getTranslations()"]
          SC["Server Components<br/>(pages: /, /recipes, /recipes/.../print, /range,<br/>/factory-ammo, /rifles, /logs, inventory, /settings)"]
-        SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
+         SA["Server Actions<br/>(actions.ts per domain)<br/>Zod validate · revalidatePath"]
+         UP["GET /api/uploads/[kind]/[file]<br/>reads public/uploads at request time"]
 
         subgraph Lib["lib/"]
             PRISMA["prisma.ts<br/>PrismaClient + pg adapter"]
@@ -42,7 +43,9 @@ graph TB
     UI <--> LS
     SC -- "queries" --> PRISMA
     SA -- "mutations + transactions" --> PRISMA
-    SA -- "image read/write/unlink" --> FILES
+    SA -- "image write/unlink" --> FILES
+    UI -- "img src uploadUrl()" --> UP
+    UP -- "read" --> FILES
     SA -- "AI safety check" --> AI
     SA -- "QL screenshot extract" --> AI
     AI -- "HTTPS + bearer token" --> EXT
@@ -333,6 +336,6 @@ flowchart LR
 ```
 
 - `Dockerfile.prod` multi-stage: pnpm install → `prisma generate` → `next build` → runtime image. Entrypoint: `prisma migrate deploy` then `pnpm start`.
-- Photos persist on the `uploads` named volume mounted at `/app/public/uploads`. Without it, range/factory-ammo images vanish on every container recreate.
+- Photos persist on the `uploads` named volume mounted at `/app/public/uploads`. Without it, range/factory-ammo images vanish on every container recreate. `next start` snapshots `public/` at boot, so thumbnails are served by `GET /api/uploads/...` (`uploadUrl()`), not as static `/uploads/...` files.
 - Deploy replaces **only** `reloading-app`. `db`, `cloudflared`, and `github-runner` stay up. `docker system prune -a -f` after each deploy to keep the LXC disk alive.
 - No inbound ports on the LXC. TLS terminates at Cloudflare. Access is the login gate; the Next.js app has no authentication of its own.

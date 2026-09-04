@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import type { FactoryAmmoListItem } from '@/lib/types'
+import { uploadUrl } from '@/lib/uploadUrl'
 
 interface FactoryAmmoTableProps {
   ammos: FactoryAmmoListItem[]
@@ -51,7 +52,7 @@ export function FactoryAmmoTable({ ammos }: FactoryAmmoTableProps) {
                 <td className="px-3 py-3">
                   {ammo.boxImageFilename ? (
                     <img
-                      src={`/uploads/factory-ammo/${ammo.boxImageFilename}`}
+                      src={uploadUrl('factory-ammo', ammo.boxImageFilename)}
                       alt=""
                       width={40}
                       height={40}

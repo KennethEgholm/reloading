@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/format';
 import { useFocusTrap } from '@/lib/useFocusTrap';
 import { DeleteRangeLogButton } from './DeleteRangeLogButton';
 import type { RangeLogListItem } from '@/lib/types';
+import { uploadUrl } from '@/lib/uploadUrl';
 
 interface RangeLogRowProps {
   log: RangeLogListItem;
@@ -68,7 +69,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
               aria-label={t('row.photoCount', { count: 1 })}
             >
               <img
-                src={`/uploads/range-logs/${log.mainImage.filename}`}
+                src={uploadUrl('range-logs', log.mainImage.filename)}
                 alt=""
                 aria-hidden="true"
                 width={56}
@@ -146,7 +147,7 @@ export function RangeLogRow({ log }: RangeLogRowProps) {
             </button>
 
             <img
-              src={`/uploads/range-logs/${log.mainImage.filename}`}
+              src={uploadUrl('range-logs', log.mainImage.filename)}
               alt={log.mainImage.description || ''}
               width={800}
               height={600}

@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { getFactoryAmmoById } from '../actions'
 import { DeleteFactoryAmmoButton } from '../DeleteFactoryAmmoButton'
 import { formatDate } from '@/lib/format'
+import { uploadUrl } from '@/lib/uploadUrl'
 
 export default async function FactoryAmmoDetailPage({
   params,
@@ -47,7 +48,7 @@ export default async function FactoryAmmoDetailPage({
         <div className="flex flex-wrap gap-6 items-start">
           {ammo.boxImageFilename && (
             <img
-              src={`/uploads/factory-ammo/${ammo.boxImageFilename}`}
+              src={uploadUrl('factory-ammo', ammo.boxImageFilename)}
               alt=""
               width={128}
               height={128}
@@ -56,7 +57,7 @@ export default async function FactoryAmmoDetailPage({
           )}
           {ammo.roundImageFilename && (
             <img
-              src={`/uploads/factory-ammo/${ammo.roundImageFilename}`}
+              src={uploadUrl('factory-ammo', ammo.roundImageFilename)}
               alt=""
               width={128}
               height={128}

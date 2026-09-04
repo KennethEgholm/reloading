@@ -57,4 +57,4 @@ CLAUDE.md
 
 # User uploaded photos (range logs etc.) - never commit personal target images
 public/uploads/
-uploads/
+/uploads/

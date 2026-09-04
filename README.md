@@ -56,7 +56,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
 
 - **Factory Ammo** (`/factory-ammo`)
   - Track store-bought ammunition as a unit (not its components): brand, model, caliber, and a hand-edited round count (`amount`). `amount` is **not** deducted when you log a session — it's manual inventory, like counting boxes on a shelf.
-  - Two photos per ammo: a picture of the ammo box and a picture of a single round. Stored locally (`public/uploads/factory-ammo`).
+  - Two photos per ammo: a picture of the ammo box and a picture of a single round. Stored on disk (`public/uploads/factory-ammo`) and served by `GET /api/uploads/factory-ammo/...`.
   - **Velocity sessions**: each ammo can have any number of verification sessions over time. A session records date, location, conditions, rounds fired, notes, and full chronograph data (Min/Max/Avg/ES/SD). Import per-shot velocities from a **Xero C1 CSV** right inside the session form (reuses the range-session chronograph importer); the server stores `FactoryAmmoShot` rows and recomputes aggregates from the validated shots.
   - **Accuracy groups (MOA, optional)**: a session can record target groups (distance, shot count, extreme spread → MOA computed by `lib/moa.ts`), same as range sessions. Session detail shows a groups table + session average.
   - List view with brand/model/caliber/rounds/sessions count/latest V0. Detail page shows the ammo info + photos + all sessions. Overview shows a Factory Ammo summary card + recent-ammo table (after Range Sessions and Load Logs, before Recipes).
@@ -67,7 +67,7 @@ Track your inventory of primers, projectiles, and propellants. Define recipes, l
   - Full session logging: date, location, linked recipe, rounds fired, weather/conditions, notes.
   - **Historical snapshots**: each session freezes a copy of the linked recipe at creation (name, caliber, charge, COAL, projectile/propellant/primer, linked **cartridge** (brand, caliber, water capacity), calculated/measured V0, fill rate), so later recipe edits or deletion never change or erase the session's record. The detail view shows the snapshot; switching the session's recipe re-snapshots, while editing other fields preserves the frozen values.
   - Complete chronograph data: Min/Max/Avg velocity (m/s), Extreme Spread (ES), Standard Deviation (SD).
-  - **Unlimited photos** with individual descriptions per photo. Photos stored locally (`public/uploads/range-logs`).
+  - **Unlimited photos** with individual descriptions per photo. Stored on disk (`public/uploads/range-logs`) and served by `GET /api/uploads/range-logs/...` (`lib/uploadUrl.ts`) so they work after `next start` (which snapshots `public/` at boot).
   - **Chronograph import**: upload a Xero C1 export (`.csv`) **or** a Garmin export (`.xlsx`) from inside the range session form. The app parses per-shot velocities in the browser, shows a preview with computed stats (min/max/avg/ES/SD), auto-fills the velocity fields, and — on save — stores both the individual shots (`RangeLogShot` model) and the recomputed aggregates. A Garmin `.xlsx` with multiple sheets (one per session) collapses all shots into a single renumbered list; aggregates are recomputed from the combined shots. The detail page shows a shot-by-shot table.
   - **Accuracy groups (MOA)**: record one or more target groups per session — distance (m), shot count, and extreme spread (mm). MOA is computed automatically by the server (`lib/moa.ts`) and stored on a `RangeGroup` child row. The session detail shows a groups table with a session average; the recipe detail shows an aggregate accuracy card (average MOA across all groups for that recipe + a recent-groups table). Groups are replaced wholesale on edit (touch to save) and are included in range-log export/import.
   - List view with photo count badges, velocity summaries, etc. Recent sessions are shown first on the Overview dashboard (before Load Logs).
@@ -159,6 +159,7 @@ pnpm dev
 - `messages/en.json` + `messages/da.json` – the bilingual message dictionaries (17 namespaces)
 - `prisma/schema.prisma` + `migrations/`
 - `public/images/` – nav icons (primer, projectile, etc.) + logo (seated round) + favicon (case head)
+- `app/api/uploads/[...path]/route.ts` – serves range and factory-ammo photos from disk (`lib/uploadPath.ts` guards traversal)
 - `public/uploads/range-logs/` – user-uploaded range photos (created at runtime)
 - `public/uploads/factory-ammo/` – user-uploaded factory-ammo photos (created at runtime)
 - `docker-compose.yml` / `Dockerfile` – the canonical **dev** environment (Docker Desktop)
@@ -167,7 +168,7 @@ pnpm dev
 ## Development Notes
 
 - All mutations go through Server Actions that receive `FormData`.
-- Range photos use a combination of client state (`existingImages` with `markedForDelete`, `images` for new File objects) + explicit `formData.append` for new files + metadata for existing ones. Never give the dynamic photo inputs a `name` attribute (prevents double submission).
+- Range photos use a combination of client state (`existingImages` with `markedForDelete`, `images` for new File objects) + explicit `formData.append` for new files + metadata for existing ones. Never give the dynamic photo inputs a `name` attribute (prevents double submission). Thumbnails use `uploadUrl()` (`/api/uploads/...`), not `/uploads/...` — `next start` does not pick up files written to `public/` after boot.
 - Server Actions are the trust boundary: they re-validate every `FormData` payload with shared Zod schemas in `lib/schemas.ts` (forms validating client-side is not enough). Add new entity validation there rather than hand-parsing in the action.
 - After any schema change, run the migration inside the container and restart the app service.
 - `pnpm install` runs `prisma generate` automatically (`postinstall` script), so the host Prisma client stays in sync with `prisma/schema.prisma` and `pnpm typecheck` won't fail with stale-model errors after a schema change.

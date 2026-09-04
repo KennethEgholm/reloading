@@ -11,6 +11,7 @@ import { useFocusTrap } from '@/lib/useFocusTrap'
 import { ChronographImport } from './ChronographImport'
 import type { ParsedShot, ParsedChronograph } from '@/lib/parseChronographCsv'
 import { computeMoa } from '@/lib/moa'
+import { uploadUrl } from '@/lib/uploadUrl'
 
 interface RecipeOption {
   id: string
@@ -616,7 +617,7 @@ export function RangeLogForm({ recipes, rifles, defaultRecipeId, initialData, lo
               <div key={img.id} className="flex gap-3 items-start border border-zinc-200 dark:border-zinc-700 rounded-xl p-3">
                 {img.filename && (
                   <img
-                    src={`/uploads/range-logs/${img.filename}`}
+                    src={uploadUrl('range-logs', img.filename)}
                     alt=""
                     width={64}
                     height={64}
@@ -762,7 +763,7 @@ export function RangeLogForm({ recipes, rifles, defaultRecipeId, initialData, lo
           </button>
 
           <img
-            src={`/uploads/range-logs/${currentOverlayImg.filename}`}
+            src={uploadUrl('range-logs', currentOverlayImg.filename)}
             alt={currentOverlayImg.description || ''}
             width={800}
             height={600}

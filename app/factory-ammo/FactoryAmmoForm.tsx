@@ -8,6 +8,7 @@ import { WeightUnit } from '@prisma/client'
 import { createFactoryAmmo, updateFactoryAmmo } from './actions'
 import { CaliberField } from '../CaliberField'
 import type { CaliberOption } from '@/lib/types'
+import { uploadUrl } from '@/lib/uploadUrl'
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -135,12 +136,12 @@ export function FactoryAmmoForm({ calibers, initialData }: FactoryAmmoFormProps)
   const boxPreview = boxFile
     ? URL.createObjectURL(boxFile)
     : initialData?.boxImageFilename
-      ? `/uploads/factory-ammo/${initialData.boxImageFilename}`
+      ? uploadUrl('factory-ammo', initialData.boxImageFilename)
       : null
   const roundPreview = roundFile
     ? URL.createObjectURL(roundFile)
     : initialData?.roundImageFilename
-      ? `/uploads/factory-ammo/${initialData.roundImageFilename}`
+      ? uploadUrl('factory-ammo', initialData.roundImageFilename)
       : null
 
   return (
